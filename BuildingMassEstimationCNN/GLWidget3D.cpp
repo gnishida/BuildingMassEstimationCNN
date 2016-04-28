@@ -155,11 +155,11 @@ void GLWidget3D::parameterEstimation(bool centering3D, int cameraType, float cam
 	offset.y = height() * 0.5f - bbox.center().y;
 
 	// shift the sketch
-	for (auto stroke : sketch) {
-		stroke.start.x += offset.x;
-		stroke.start.y += offset.y;
-		stroke.end.x += offset.x;
-		stroke.end.y += offset.y;
+	for (int i = 0; i < sketch.size(); ++i) {
+		sketch[i].start.x += offset.x;
+		sketch[i].start.y += offset.y;
+		sketch[i].end.x += offset.x;
+		sketch[i].end.y += offset.y;
 	}
 
 	// scale the contour to 128x128 size
