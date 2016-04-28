@@ -34,7 +34,7 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	light_mvpMatrix = light_pMatrix * light_mvMatrix;
 
 
-
+	offset = glm::vec2(0, 0);
 
 
 	/*classifier = boost::shared_ptr<Classifer>(new Classifier("../models/deploy.prototxt",
@@ -53,6 +53,7 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
  */
 void GLWidget3D::clearSketch() {
 	sketch.clear();
+	offset = glm::vec2(0, 0);
 
 	update();
 }
@@ -65,6 +66,7 @@ void GLWidget3D::clearGeometry() {
 
 void GLWidget3D::loadContour(const std::string& filename) {
 	sketch.clear();
+	offset = glm::vec2(0, 0);
 
 	std::ifstream in(filename);
 	
@@ -120,7 +122,7 @@ void GLWidget3D::loadCGA(const std::string& filename) {
 	// generate 3d model
 	cga.derive(grammar, true);
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
-	cga.generateGeometry(faces);
+	cga.generateGeometry(faces, true);
 	renderManager.addFaces(faces, true);
 
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
@@ -140,41 +142,48 @@ void GLWidget3D::undo() {
  * Use the sketch as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimation(bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+	// compute the bbox
+	glutils::BoundingBox bbox;
+	for (auto stroke : sketch) {
+		bbox.addPoint(stroke.start);
+		bbox.addPoint(stroke.end);
+	}
+
+	// compute the offset
+	offset.x = width() * 0.5f - bbox.center().x;
+	offset.y = height() * 0.5f - bbox.center().y;
+
+	// shift the sketch
+	for (auto stroke : sketch) {
+		stroke.start.x += offset.x;
+		stroke.start.y += offset.y;
+		stroke.end.x += offset.x;
+		stroke.end.y += offset.y;
+	}
+
 	// scale the contour to 128x128 size
 	glm::vec2 scale(128.0 / width(), 128.0 / height());
 
-	glutils::BoundingBox bbox;
 	std::vector<Stroke> scaledSketch;
 	for (auto stroke : sketch) {
 		Stroke s;
 		s.start = glm::vec2(stroke.start.x * scale.x, stroke.start.y * scale.y);
 		s.end = glm::vec2(stroke.end.x * scale.x, stroke.end.y * scale.y);
 		scaledSketch.push_back(s);
-
-		bbox.addPoint(s.start);
-		bbox.addPoint(s.end);
-	}
-
-	// center the contour
-	for (int i = 0; i < scaledSketch.size(); ++i) {
-		scaledSketch[i].start.x += 64 - bbox.center().x;
-		scaledSketch[i].start.y += 64 - bbox.center().y;
-		scaledSketch[i].end.x += 64 - bbox.center().x;
-		scaledSketch[i].end.y += 64 - bbox.center().y;
 	}
 
 	// create input image
 	cv::Mat input(128, 128, CV_8U, cv::Scalar(255));
 	for (auto stroke : scaledSketch) {
-		cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1);
+		cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
 	}
 	//cv::imwrite("input.png", input);
 
 
 
-	input = cv::imread("..\\photos\\image_001550.png");
-	std::cout << "ch: " << input.channels() << std::endl;
+	//input = cv::imread("..\\photos\\image_001550.png");
+	//std::cout << "ch: " << input.channels() << std::endl;
 
 
 	// estimate parameters
@@ -236,7 +245,7 @@ void GLWidget3D::parameterEstimation(int cameraType, float cameraDistanceBase, f
 	renderManager.removeObjects();
 	cga.derive(grammar, true);
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
-	cga.generateGeometry(faces);
+	cga.generateGeometry(faces, centering3D);
 	renderManager.addFaces(faces, true);
 
 	updateStatusBar();

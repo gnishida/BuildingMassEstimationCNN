@@ -85,9 +85,26 @@ void CGA::derive(const Grammar& grammar, bool suppressWarning) {
 /**
  * Generate a geometry and add it to the render manager.
  */
-void CGA::generateGeometry(std::vector<boost::shared_ptr<glutils::Face> >& faces) {
+void CGA::generateGeometry(std::vector<boost::shared_ptr<glutils::Face> >& faces, bool center) {
 	for (int i = 0; i < shapes.size(); ++i) {
 		shapes[i]->generateGeometry(faces, 1.0f);
+	}
+
+	if (center) {
+		glutils::BoundingBox bbox;
+		for (int i = 0; i < faces.size(); ++i) {
+			for (int j = 0; j < faces[i]->vertices.size(); ++j) {
+				bbox.addPoint(faces[i]->vertices[j].position);
+			}
+		}
+
+		glm::vec3 centroid = bbox.center();
+
+		for (int i = 0; i < faces.size(); ++i) {
+			for (int j = 0; j < faces[i]->vertices.size(); ++j) {
+				faces[i]->vertices[j].position -= centroid;
+			}
+		}
 	}
 }
 

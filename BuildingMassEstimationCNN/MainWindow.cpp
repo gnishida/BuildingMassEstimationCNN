@@ -1,8 +1,7 @@
 #include "MainWindow.h"
 #include "Classifier.h"
 #include <QFileDialog>
-#include <QHBoxLayout>
-#include "CustomWidget.h"
+#include "ParameterEstimationDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -77,5 +76,21 @@ void MainWindow::onUndo() {
 * This is called when the user clickes [Tool] -> [Predict]
 */
 void MainWindow::onParameterEstimation() {
-	glWidget->parameterEstimation(1, 25.0f, 0.0f, 10, 30, 15, 75, 45, 50);
+	ParameterEstimationDialog dlg;
+	if (dlg.exec()) {
+		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
+		int cameraType = 0;
+		if (dlg.ui.radioButtonCameraTypeAerialView->isChecked()) {
+			cameraType = 1;
+		}
+		float cameraDistanceBase = dlg.ui.lineEditCameraDistance->text().toFloat();
+		int xrotMin = dlg.ui.lineEditXrotMin->text().toInt();
+		int xrotMax = dlg.ui.lineEditXrotMax->text().toInt();
+		int yrotMin = dlg.ui.lineEditYrotMin->text().toInt();
+		int yrotMax = dlg.ui.lineEditYrotMax->text().toInt();
+		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
+		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
+
+		glWidget->parameterEstimation(centering3D, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
+	}
 }

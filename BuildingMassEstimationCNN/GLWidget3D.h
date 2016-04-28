@@ -45,6 +45,7 @@ private:
 	QImage bgImage;
 	std::vector<Stroke> sketch;
 	Stroke currentStroke;
+	glm::vec2 offset;
 
 	Camera camera;
 	glm::vec3 light_dir;
@@ -63,7 +64,7 @@ public:
 	void loadImage(const std::string& filename);
 	void loadCGA(const std::string& filename);
 	void undo();
-	void parameterEstimation(int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
+	void parameterEstimation(bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void updateStatusBar();
