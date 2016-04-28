@@ -45,7 +45,6 @@ private:
 	QImage bgImage;
 	std::vector<Stroke> sketch;
 	Stroke currentStroke;
-	glm::vec2 offset;
 
 	Camera camera;
 	glm::vec3 light_dir;

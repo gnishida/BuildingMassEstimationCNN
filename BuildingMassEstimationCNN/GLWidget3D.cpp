@@ -33,10 +33,6 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	glm::mat4 light_mvMatrix = glm::lookAt(-light_dir * 50.0f, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	light_mvpMatrix = light_pMatrix * light_mvMatrix;
 
-
-	offset = glm::vec2(0, 0);
-
-
 	/*classifier = boost::shared_ptr<Classifer>(new Classifier("../models/deploy.prototxt",
 		"../models/train.caffemodel",
 		"../models/mean.binaryproto",
@@ -53,7 +49,6 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
  */
 void GLWidget3D::clearSketch() {
 	sketch.clear();
-	offset = glm::vec2(0, 0);
 
 	update();
 }
@@ -66,7 +61,6 @@ void GLWidget3D::clearGeometry() {
 
 void GLWidget3D::loadContour(const std::string& filename) {
 	sketch.clear();
-	offset = glm::vec2(0, 0);
 
 	std::ifstream in(filename);
 	
@@ -97,8 +91,12 @@ void GLWidget3D::loadImage(const std::string& filename) {
 	newImage.load(filename.c_str());
 
 	float scale = std::min((float)width() / newImage.width(), (float)height() / newImage.height());
-	bgImage = newImage.scaled(newImage.width() * scale, newImage.height() * scale);
+	newImage = newImage.scaled(newImage.width() * scale, newImage.height() * scale);
 
+	bgImage = QImage(width(), height(), QImage::Format_RGB32);
+	QPainter painter(&bgImage);
+	painter.drawImage((width() - newImage.width()) / 2, (height() - newImage.height()) / 2, newImage);
+	
 	update();
 }
 
@@ -151,6 +149,7 @@ void GLWidget3D::parameterEstimation(bool centering3D, int cameraType, float cam
 	}
 
 	// compute the offset
+	glm::vec2 offset;
 	offset.x = width() * 0.5f - bbox.center().x;
 	offset.y = height() * 0.5f - bbox.center().y;
 
@@ -161,6 +160,11 @@ void GLWidget3D::parameterEstimation(bool centering3D, int cameraType, float cam
 		sketch[i].end.x += offset.x;
 		sketch[i].end.y += offset.y;
 	}
+
+	// shift the image
+	QImage newImage = bgImage;
+	QPainter painter(&bgImage);
+	painter.drawImage(offset.x, offset.y, newImage);
 
 	// scale the contour to 128x128 size
 	glm::vec2 scale(128.0 / width(), 128.0 / height());
@@ -429,7 +433,7 @@ void GLWidget3D::paintEvent(QPaintEvent *event) {
 	// draw sketch
 	QPainter painter(this);
 	painter.setOpacity(0.5);
-	painter.drawImage((width() - bgImage.width()) * 0.5, (height() - bgImage.height()) * 0.5, bgImage);
+	painter.drawImage(0, 0, bgImage);
 
 	painter.setPen(QPen(Qt::black, 3));
 	for (auto stroke : sketch) {
