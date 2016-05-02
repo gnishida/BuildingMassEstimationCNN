@@ -276,6 +276,19 @@
     <string>3D Centering</string>
    </property>
   </widget>
+  <widget class="QCheckBox" name="checkBoxMeanSubtraction">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>10</y>
+     <width>121</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Mean subtraction</string>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>

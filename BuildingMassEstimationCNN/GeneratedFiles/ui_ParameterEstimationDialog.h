@@ -46,6 +46,7 @@ public:
     QRadioButton *radioButtonCameraTypeStreetView;
     QRadioButton *radioButtonCameraTypeAerialView;
     QCheckBox *checkBoxCentering3D;
+    QCheckBox *checkBoxMeanSubtraction;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
@@ -120,6 +121,9 @@ public:
         checkBoxCentering3D = new QCheckBox(ParameterEstimationDialog);
         checkBoxCentering3D->setObjectName(QStringLiteral("checkBoxCentering3D"));
         checkBoxCentering3D->setGeometry(QRect(110, 10, 91, 17));
+        checkBoxMeanSubtraction = new QCheckBox(ParameterEstimationDialog);
+        checkBoxMeanSubtraction->setObjectName(QStringLiteral("checkBoxMeanSubtraction"));
+        checkBoxMeanSubtraction->setGeometry(QRect(220, 10, 121, 17));
         QWidget::setTabOrder(checkBoxCentering3D, radioButtonCameraTypeStreetView);
         QWidget::setTabOrder(radioButtonCameraTypeStreetView, radioButtonCameraTypeAerialView);
         QWidget::setTabOrder(radioButtonCameraTypeAerialView, lineEditCameraDistance);
@@ -153,6 +157,7 @@ public:
         radioButtonCameraTypeStreetView->setText(QApplication::translate("ParameterEstimationDialog", "Street view", 0));
         radioButtonCameraTypeAerialView->setText(QApplication::translate("ParameterEstimationDialog", "Aerial view", 0));
         checkBoxCentering3D->setText(QApplication::translate("ParameterEstimationDialog", "3D Centering", 0));
+        checkBoxMeanSubtraction->setText(QApplication::translate("ParameterEstimationDialog", "Mean subtraction", 0));
     } // retranslateUi
 
 };

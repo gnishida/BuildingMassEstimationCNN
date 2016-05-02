@@ -39,7 +39,7 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		"../models/words.txt"));*/
 
 
-	regression = boost::shared_ptr<Regression>(new Regression("../models/deploy.prototxt", "../models/contour1_iter_240000.caffemodel"));
+	regression = boost::shared_ptr<Regression>(new Regression("../models/deploy_1.prototxt", "../models/contour1_iter_240000.caffemodel"));
 
 
 }
@@ -140,7 +140,7 @@ void GLWidget3D::undo() {
  * Use the sketch as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : sketch) {
@@ -184,6 +184,11 @@ void GLWidget3D::parameterEstimation(bool centering3D, int cameraType, float cam
 	}
 	//cv::imwrite("input.png", input);
 
+	if (meanSubtraction) {
+		cv::Mat meanImg = cv::imread("../models/mean.png");
+		cv::cvtColor(meanImg, meanImg, cv::COLOR_BGR2GRAY);
+		input -= meanImg;
+	}
 
 
 	//input = cv::imread("..\\photos\\image_001550.png");
@@ -435,7 +440,8 @@ void GLWidget3D::paintEvent(QPaintEvent *event) {
 	painter.setOpacity(0.5);
 	painter.drawImage(0, 0, bgImage);
 
-	painter.setPen(QPen(Qt::black, 3));
+	//painter.setPen(QPen(Qt::black, 3));
+	painter.setPen(QPen(QColor(0, 0, 255), 3));
 	for (auto stroke : sketch) {
 		painter.drawLine(stroke.start.x, stroke.start.y, stroke.end.x, stroke.end.y);
 	}

@@ -4,6 +4,7 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.setupUi(this);
 
 	ui.checkBoxCentering3D->setChecked(true);
+	ui.checkBoxMeanSubtraction->setChecked(false);
 	ui.radioButtonCameraTypeStreetView->setChecked(false);
 	ui.radioButtonCameraTypeAerialView->setChecked(true);
 	ui.lineEditCameraDistance->setText("25");
