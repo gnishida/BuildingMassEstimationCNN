@@ -64,6 +64,8 @@ public:
 	void loadCGA(const std::string& filename);
 	void undo();
 	void parameterEstimation(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
+	void parameterEstimation2(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
+	void parameterEstimation3(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void updateStatusBar();

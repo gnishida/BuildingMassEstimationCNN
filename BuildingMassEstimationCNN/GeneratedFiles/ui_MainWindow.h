@@ -34,6 +34,7 @@ public:
     QAction *actionOpenContour;
     QAction *actionSaveContour;
     QAction *actionUndo;
+    QAction *actionExtractCameraParameter;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -63,6 +64,8 @@ public:
         actionSaveContour->setObjectName(QStringLiteral("actionSaveContour"));
         actionUndo = new QAction(MainWindowClass);
         actionUndo->setObjectName(QStringLiteral("actionUndo"));
+        actionExtractCameraParameter = new QAction(MainWindowClass);
+        actionExtractCameraParameter->setObjectName(QStringLiteral("actionExtractCameraParameter"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -119,6 +122,7 @@ public:
         actionSaveContour->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
         actionUndo->setText(QApplication::translate("MainWindowClass", "Undo", 0));
         actionUndo->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+Z", 0));
+        actionExtractCameraParameter->setText(QApplication::translate("MainWindowClass", "Extract Camera Parameter", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuTool->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
         menuEdit->setTitle(QApplication::translate("MainWindowClass", "Edit", 0));

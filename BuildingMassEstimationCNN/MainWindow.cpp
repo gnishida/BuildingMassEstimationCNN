@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionParameterEstimation, SIGNAL(triggered()), this, SLOT(onParameterEstimation()));
-	
+
 	glWidget = new GLWidget3D(this);
 	this->setCentralWidget(glWidget);
 }
@@ -92,6 +92,6 @@ void MainWindow::onParameterEstimation() {
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
 
-		glWidget->parameterEstimation(centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
+		glWidget->parameterEstimation2(centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
 	}
 }

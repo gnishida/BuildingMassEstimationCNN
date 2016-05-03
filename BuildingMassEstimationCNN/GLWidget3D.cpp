@@ -10,9 +10,15 @@
 #include "GrammarParser.h"
 #include "Rectangle.h"
 #include "GLUtils.h"
+#include <opencv2/calib3d.hpp>
+#include <map>
 
 #ifndef M_PI
 #define	M_PI	3.141592653
+#endif
+
+#ifndef SQR
+#define SQR(x)		((x) * (x))
 #endif
 
 GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent) {
@@ -256,6 +262,437 @@ void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
 	cga.generateGeometry(faces, centering3D);
 	renderManager.addFaces(faces, true);
+
+	updateStatusBar();
+	update();
+}
+
+/**
+* Use the sketch as an input to the pretrained network, and obtain the probabilities as output.
+* Then, display the options ordered by the probabilities.
+*/
+void GLWidget3D::parameterEstimation2(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+	// compute the bbox
+	glutils::BoundingBox bbox;
+	for (auto stroke : sketch) {
+		bbox.addPoint(stroke.start);
+		bbox.addPoint(stroke.end);
+	}
+
+	// compute the offset
+	glm::vec2 offset;
+	offset.x = width() * 0.5f - bbox.center().x;
+	offset.y = height() * 0.5f - bbox.center().y;
+
+	// shift the sketch
+	for (int i = 0; i < sketch.size(); ++i) {
+		sketch[i].start.x += offset.x;
+		sketch[i].start.y += offset.y;
+		sketch[i].end.x += offset.x;
+		sketch[i].end.y += offset.y;
+	}
+
+	// shift the image
+	QImage newImage = bgImage;
+	QPainter painter(&bgImage);
+	painter.drawImage(offset.x, offset.y, newImage);
+
+	// scale the contour to 128x128 size
+	glm::vec2 scale(128.0 / width(), 128.0 / height());
+
+	std::vector<Stroke> scaledSketch;
+	for (auto stroke : sketch) {
+		Stroke s;
+		s.start = glm::vec2(stroke.start.x * scale.x, stroke.start.y * scale.y);
+		s.end = glm::vec2(stroke.end.x * scale.x, stroke.end.y * scale.y);
+		scaledSketch.push_back(s);
+	}
+
+	// create input image
+	cv::Mat input(128, 128, CV_8U, cv::Scalar(255));
+	for (auto stroke : scaledSketch) {
+		cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
+	}
+	//cv::imwrite("input.png", input);
+
+	if (meanSubtraction) {
+		cv::Mat meanImg = cv::imread("../models/mean.png");
+		cv::cvtColor(meanImg, meanImg, cv::COLOR_BGR2GRAY);
+		input -= meanImg;
+	}
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+	// contourの頂点の座標を取得
+	std::vector<std::vector<cv::Point2f>> imagePoints(1);
+	for (int i = 0; i < scaledSketch.size(); ++i) {
+		cv::Point2f p1(scaledSketch[i].start.x / 64.0 - 1.0, 1 - scaledSketch[i].start.y / 64.0);
+		bool registered = false;
+		for (int j = 0; j < imagePoints[0].size(); ++j) {
+			// 既に登録済みの頂点はスキップ
+			if (sqrtf(SQR(imagePoints[0][j].x - p1.x) + SQR(imagePoints[0][j].y - p1.y)) < 0.07f) {
+				registered = true;
+				break;
+			}
+		}
+
+		if (!registered) {
+			imagePoints[0].push_back(p1);
+		}
+
+		cv::Point2f p2(scaledSketch[i].end.x / 64.0 - 1.0, 1 - scaledSketch[i].end.y / 64.0);
+		registered = false;
+		for (int j = 0; j < imagePoints[0].size(); ++j) {
+			// 既に登録済みの頂点はスキップ
+			if (sqrtf(SQR(imagePoints[0][j].x - p2.x) + SQR(imagePoints[0][j].y - p2.y)) < 0.07f) {
+				registered = true;
+				break;
+			}
+		}
+
+		if (!registered) {
+			imagePoints[0].push_back(p2);
+		}
+	}
+	///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+	//input = cv::imread("..\\photos\\image_001550.png");
+	//std::cout << "ch: " << input.channels() << std::endl;
+
+
+	// estimate parameters
+	std::vector<float> params = regression->Predict(input);
+	for (int i = 0; i < params.size(); ++i) {
+		if (i > 0) std::cout << ",";
+		std::cout << params[i];
+	}
+	std::cout << std::endl;
+
+	// setup the camera
+	if (xrotMin != xrotMax && yrotMin != yrotMax) {
+		camera.xrot = xrotMin + (xrotMax - xrotMin) * params[0];
+		camera.yrot = yrotMin + (yrotMax - yrotMin) * params[1];
+		params.erase(params.begin());
+		params.erase(params.begin());
+	}
+	else {
+		camera.xrot = xrotMin;
+		camera.yrot = yrotMin;
+	}
+	camera.zrot = 0;
+	if (fovMin != fovMax) {
+		camera.fovy = fovMin + params[0] * (fovMax - fovMin);
+		params.erase(params.begin());
+
+	}
+	else {
+		camera.fovy = fovMin;
+	}
+	float cameraDistance = cameraDistanceBase / tanf(camera.fovy * 0.5 / 180.0f * M_PI);
+	if (cameraType == 0) { // street view
+		camera.pos.x = 0;
+		camera.pos.y = -cameraDistance * sinf(camera.xrot / 180.0f * M_PI) + cameraHeight * cosf(camera.xrot / 180.0f * M_PI);
+		camera.pos.z = cameraDistance * cosf(camera.xrot / 180.0f * M_PI) + cameraHeight * sinf(camera.xrot / 180.0f * M_PI);
+	}
+	else { // aerial view
+		camera.pos.x = 0;
+		camera.pos.y = cameraHeight;
+		camera.pos.z = cameraDistance;
+	}
+	camera.updatePMatrix(width(), height());
+
+	// setup CGA
+	QString cga_file = QString("..\\cga\\contour_01.xml");
+	cga::CGA cga;
+	cga::Grammar grammar;
+	cga.modelMat = glm::rotate(glm::mat4(), -(float)M_PI * 0.5f, glm::vec3(1, 0, 0));
+	cga::parseGrammar(cga_file.toUtf8().constData(), grammar);
+
+	// set parameters
+	cga.setParamValues(grammar, params);
+
+	// set axiom
+	cga::Rectangle* start = new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -3.141592f * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1));
+	cga.stack.push_back(boost::shared_ptr<cga::Shape>(start));
+
+	// generate 3d model
+	renderManager.removeObjects();
+	cga.derive(grammar, true);
+	std::vector<boost::shared_ptr<glutils::Face> > faces;
+	cga.generateGeometry(faces, centering3D);
+	renderManager.addFaces(faces, true);
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+	// 3Dの頂点の座標を取得
+	std::vector<glm::vec3> objectPointsTemp;
+	for (int i = 0; i < faces.size(); ++i) {
+		for (int j = 0; j < faces[i]->vertices.size(); ++j) {
+			// 既にその座標が登録済みかチェック
+			bool registered = false;
+			for (int k = 0; k < objectPointsTemp.size(); ++k) {
+				float dist = glm::length(objectPointsTemp[k] - faces[i]->vertices[j].position);
+				if (dist < 0.1f) {
+					registered = true;
+					break;
+				}
+			}
+
+			if (!registered) {
+				objectPointsTemp.push_back(faces[i]->vertices[j].position);
+			}
+		}
+	}
+
+	// 3Dの頂点を、2Dの頂点に合わせて並べる
+	std::vector<std::vector<cv::Point3f>> objectPoints(1);
+	std::map<int, bool> used;
+	for (int i = 0; i < imagePoints[0].size(); ++i) {
+		// 最も近い3Dの頂点を探す
+		float min_dist = std::numeric_limits<float>::max();
+		int min_idx;
+		for (int j = 0; j < objectPointsTemp.size(); ++j) {
+			if (used.find(j) != used.end() && used[j]) continue;
+
+			glm::vec4 result = camera.mvpMatrix * glm::vec4(objectPointsTemp[j], 1);
+			glm::vec2 pp(result.x / result.w, result.y / result.w);
+
+			float dist = sqrtf(SQR(imagePoints[0][i].x - pp.x) + SQR(imagePoints[0][i].y - pp.y));
+			if (dist < min_dist) {
+				min_dist = dist;
+				min_idx = j;
+			}
+		}
+
+		used[min_idx] = true;
+		objectPoints[0].push_back(cv::Point3f(objectPointsTemp[min_idx].x, objectPointsTemp[min_idx].y, objectPointsTemp[min_idx].z));
+
+	}
+	///////////////////////////////////////////////////////////////////////////////////
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+	for (int i = 0; i < objectPoints[0].size(); ++i) {
+		std::cout << "(" << imagePoints[0][i].x << "," << imagePoints[0][i].y << ") --> (" << objectPoints[0][i].x << "," << objectPoints[0][i].y << "," << objectPoints[0][i].z << ")" << std::endl;
+	}
+
+	// Camera calibration
+	cv::Mat cameraMat = cv::Mat::eye(3, 3, CV_64F);
+	cameraMat.at<double>(0, 0) = camera.pMatrix[0][0];
+	cameraMat.at<double>(1, 1) = camera.pMatrix[1][1];
+	cameraMat.at<double>(2, 0) = camera.pMatrix[2][0];
+	cameraMat.at<double>(2, 1) = camera.pMatrix[2][1];
+	std::cout << "Camera Matrix: " << std::endl;
+	std::cout << cameraMat << std::endl;
+	cv::Mat distortion = cv::Mat::zeros(1, 8, CV_64F);
+	std::vector<cv::Mat> rvecs, tvecs;
+	cv::calibrateCamera(objectPoints, imagePoints, cv::Size(128, 128), cameraMat, distortion, rvecs, tvecs, cv::CALIB_USE_INTRINSIC_GUESS | cv::CALIB_FIX_ASPECT_RATIO | cv::CALIB_FIX_PRINCIPAL_POINT | cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_K2 | cv::CALIB_FIX_K3 | cv::CALIB_FIX_K4 | cv::CALIB_FIX_K5 | cv::CALIB_FIX_K6);
+	std::cout << "<<< OpenCV results >>>" << std::endl;
+	std::cout << "Camera Matrix:" << std::endl << cameraMat << std::endl;
+	for (int i = 0; i < rvecs.size(); ++i) {
+		std::cout << "R:" << std::endl << rvecs[i] << std::endl;
+		std::cout << "T:" << std::endl << tvecs[i] << std::endl;
+	}
+
+	float fov = atan2(1.0, cameraMat.at<double>(0, 0)) * 2.0 / M_PI * 180.0;
+	std::cout << "FOV: " << camera.fovy << " --> " << fov << std::endl;
+	camera.fovy = atan2(1.0f, cameraMat.at<double>(0, 0)) * 2.0 / M_PI * 180.0;
+	camera.pos.z = cameraDistanceBase / tanf(camera.fovy * 0.5 / 180.0f * M_PI);
+
+	cv::Mat R;
+	cv::Rodrigues(rvecs[0], R);
+	float xrot = atan2(R.at<double>(1, 2), R.at<double>(2, 2)) / M_PI * 180.0;
+	float yrot = atan2(-R.at<double>(0, 2), sqrt(SQR(R.at<double>(1, 2)) + SQR(R.at<double>(2, 2)))) / M_PI * 180.0;	
+	std::cout << "Xrot: " << camera.xrot << " --> " << xrot << std::endl;
+	std::cout << "Yrot: " << camera.yrot << " --> " << yrot << std::endl;
+	camera.xrot = xrot;
+	camera.yrot = yrot;
+
+	camera.updatePMatrix(width(), height());
+	/*
+	cv::Mat R;
+	cv::rodrigues(rvecs, R);
+
+	cv::Mat P(3, 4, CV_64F);
+	for (int r = 0; r < 3; ++r) {
+		for (int c = 0; c < 3; ++c) {}
+	}
+	*/
+	///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+	updateStatusBar();
+	update();
+}
+
+void GLWidget3D::parameterEstimation3(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+	// contourの頂点の座標を取得
+	std::vector<std::vector<cv::Point2f>> imagePoints(7);
+	imagePoints[0].push_back(cv::Point2f(-0.15875, 0.1375));
+	imagePoints[0].push_back(cv::Point2f(-0.14375, -0.28));
+	imagePoints[0].push_back(cv::Point2f(-0.03625, -0.345));
+	imagePoints[0].push_back(cv::Point2f(0.15625, -0.16));
+	imagePoints[0].push_back(cv::Point2f(0.15875, 0.295));
+	imagePoints[0].push_back(cv::Point2f(0.05, 0.34375));
+
+	imagePoints[1].push_back(cv::Point2f(-0.00749999, 0.245));
+	imagePoints[1].push_back(cv::Point2f(-0.2375, 0.0825));
+	imagePoints[1].push_back(cv::Point2f(-0.23, -0.1775));
+	imagePoints[1].push_back(cv::Point2f(0.2375, 0.18));
+	imagePoints[1].push_back(cv::Point2f(0.2325, -0.0575));
+	imagePoints[1].push_back(cv::Point2f(0.02, -0.25));
+
+	imagePoints[2].push_back(cv::Point2f(-0.26125, 0.115));
+	imagePoints[2].push_back(cv::Point2f(-0.24625, -0.1175));
+	imagePoints[2].push_back(cv::Point2f(-0.08625, -0.225));
+	imagePoints[2].push_back(cv::Point2f(0.24875, -0.1025));
+	imagePoints[2].push_back(cv::Point2f(0.26125, 0.1175));
+	imagePoints[2].push_back(cv::Point2f(0.05625, 0.2225));
+
+	imagePoints[3].push_back(cv::Point2f(-0.295, 0.20125));
+	imagePoints[3].push_back(cv::Point2f(0.0599999, 0.29125));
+	imagePoints[3].push_back(cv::Point2f(0.2975, -0.02625));
+	imagePoints[3].push_back(cv::Point2f(0.2825, -0.18125));
+	imagePoints[3].push_back(cv::Point2f(-0.0875, -0.29125));
+	imagePoints[3].push_back(cv::Point2f(-0.29, 0.04875));
+
+	imagePoints[4].push_back(cv::Point2f(-0.1975, 0.1725));
+	imagePoints[4].push_back(cv::Point2f(-0.19, -0.1025));
+	imagePoints[4].push_back(cv::Point2f(0.0749999, -0.2525));
+	imagePoints[4].push_back(cv::Point2f(0.19, -0.1675));
+	imagePoints[4].push_back(cv::Point2f(0.2, 0.11));
+	imagePoints[4].push_back(cv::Point2f(-0.085, 0.25));
+
+	imagePoints[5].push_back(cv::Point2f(-0.1175, 0.25));
+	imagePoints[5].push_back(cv::Point2f(-0.02, 0.31));
+	imagePoints[5].push_back(cv::Point2f(0.1175, 0.2375));
+	imagePoints[5].push_back(cv::Point2f(0.11, -0.2475));
+	imagePoints[5].push_back(cv::Point2f(0.0325, -0.31));
+	imagePoints[5].push_back(cv::Point2f(-0.0975, -0.2225));
+
+	imagePoints[6].push_back(cv::Point2f(-0.0225, 0.235));
+	imagePoints[6].push_back(cv::Point2f(-0.2025, 0.09));
+	imagePoints[6].push_back(cv::Point2f(-0.1975, -0.155));
+	imagePoints[6].push_back(cv::Point2f(0.0224999, -0.2375));
+	imagePoints[6].push_back(cv::Point2f(0.2, 0.1725));
+	imagePoints[6].push_back(cv::Point2f(0.19, -0.0799999));
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+
+
+	// 3Dの頂点を、2Dの頂点に合わせて並べる
+	std::vector<std::vector<cv::Point3f>> objectPoints(7);
+	objectPoints[0].push_back(cv::Point3f(-4.14134, 8.81758, -2));
+	objectPoints[0].push_back(cv::Point3f(-4.14134, -8.81758, -2));
+	objectPoints[0].push_back(cv::Point3f(-4.14134, -8.81758, 2));
+	objectPoints[0].push_back(cv::Point3f(4.14134, -8.81758, 2));
+	objectPoints[0].push_back(cv::Point3f(4.14134, 8.81758, 2));
+	objectPoints[0].push_back(cv::Point3f(4.14134, 8.81758, -2));
+
+	objectPoints[1].push_back(cv::Point3f(5.16899, 3.76056, -3.62279));
+	objectPoints[1].push_back(cv::Point3f(-5.16899, 3.76056, -3.62279));
+	objectPoints[1].push_back(cv::Point3f(-5.16899, -3.76056, -3.62279));
+	objectPoints[1].push_back(cv::Point3f(5.16899, 3.76056, 3.62279));
+	objectPoints[1].push_back(cv::Point3f(5.16899, -3.76056, 3.62279));
+	objectPoints[1].push_back(cv::Point3f(-5.16899, -3.76056, 3.62279));
+
+	objectPoints[2].push_back(cv::Point3f(-4.96565, 3.1291, -3.61298));
+	objectPoints[2].push_back(cv::Point3f(-4.96565, -3.1291, -3.61298));
+	objectPoints[2].push_back(cv::Point3f(-4.96565, -3.1291, 3.61298));
+	objectPoints[2].push_back(cv::Point3f(4.96565, -3.1291, 3.61298));
+	objectPoints[2].push_back(cv::Point3f(4.96565, 3.1291, 3.61298));
+	objectPoints[2].push_back(cv::Point3f(4.96565, 3.1291, -3.61298));
+
+	objectPoints[3].push_back(cv::Point3f(-5.37314, 2.90477, -6.32432));
+	objectPoints[3].push_back(cv::Point3f(5.37314, 2.90477, -6.32432));
+	objectPoints[3].push_back(cv::Point3f(5.37314, 2.90477, 6.32433));
+	objectPoints[3].push_back(cv::Point3f(5.37314, -2.90477, 6.32433));
+	objectPoints[3].push_back(cv::Point3f(-5.37314, -2.90477, 6.32433));
+	objectPoints[3].push_back(cv::Point3f(-5.37314, -2.90477, -6.32433));
+
+	objectPoints[4].push_back(cv::Point3f(-2.46817, 4.50724, -4.61624));
+	objectPoints[4].push_back(cv::Point3f(-2.46817, -4.50723, -4.61625));
+	objectPoints[4].push_back(cv::Point3f(-2.46817, -4.50724, 4.61624));
+	objectPoints[4].push_back(cv::Point3f(2.46817, -4.50724, 4.61624));
+	objectPoints[4].push_back(cv::Point3f(2.46817, 4.50723, 4.61625));
+	objectPoints[4].push_back(cv::Point3f(2.46817, 4.50724, -4.61624));
+
+	objectPoints[5].push_back(cv::Point3f(-2.04061, 7.62239, -2.79208));
+	objectPoints[5].push_back(cv::Point3f(2.04061, 7.62239, -2.79208));
+	objectPoints[5].push_back(cv::Point3f(2.04061, 7.62239, 2.79209));
+	objectPoints[5].push_back(cv::Point3f(2.04061, -7.62239, 2.79209));
+	objectPoints[5].push_back(cv::Point3f(-2.04061, -7.62239, 2.79209));
+	objectPoints[5].push_back(cv::Point3f(-2.04061, -7.62239, -2.79209));
+
+	objectPoints[6].push_back(cv::Point3f(4.02926, 4.04294, -3.25238));
+	objectPoints[6].push_back(cv::Point3f(-4.02926, 4.04294, -3.25238));
+	objectPoints[6].push_back(cv::Point3f(-4.02926, -4.04294, -3.25238));
+	objectPoints[6].push_back(cv::Point3f(-4.02926, -4.04294, 3.25238));
+	objectPoints[6].push_back(cv::Point3f(4.02926, 4.04294, 3.25238));
+	objectPoints[6].push_back(cv::Point3f(4.02926, -4.04294, 3.25238));
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+	// Camera calibration
+	cv::Mat cameraMat = cv::Mat::eye(3, 3, CV_64F);
+	cameraMat.at<double>(0, 0) = 4.3;// camera.pMatrix[0][0];
+	cameraMat.at<double>(1, 1) = 4.3;// camera.pMatrix[1][1];
+	cameraMat.at<double>(2, 0) = 0;// camera.pMatrix[2][0];
+	cameraMat.at<double>(2, 1) = 0;// camera.pMatrix[2][1];
+	std::cout << "Camera Matrix: " << std::endl;
+	std::cout << cameraMat << std::endl;
+	cv::Mat distortion = cv::Mat::zeros(1, 8, CV_64F);
+	std::vector<cv::Mat> rvecs, tvecs;
+	cv::calibrateCamera(objectPoints, imagePoints, cv::Size(128, 128), cameraMat, distortion, rvecs, tvecs, cv::CALIB_USE_INTRINSIC_GUESS | cv::CALIB_FIX_ASPECT_RATIO | cv::CALIB_FIX_PRINCIPAL_POINT | cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_K2 | cv::CALIB_FIX_K3 | cv::CALIB_FIX_K4 | cv::CALIB_FIX_K5 | cv::CALIB_FIX_K6);
+	std::cout << "<<< OpenCV results >>>" << std::endl;
+	std::cout << "Camera Matrix:" << std::endl << cameraMat << std::endl;
+	for (int i = 0; i < rvecs.size(); ++i) {
+		std::cout << "R:" << std::endl << rvecs[i] << std::endl;
+		std::cout << "T:" << std::endl << tvecs[i] << std::endl;
+	}
+
+	float fov = atan2(1.0, cameraMat.at<double>(0, 0)) * 2.0 / M_PI * 180.0;
+	std::cout << "FOV: " << fov << std::endl;
+	camera.fovy = atan2(1.0f, cameraMat.at<double>(0, 0)) * 2.0 / M_PI * 180.0;
+	camera.pos.z = cameraDistanceBase / tanf(camera.fovy * 0.5 / 180.0f * M_PI);
+
+	cv::Mat R;
+	for (int i = 0; i < 7; ++i) {
+		cv::Rodrigues(rvecs[i], R);
+		float xrot = atan2(R.at<double>(1, 2), R.at<double>(2, 2)) / M_PI * 180.0;
+		float yrot = atan2(-R.at<double>(0, 2), sqrt(SQR(R.at<double>(1, 2)) + SQR(R.at<double>(2, 2)))) / M_PI * 180.0;
+		std::cout << "Xrot[" << i << "]: " << xrot << std::endl;
+		std::cout << "Yrot[" << i << "]: " << yrot << std::endl;
+	}
+	/*
+	cv::Mat R;
+	cv::rodrigues(rvecs, R);
+
+	cv::Mat P(3, 4, CV_64F);
+	for (int r = 0; r < 3; ++r) {
+	for (int c = 0; c < 3; ++c) {}
+	}
+	*/
+	///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 	updateStatusBar();
 	update();
