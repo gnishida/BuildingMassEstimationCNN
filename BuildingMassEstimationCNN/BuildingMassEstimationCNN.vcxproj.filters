@@ -220,6 +220,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ParameterEstimationDialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="CameraCalibration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Generated Files">
@@ -488,6 +491,9 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_ParameterEstimationDialog.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraCalibration.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

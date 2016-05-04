@@ -42,6 +42,7 @@
      <string>Tool</string>
     </property>
     <addaction name="actionParameterEstimation"/>
+    <addaction name="actionParameterEstimationWithCameraCalibration"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -120,6 +121,11 @@
   <action name="actionExtractCameraParameter">
    <property name="text">
     <string>Extract Camera Parameter</string>
+   </property>
+  </action>
+  <action name="actionParameterEstimationWithCameraCalibration">
+   <property name="text">
+    <string>Parameter Estimation with Camera Calibration</string>
    </property>
   </action>
  </widget>

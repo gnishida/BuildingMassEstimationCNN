@@ -11,6 +11,7 @@
 #include "Rectangle.h"
 #include "GLUtils.h"
 #include <opencv2/calib3d.hpp>
+#include "CameraCalibration.h"
 #include <map>
 
 #ifndef M_PI
@@ -271,7 +272,7 @@ void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int
 * Use the sketch as an input to the pretrained network, and obtain the probabilities as output.
 * Then, display the options ordered by the probabilities.
 */
-void GLWidget3D::parameterEstimation2(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimationWithCameraCalibration(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : sketch) {
@@ -532,7 +533,7 @@ void GLWidget3D::parameterEstimation2(bool centering3D, bool meanSubtraction, in
 	update();
 }
 
-void GLWidget3D::parameterEstimation3(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimationWithCameraCalibration2(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
 
 
 

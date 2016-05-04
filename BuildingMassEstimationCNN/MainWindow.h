@@ -27,6 +27,7 @@ public slots:
 	void onOpenCGA();
 	void onUndo();
 	void onParameterEstimation();
+	void onParameterEstimationWithCameraCalibration();
 };
 
 #endif // MAINWINDOW_H

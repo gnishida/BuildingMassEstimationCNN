@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionParameterEstimation, SIGNAL(triggered()), this, SLOT(onParameterEstimation()));
+	connect(ui.actionParameterEstimationWithCameraCalibration, SIGNAL(triggered()), this, SLOT(onParameterEstimationWithCameraCalibration()));
 
 	glWidget = new GLWidget3D(this);
 	this->setCentralWidget(glWidget);
@@ -92,6 +93,27 @@ void MainWindow::onParameterEstimation() {
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
 
-		glWidget->parameterEstimation2(centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
+		glWidget->parameterEstimation(centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
+	}
+}
+
+void MainWindow::onParameterEstimationWithCameraCalibration() {
+	ParameterEstimationDialog dlg;
+	if (dlg.exec()) {
+		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
+		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
+		int cameraType = 0;
+		if (dlg.ui.radioButtonCameraTypeAerialView->isChecked()) {
+			cameraType = 1;
+		}
+		float cameraDistanceBase = dlg.ui.lineEditCameraDistance->text().toFloat();
+		int xrotMin = dlg.ui.lineEditXrotMin->text().toInt();
+		int xrotMax = dlg.ui.lineEditXrotMax->text().toInt();
+		int yrotMin = dlg.ui.lineEditYrotMin->text().toInt();
+		int yrotMax = dlg.ui.lineEditYrotMax->text().toInt();
+		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
+		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
+
+		glWidget->parameterEstimationWithCameraCalibration(centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
 	}
 }
