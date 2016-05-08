@@ -33,6 +33,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent* e) {
  */
 void MainWindow::onNew() {
 	glWidget->clearSketch();
+	glWidget->clearBackground();
 }
 
 void MainWindow::onOpenContour() {

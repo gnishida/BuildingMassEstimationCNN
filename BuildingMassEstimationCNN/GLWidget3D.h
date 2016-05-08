@@ -39,7 +39,6 @@ private:
 	bool shiftPressed;
 	//boost::shared_ptr<Classifier> classifier;
 	std::vector<boost::shared_ptr<Regression>> regressions;
-	//std::vector<QImage> images;
 	std::vector<cga::Grammar> grammars;
 
 	QImage bgImage;
@@ -55,6 +54,7 @@ private:
 public:
 	GLWidget3D(QWidget *parent);
 	void clearSketch();
+	void clearBackground();
 	void clearGeometry();
 	void drawScene();
 	void render();

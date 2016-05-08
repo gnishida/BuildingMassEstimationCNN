@@ -77,6 +77,12 @@ void GLWidget3D::clearSketch() {
 	update();
 }
 
+void GLWidget3D::clearBackground() {
+	bgImage = QImage(width(), height(), QImage::Format_RGB32);
+
+	update();
+}
+
 void GLWidget3D::clearGeometry() {
 	renderManager.removeObjects();
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
@@ -294,12 +300,18 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 
 		if (pts.size() == 4) {
 			cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
-			/*
-			QString name = QString("rectified_%1.png").arg(i + 1);
+
+			if (!QDir("textures").exists()) QDir().mkdir("textures");
+			QString name = QString("textures\\rectified_%1.png").arg(i);
 			cv::imwrite(name.toUtf8().constData(), rectifiedImage);
-			*/
+
+			faces[i]->texture = name.toUtf8().constData();
 		}
 	}
+
+	renderManager.removeObjects();
+	renderManager.addFaces(faces, true);
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
 
 	updateStatusBar();
 	update();
