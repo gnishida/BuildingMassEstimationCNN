@@ -79,6 +79,7 @@ void MainWindow::onUndo() {
 void MainWindow::onParameterEstimation() {
 	ParameterEstimationDialog dlg;
 	if (dlg.exec()) {
+		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
 		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
 		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
 		int cameraType = 0;
@@ -93,13 +94,14 @@ void MainWindow::onParameterEstimation() {
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
 
-		glWidget->parameterEstimation(centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
+		glWidget->parameterEstimation(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
 	}
 }
 
 void MainWindow::onParameterEstimationWithCameraCalibration() {
 	ParameterEstimationDialog dlg;
 	if (dlg.exec()) {
+		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
 		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
 		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
 		int cameraType = 0;
@@ -114,6 +116,6 @@ void MainWindow::onParameterEstimationWithCameraCalibration() {
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
 
-		glWidget->parameterEstimationWithCameraCalibration(centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
+		glWidget->parameterEstimationWithCameraCalibration(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
 	}
 }

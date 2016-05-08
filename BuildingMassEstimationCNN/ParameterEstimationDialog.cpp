@@ -1,8 +1,10 @@
 #include "ParameterEstimationDialog.h"
+#include <QFileDialog>
 
 ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
+	ui.lineEditGrammarSnippet->setText("1");
 	ui.checkBoxCentering3D->setChecked(true);
 	ui.checkBoxMeanSubtraction->setChecked(false);
 	ui.radioButtonCameraTypeStreetView->setChecked(false);

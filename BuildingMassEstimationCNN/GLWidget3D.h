@@ -38,9 +38,9 @@ private:
 	bool ctrlPressed;
 	bool shiftPressed;
 	//boost::shared_ptr<Classifier> classifier;
-	boost::shared_ptr<Regression> regression;
+	std::vector<boost::shared_ptr<Regression>> regressions;
 	std::vector<QImage> images;
-	std::map<std::string, std::vector<cga::Grammar> > grammars;
+	std::vector<cga::Grammar> grammars;
 
 	QImage bgImage;
 	std::vector<Stroke> sketch;
@@ -63,12 +63,14 @@ public:
 	void loadImage(const std::string& filename);
 	void loadCGA(const std::string& filename);
 	void undo();
-	void parameterEstimation(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
-	void parameterEstimationWithCameraCalibration(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
-	void parameterEstimationWithCameraCalibration2(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
+	void parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
+	void parameterEstimationWithCameraCalibration(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
+	void parameterEstimationWithCameraCalibration2(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void updateStatusBar();
+	void shiftImageAndContour(int shift_x, int shift_y);
+	glm::vec2 getOffsetImage(cv::Mat& img);
 
 protected:
 	void mousePressEvent(QMouseEvent *e);
