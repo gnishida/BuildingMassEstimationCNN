@@ -223,6 +223,9 @@
     <ClCompile Include="CameraCalibration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CVUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Generated Files">
@@ -493,6 +496,9 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="CameraCalibration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CVUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -13,6 +13,7 @@
 #include <opencv2/calib3d.hpp>
 #include "CameraCalibration.h"
 #include <map>
+#include "CVUtils.h"
 
 #ifndef M_PI
 #define	M_PI	3.141592653
@@ -277,6 +278,28 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	
 	// translate the background image and contour lines
 	shiftImageAndContour(rendered_offset.x, rendered_offset.y);
+
+	// convert bgImage to cv::Mat object
+	cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
+	// rectify the facade image
+	for (int i = 0; i < faces.size(); ++i) {
+		std::vector<cv::Point2f> pts;
+		for (int j = 0; j < faces[i]->vertices.size(); ++j) {
+			if (j == 3 || j == 4) continue;
+
+			glm::vec4 result = camera.mvpMatrix * glm::vec4(faces[i]->vertices[j].position, 1);
+			glm::vec2 pp((result.x / result.w + 1) * 0.5 * width(), (1 - result.y / result.w) * 0.5 * height());
+			pts.push_back(cv::Point2f(pp.x, pp.y));
+		}
+
+		if (pts.size() == 4) {
+			cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
+			/*
+			QString name = QString("rectified_%1.png").arg(i + 1);
+			cv::imwrite(name.toUtf8().constData(), rectifiedImage);
+			*/
+		}
+	}
 
 	updateStatusBar();
 	update();

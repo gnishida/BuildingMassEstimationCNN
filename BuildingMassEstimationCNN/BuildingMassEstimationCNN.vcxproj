@@ -223,6 +223,7 @@
     <ClCompile Include="CornerCutRectangle.cpp" />
     <ClCompile Include="CornerCutTaper.cpp" />
     <ClCompile Include="Cuboid.cpp" />
+    <ClCompile Include="CVUtils.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="CylinderSide.cpp" />
     <ClCompile Include="ExtrudeOperator.cpp" />
@@ -390,6 +391,7 @@
     <ClInclude Include="CornerCutRectangle.h" />
     <ClInclude Include="CornerCutTaper.h" />
     <ClInclude Include="Cuboid.h" />
+    <ClInclude Include="CVUtils.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="CylinderSide.h" />
     <ClInclude Include="ExtrudeOperator.h" />

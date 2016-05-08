@@ -39,7 +39,7 @@ private:
 	bool shiftPressed;
 	//boost::shared_ptr<Classifier> classifier;
 	std::vector<boost::shared_ptr<Regression>> regressions;
-	std::vector<QImage> images;
+	//std::vector<QImage> images;
 	std::vector<cga::Grammar> grammars;
 
 	QImage bgImage;
