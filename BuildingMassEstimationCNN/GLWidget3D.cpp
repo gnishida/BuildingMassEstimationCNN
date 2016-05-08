@@ -45,10 +45,26 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		"../models/mean.binaryproto",
 		"../models/words.txt"));*/
 
+	// caffe modelを読み込む
+	for (int i = 0; i < 4; ++i) {
+		QString deploy = QString("..\\models\\deploy_%1.prototxt").arg(i + 1);
+		QString model = QString("..\\models\\contour%1_iter_240000.caffemodel").arg(i + 1);
+		boost::shared_ptr<Regression> regression = boost::shared_ptr<Regression>(new Regression(deploy.toUtf8().constData(), model.toUtf8().constData()));
+		regressions.push_back(regression);
+	}
 
-	regression = boost::shared_ptr<Regression>(new Regression("../models/deploy_1.prototxt", "../models/contour1_iter_240000.caffemodel"));
-
-
+	// Grammarを読み込む
+	{
+		QDir dir("..\\cga\\");
+		QStringList filters;
+		filters << "*.xml";
+		QFileInfoList fileInfoList = dir.entryInfoList(filters, QDir::Files | QDir::NoDotAndDotDot);
+		for (int i = 0; i < fileInfoList.size(); ++i) {
+			cga::Grammar grammar;
+			cga::parseGrammar(fileInfoList[i].absoluteFilePath().toUtf8().constData(), grammar);
+			grammars.push_back(grammar);
+		}
+	}
 }
 
 /**
@@ -147,7 +163,7 @@ void GLWidget3D::undo() {
  * Use the sketch as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : sketch) {
@@ -160,18 +176,8 @@ void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int
 	offset.x = width() * 0.5f - bbox.center().x;
 	offset.y = height() * 0.5f - bbox.center().y;
 
-	// shift the sketch
-	for (int i = 0; i < sketch.size(); ++i) {
-		sketch[i].start.x += offset.x;
-		sketch[i].start.y += offset.y;
-		sketch[i].end.x += offset.x;
-		sketch[i].end.y += offset.y;
-	}
-
-	// shift the image
-	QImage newImage = bgImage;
-	QPainter painter(&bgImage);
-	painter.drawImage(offset.x, offset.y, newImage);
+	// shift the image and sketch
+	shiftImageAndContour(offset.x, offset.y);
 
 	// scale the contour to 128x128 size
 	glm::vec2 scale(128.0 / width(), 128.0 / height());
@@ -203,7 +209,7 @@ void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int
 
 
 	// estimate parameters
-	std::vector<float> params = regression->Predict(input);
+	std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
 	for (int i = 0; i < params.size(); ++i) {
 		if (i > 0) std::cout << ",";
 		std::cout << params[i];
@@ -244,14 +250,11 @@ void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int
 	camera.updatePMatrix(width(), height());
 
 	// setup CGA
-	QString cga_file = QString("..\\cga\\contour_01.xml");
 	cga::CGA cga;
-	cga::Grammar grammar;
 	cga.modelMat = glm::rotate(glm::mat4(), -(float)M_PI * 0.5f, glm::vec3(1, 0, 0));
-	cga::parseGrammar(cga_file.toUtf8().constData(), grammar);
 
 	// set parameters
-	cga.setParamValues(grammar, params);
+	cga.setParamValues(grammars[grammarSnippetId], params);
 
 	// set axiom
 	cga::Rectangle* start = new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -3.141592f * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1));
@@ -259,10 +262,21 @@ void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int
 
 	// generate 3d model
 	renderManager.removeObjects();
-	cga.derive(grammar, true);
+	cga.derive(grammars[grammarSnippetId], true);
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
 	cga.generateGeometry(faces, centering3D);
 	renderManager.addFaces(faces, true);
+
+	// obtain the rendered image
+	render();
+	QImage img = grabFrameBuffer();
+	cv::Mat mat = cv::Mat(img.height(), img.width(), CV_8UC4, img.bits(), img.bytesPerLine()).clone();
+
+	// compute the offset of the rendered image
+	glm::vec2 rendered_offset = getOffsetImage(mat);
+	
+	// translate the background image and contour lines
+	shiftImageAndContour(rendered_offset.x, rendered_offset.y);
 
 	updateStatusBar();
 	update();
@@ -272,7 +286,7 @@ void GLWidget3D::parameterEstimation(bool centering3D, bool meanSubtraction, int
 * Use the sketch as an input to the pretrained network, and obtain the probabilities as output.
 * Then, display the options ordered by the probabilities.
 */
-void GLWidget3D::parameterEstimationWithCameraCalibration(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : sketch) {
@@ -366,7 +380,7 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(bool centering3D, bool
 
 
 	// estimate parameters
-	std::vector<float> params = regression->Predict(input);
+	std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
 	for (int i = 0; i < params.size(); ++i) {
 		if (i > 0) std::cout << ",";
 		std::cout << params[i];
@@ -407,14 +421,11 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(bool centering3D, bool
 	camera.updatePMatrix(width(), height());
 
 	// setup CGA
-	QString cga_file = QString("..\\cga\\contour_01.xml");
 	cga::CGA cga;
-	cga::Grammar grammar;
 	cga.modelMat = glm::rotate(glm::mat4(), -(float)M_PI * 0.5f, glm::vec3(1, 0, 0));
-	cga::parseGrammar(cga_file.toUtf8().constData(), grammar);
 
 	// set parameters
-	cga.setParamValues(grammar, params);
+	cga.setParamValues(grammars[grammarSnippetId], params);
 
 	// set axiom
 	cga::Rectangle* start = new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -3.141592f * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1));
@@ -422,7 +433,7 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(bool centering3D, bool
 
 	// generate 3d model
 	renderManager.removeObjects();
-	cga.derive(grammar, true);
+	cga.derive(grammars[grammarSnippetId], true);
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
 	cga.generateGeometry(faces, centering3D);
 	renderManager.addFaces(faces, true);
@@ -533,7 +544,7 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(bool centering3D, bool
 	update();
 }
 
-void GLWidget3D::parameterEstimationWithCameraCalibration2(bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimationWithCameraCalibration2(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
 
 
 
@@ -1153,4 +1164,80 @@ void GLWidget3D::render() {
 void GLWidget3D::updateStatusBar() {
 	QString msg = QString("xrot: %1, yrot: %2, zrot: %3, pos: (%4, %5, %6), FOV: %7").arg(camera.xrot).arg(camera.yrot).arg(camera.zrot).arg(camera.pos.x).arg(camera.pos.y).arg(camera.pos.z).arg(camera.fovy);
 	mainWin->statusBar()->showMessage(msg);
+}
+
+void GLWidget3D::shiftImageAndContour(int shift_x, int shift_y) {
+	// shift the sketch
+	for (int i = 0; i < sketch.size(); ++i) {
+		sketch[i].start.x += shift_x;
+		sketch[i].start.y += shift_y;
+		sketch[i].end.x += shift_x;
+		sketch[i].end.y += shift_y;
+	}
+
+	// shift the image
+	QImage newImage = bgImage;
+	QPainter painter(&bgImage);
+	painter.drawImage(shift_x, shift_y, newImage);
+}
+
+/**
+ * 画像が、キャンバスの中心からどの程度ずれているかを返却する。
+ * 例えば、(100, 0)を返すということは、右に100pixずれているということ。
+ * ただし、暗い部分を画像、白い部分を背景と見なす。
+ *
+ * @param img		画像（4チャンネル）
+ * @return			ずれ
+ */
+glm::vec2 GLWidget3D::getOffsetImage(cv::Mat& img) {
+	bool scan_r = false;
+	int min_r = -1;
+	int max_r = -1;
+	for (int r = 0; r < img.rows; ++r) {
+		for (int c = 0; c < img.cols; ++c) {
+			cv::Vec4b color = img.at<cv::Vec4b>(r, c);
+
+			if (color[0] < 100 && color[1] < 100 && color[2] < 100) {
+				if (!scan_r) {
+					min_r = r;
+					max_r = r;
+					scan_r = true;
+				}
+				else {
+					max_r = r;
+				}
+			}
+		}
+	}
+
+	bool scan_c = false;
+	int min_c = -1;
+	int max_c = -1;
+	for (int c = 0; c < img.rows; ++c) {
+		for (int r = 0; r < img.cols; ++r) {
+			cv::Vec4b color = img.at<cv::Vec4b>(r, c);
+
+			if (color[0] < 100 && color[1] < 100 && color[2] < 100) {
+				if (!scan_c) {
+					min_c = c;
+					max_c = c;
+					scan_c = true;
+				}
+				else {
+					max_c = c;
+				}
+			}
+		}
+	}
+
+	// if there is no image, cancel the translation.
+	if (min_r == -1 || min_c == -1) return glm::vec2();
+
+	// if the image is not strictly inside the canvas, cancel the translation.
+	if (min_r == 0 || min_c == 0 || max_r == img.rows - 1 || max_c == img.cols - 1) return glm::vec2();
+
+	int offset_c = (min_c + max_c) * 0.5 - img.cols * 0.5;
+	int offset_r = (min_r + max_r) * 0.5 - img.rows * 0.5;
+
+	return glm::vec2(offset_c, offset_r);
 }
