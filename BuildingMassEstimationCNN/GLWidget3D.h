@@ -44,6 +44,7 @@ private:
 	QImage bgImage;
 	std::vector<Stroke> sketch;
 	Stroke currentStroke;
+	float opacityOfBackground;
 
 	Camera camera;
 	glm::vec3 light_dir;

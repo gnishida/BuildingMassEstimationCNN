@@ -29,6 +29,8 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	ctrlPressed = false;
 	shiftPressed = false;
 
+	opacityOfBackground = 0.5f;
+
 	// This is necessary to prevent the screen overdrawn by OpenGL
 	setAutoFillBackground(false);
 
@@ -127,6 +129,8 @@ void GLWidget3D::loadImage(const std::string& filename) {
 	QPainter painter(&bgImage);
 	painter.drawImage((width() - newImage.width()) / 2, (height() - newImage.height()) / 2, newImage);
 	
+	opacityOfBackground = 0.5f;
+
 	update();
 }
 
@@ -210,11 +214,6 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 		input -= meanImg;
 	}
 
-
-	//input = cv::imread("..\\photos\\image_001550.png");
-	//std::cout << "ch: " << input.channels() << std::endl;
-
-
 	// estimate parameters
 	std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
 	for (int i = 0; i < params.size(); ++i) {
@@ -275,6 +274,7 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	renderManager.addFaces(faces, true);
 
 	// obtain the rendered image
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
 	render();
 	QImage img = grabFrameBuffer();
 	cv::Mat mat = cv::Mat(img.height(), img.width(), CV_8UC4, img.bits(), img.bytesPerLine()).clone();
@@ -302,7 +302,8 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 			cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
 
 			if (!QDir("textures").exists()) QDir().mkdir("textures");
-			QString name = QString("textures\\rectified_%1.png").arg(i);
+			time_t now = clock();
+			QString name = QString("textures\\rectified_%1_%2.png").arg(now).arg(i);
 			cv::imwrite(name.toUtf8().constData(), rectifiedImage);
 
 			faces[i]->texture = name.toUtf8().constData();
@@ -312,6 +313,8 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	renderManager.removeObjects();
 	renderManager.addFaces(faces, true);
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
+
+	opacityOfBackground = 0.1f;
 
 	updateStatusBar();
 	update();
@@ -921,7 +924,7 @@ void GLWidget3D::paintEvent(QPaintEvent *event) {
 
 	// draw sketch
 	QPainter painter(this);
-	painter.setOpacity(0.5);
+	painter.setOpacity(opacityOfBackground);
 	painter.drawImage(0, 0, bgImage);
 
 	//painter.setPen(QPen(Qt::black, 3));

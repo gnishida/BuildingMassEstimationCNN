@@ -112,7 +112,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindowClass)
     {
-        MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "Sketching Application", 0));
+        MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "Photo to 3D", 0));
         actionOpenImage->setText(QApplication::translate("MainWindowClass", "Open Image", 0));
         actionExit->setText(QApplication::translate("MainWindowClass", "Exit", 0));
         actionParameterEstimation->setText(QApplication::translate("MainWindowClass", "Parameter Estimation", 0));

@@ -57,6 +57,8 @@ void MainWindow::onOpenImage() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open Image file..."), "", tr("Image Files (*.jpg *.png *.bmp)"));
 	if (filename.isEmpty()) return;
 
+	glWidget->clearSketch();
+	glWidget->clearGeometry();
 	glWidget->loadImage(filename.toUtf8().constData());
 }
 
