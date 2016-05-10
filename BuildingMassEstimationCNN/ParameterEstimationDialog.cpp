@@ -16,6 +16,7 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditYrotMax->setText("60");
 	ui.lineEditFovMin->setText("20");
 	ui.lineEditFovMax->setText("30");
+	ui.checkBoxApplyTexture->setChecked(true);
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));

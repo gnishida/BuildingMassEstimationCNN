@@ -81,6 +81,7 @@ void GLWidget3D::clearSketch() {
 
 void GLWidget3D::clearBackground() {
 	bgImage = QImage(width(), height(), QImage::Format_RGB32);
+	mainWin->setWindowTitle("Photo to 3D");
 
 	update();
 }
@@ -131,6 +132,8 @@ void GLWidget3D::loadImage(const std::string& filename) {
 	
 	opacityOfBackground = 0.5f;
 
+	mainWin->setWindowTitle(QString("Photo to 3D - ") + filename.c_str());
+
 	update();
 }
 
@@ -174,7 +177,7 @@ void GLWidget3D::undo() {
  * Use the sketch as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool applyTexture) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : sketch) {
@@ -222,27 +225,24 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	}
 	std::cout << std::endl;
 
-	// setup the camera
-	if (xrotMin != xrotMax && yrotMin != yrotMax) {
-		camera.xrot = xrotMin + (xrotMax - xrotMin) * params[0];
-		camera.yrot = yrotMin + (yrotMax - yrotMin) * params[1];
-		params.erase(params.begin());
-		params.erase(params.begin());
+	// rotation固定の場合には、ダミーでパラメータを入れちゃう
+	if (xrotMin == xrotMax && yrotMin == yrotMax) {
+		params.insert(params.begin(), 0.5);
+		params.insert(params.begin(), 0.5);
 	}
-	else {
-		camera.xrot = xrotMin;
-		camera.yrot = yrotMin;
-	}
-	camera.zrot = 0;
-	if (fovMin != fovMax) {
-		camera.fovy = fovMin + params[0] * (fovMax - fovMin);
-		params.erase(params.begin());
 
+	// FOV固定の場合には、ダミーでパラメータを入れちゃう
+	if (fovMin == fovMax) {
+		params.insert(params.begin(), 0.5);
 	}
-	else {
-		camera.fovy = fovMin;
-	}
+
+	// setup the camera
+	camera.xrot = xrotMin + (xrotMax - xrotMin) * params[0];
+	camera.yrot = yrotMin + (yrotMax - yrotMin) * params[1];
+	camera.zrot = 0;
+	camera.fovy = fovMin + params[0] * (fovMax - fovMin);
 	float cameraDistance = cameraDistanceBase / tanf(camera.fovy * 0.5 / 180.0f * M_PI);
+
 	if (cameraType == 0) { // street view
 		camera.pos.x = 0;
 		camera.pos.y = -cameraDistance * sinf(camera.xrot / 180.0f * M_PI) + cameraHeight * cosf(camera.xrot / 180.0f * M_PI);
@@ -260,7 +260,11 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	cga.modelMat = glm::rotate(glm::mat4(), -(float)M_PI * 0.5f, glm::vec3(1, 0, 0));
 
 	// set parameters
-	cga.setParamValues(grammars[grammarSnippetId], params);
+	std::vector<float> pm_params;
+	for (int i = 3; i < params.size(); ++i) {
+		pm_params.push_back(params[i]);
+	}
+	cga.setParamValues(grammars[grammarSnippetId], pm_params);
 
 	// set axiom
 	cga::Rectangle* start = new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -3.141592f * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1));
@@ -285,36 +289,38 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	// translate the background image and contour lines
 	shiftImageAndContour(rendered_offset.x, rendered_offset.y);
 
-	// convert bgImage to cv::Mat object
-	cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
-	// rectify the facade image
-	for (int i = 0; i < faces.size(); ++i) {
-		std::vector<cv::Point2f> pts;
-		for (int j = 0; j < faces[i]->vertices.size(); ++j) {
-			if (j == 3 || j == 4) continue;
+	if (applyTexture) {
+		// convert bgImage to cv::Mat object
+		cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
+		// rectify the facade image
+		for (int i = 0; i < faces.size(); ++i) {
+			std::vector<cv::Point2f> pts;
+			for (int j = 0; j < faces[i]->vertices.size(); ++j) {
+				if (j == 3 || j == 4) continue;
 
-			glm::vec4 result = camera.mvpMatrix * glm::vec4(faces[i]->vertices[j].position, 1);
-			glm::vec2 pp((result.x / result.w + 1) * 0.5 * width(), (1 - result.y / result.w) * 0.5 * height());
-			pts.push_back(cv::Point2f(pp.x, pp.y));
+				glm::vec4 result = camera.mvpMatrix * glm::vec4(faces[i]->vertices[j].position, 1);
+				glm::vec2 pp((result.x / result.w + 1) * 0.5 * width(), (1 - result.y / result.w) * 0.5 * height());
+				pts.push_back(cv::Point2f(pp.x, pp.y));
+			}
+
+			if (pts.size() == 4) {
+				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
+
+				if (!QDir("textures").exists()) QDir().mkdir("textures");
+				time_t now = clock();
+				QString name = QString("textures\\rectified_%1_%2.png").arg(now).arg(i);
+				cv::imwrite(name.toUtf8().constData(), rectifiedImage);
+
+				faces[i]->texture = name.toUtf8().constData();
+			}
 		}
 
-		if (pts.size() == 4) {
-			cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
+		renderManager.removeObjects();
+		renderManager.addFaces(faces, true);
+		renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
 
-			if (!QDir("textures").exists()) QDir().mkdir("textures");
-			time_t now = clock();
-			QString name = QString("textures\\rectified_%1_%2.png").arg(now).arg(i);
-			cv::imwrite(name.toUtf8().constData(), rectifiedImage);
-
-			faces[i]->texture = name.toUtf8().constData();
-		}
+		opacityOfBackground = 0.1f;
 	}
-
-	renderManager.removeObjects();
-	renderManager.addFaces(faces, true);
-	renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
-
-	opacityOfBackground = 0.1f;
 
 	updateStatusBar();
 	update();

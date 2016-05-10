@@ -50,12 +50,13 @@ public:
     QLabel *label_15;
     QLineEdit *lineEditGrammarSnippet;
     QLabel *label_16;
+    QCheckBox *checkBoxApplyTexture;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(502, 261);
+        ParameterEstimationDialog->resize(502, 289);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 190, 16, 20));
@@ -107,10 +108,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 190, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(390, 220, 91, 31));
+        pushButtonCancel->setGeometry(QRect(390, 250, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(290, 220, 91, 31));
+        pushButtonOK->setGeometry(QRect(290, 250, 91, 31));
         label_12 = new QLabel(ParameterEstimationDialog);
         label_12->setObjectName(QStringLiteral("label_12"));
         label_12->setGeometry(QRect(30, 70, 71, 16));
@@ -138,6 +139,9 @@ public:
         label_16->setObjectName(QStringLiteral("label_16"));
         label_16->setGeometry(QRect(150, 10, 41, 20));
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
+        checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
+        checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
+        checkBoxApplyTexture->setGeometry(QRect(110, 220, 91, 17));
         QWidget::setTabOrder(checkBoxCentering3D, radioButtonCameraTypeStreetView);
         QWidget::setTabOrder(radioButtonCameraTypeStreetView, radioButtonCameraTypeAerialView);
         QWidget::setTabOrder(radioButtonCameraTypeAerialView, lineEditCameraDistance);
@@ -174,6 +178,7 @@ public:
         checkBoxMeanSubtraction->setText(QApplication::translate("ParameterEstimationDialog", "Mean subtraction", 0));
         label_15->setText(QApplication::translate("ParameterEstimationDialog", "Grammar snippet:", 0));
         label_16->setText(QApplication::translate("ParameterEstimationDialog", "(1 - 14)", 0));
+        checkBoxApplyTexture->setText(QApplication::translate("ParameterEstimationDialog", "Apply Texture", 0));
     } // retranslateUi
 
 };
