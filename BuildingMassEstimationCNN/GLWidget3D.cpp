@@ -278,7 +278,7 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	renderManager.addFaces(faces, true);
 
 	// obtain the rendered image
-	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
 	render();
 	QImage img = grabFrameBuffer();
 	cv::Mat mat = cv::Mat(img.height(), img.width(), CV_8UC4, img.bits(), img.bytesPerLine()).clone();
