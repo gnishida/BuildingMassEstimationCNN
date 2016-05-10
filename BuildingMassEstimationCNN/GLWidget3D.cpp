@@ -49,7 +49,7 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		"../models/words.txt"));*/
 
 	// caffe modelを読み込む
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < 5; ++i) {
 		QString deploy = QString("..\\models\\deploy_%1.prototxt").arg(i + 1);
 		QString model = QString("..\\models\\contour%1_iter_240000.caffemodel").arg(i + 1);
 		boost::shared_ptr<Regression> regression = boost::shared_ptr<Regression>(new Regression(deploy.toUtf8().constData(), model.toUtf8().constData()));
