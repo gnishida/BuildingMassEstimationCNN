@@ -96,10 +96,13 @@ void MainWindow::onParameterEstimation() {
 		int yrotMax = dlg.ui.lineEditYrotMax->text().toInt();
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
+		bool tryMultiples = dlg.ui.checkBoxTryMultiples->isChecked();
+		int numMultipleTries = dlg.ui.lineEditNumMultipleTries->text().toInt();
+		float maxNoise = dlg.ui.lineEditMaxNoise->text().toFloat();
 		bool refinement = dlg.ui.checkBoxRefinement->isChecked();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, refinement, applyTexture);
+		glWidget->parameterEstimation(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, applyTexture);
 	}
 }
 

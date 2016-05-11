@@ -14,6 +14,7 @@
 #include "CameraCalibration.h"
 #include <map>
 #include "CVUtils.h"
+#include "Utils.h"
 
 #ifndef M_PI
 #define	M_PI	3.141592653
@@ -177,7 +178,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool refinement, bool applyTexture) {
+void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool applyTexture) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : silhouette) {
@@ -204,108 +205,129 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 		scaledSilhouette.push_back(s);
 	}
 
-	// create input image
-	cv::Mat input(128, 128, CV_8U, cv::Scalar(255));
-	for (auto stroke : scaledSilhouette) {
-		cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
-	}
-	//cv::imwrite("input.png", input);
+	std::vector<float> best_params;
+	double best_dist = std::numeric_limits<double>::max();
+	for (int multipleTryIter = 0; multipleTryIter < (tryMultiples ? numMultipleTries : 1); ++multipleTryIter) {
+		// create input image
+		cv::Mat input(128, 128, CV_8U, cv::Scalar(255));
+		for (auto stroke : scaledSilhouette) {
+			if (multipleTryIter > 0) {
+				stroke.start.x += utils::genIntRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f);
+				stroke.start.y += utils::genIntRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f);
+				stroke.end.x += utils::genIntRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f);
+				stroke.end.y += utils::genIntRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f);
+			}
+			cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
+		}
+		//cv::imwrite("input.png", input);
 
-	if (meanSubtraction) {
-		cv::Mat meanImg = cv::imread("../models/mean.png");
-		cv::cvtColor(meanImg, meanImg, cv::COLOR_BGR2GRAY);
-		input -= meanImg;
-	}
+		if (meanSubtraction) {
+			cv::Mat meanImg = cv::imread("../models/mean.png");
+			cv::cvtColor(meanImg, meanImg, cv::COLOR_BGR2GRAY);
+			input -= meanImg;
+		}
 
-	// estimate parameters
-	std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
-	for (int i = 0; i < params.size(); ++i) {
-		if (i > 0) std::cout << ",";
-		std::cout << params[i];
-	}
-	std::cout << std::endl;
+		// estimate parameters
+		std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
 
-	// rotation固定の場合には、ダミーでパラメータを入れちゃう
-	if (xrotMin == xrotMax && yrotMin == yrotMax) {
-		params.insert(params.begin(), 0.5);
-		params.insert(params.begin(), 0.5);
-	}
+		// rotation固定の場合には、ダミーでパラメータを入れちゃう
+		if (xrotMin == xrotMax && yrotMin == yrotMax) {
+			params.insert(params.begin(), 0.5);
+			params.insert(params.begin(), 0.5);
+		}
 
-	// FOV固定の場合には、ダミーでパラメータを入れちゃう
-	if (fovMin == fovMax) {
-		params.insert(params.begin(), 0.5);
-	}
+		// FOV固定の場合には、ダミーでパラメータを入れちゃう
+		if (fovMin == fovMax) {
+			params.insert(params.begin(), 0.5);
+		}
 
-	// Geometry faces
-	std::vector<boost::shared_ptr<glutils::Face> > faces;
-
-	printf("Refinement: ");
-
-	float delta = 0.1f;
-	bool updated = false;
-	for (int refinement_iter = 0;; ++refinement_iter) {
+		// Geometry faces
+		std::vector<boost::shared_ptr<glutils::Face> > faces;
 		double dist = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces);
 
-		// show the progress
-		printf("\rRefinement: %d (delta: %lf, dist: %lf)        ", refinement_iter, delta, dist);
-		fflush(stdout);
-
-		// local refinementしないならbreak
-		if (!refinement) break;
-
-		// index for coordinate descent
-		int param_id = refinement_iter % params.size();
-		if (param_id == 0) {
-			updated = false;
-		}
-		
-		// compute the score of -Delta
-		std::vector<float> new_params1 = params;
-		new_params1[param_id] -= delta;
-		double new_dist1 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params1, faces);
-
-		// compute the score of Delta
-		std::vector<float> new_params2 = params;
-		new_params2[param_id] += delta;
-		double new_dist2 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params2, faces);
-
-		// pick the best one
-		if (new_dist1 < dist && new_dist1 <= new_dist2) {
-			params = new_params1;
-			updated = true;
-		}
-		else if (new_dist2 < dist) {
-			params = new_params2;
-			updated = true;
-		}
-
-		// 一周しても更新がないなら、deltaを半減する
-		if (param_id == params.size() - 1) {
-			if (!updated) {
-				delta /= 2.0;
-			}
-		}
-
-		// 十分収束したら、終了する
-		if (delta < 0.01) {
-			break;
+		if (dist < best_dist) {
+			best_dist = dist;
+			best_params = params;
 		}
 	}
-	printf("\n");
 
-	std::cout << "Optimized params: ";
-	for (int i = 0; i < params.size(); ++i) {
+	// display the best parameters
+	std::cout << "Initial params:";
+	for (int i = 0; i < best_params.size(); ++i) {
 		if (i > 0) std::cout << ", ";
-		std::cout << params[i];
+		std::cout << best_params[i];
 	}
 	std::cout << std::endl;
+
+
+	if (refinement) {
+		printf("Refinement: ");
+
+		float delta = 0.1f;
+		bool updated = false;
+		for (int refinement_iter = 0;; ++refinement_iter) {
+			std::vector<boost::shared_ptr<glutils::Face> > faces;
+			double dist = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, best_params, faces);
+
+			// show the progress
+			printf("\rRefinement: %d (delta: %lf, dist: %lf)        ", refinement_iter, delta, dist);
+			fflush(stdout);
+
+			// index for coordinate descent
+			int param_id = refinement_iter % best_params.size();
+			if (param_id == 0) {
+				updated = false;
+			}
+
+			// compute the score of -Delta
+			std::vector<float> new_params1 = best_params;
+			new_params1[param_id] -= delta;
+			double new_dist1 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params1, faces);
+
+			// compute the score of Delta
+			std::vector<float> new_params2 = best_params;
+			new_params2[param_id] += delta;
+			double new_dist2 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params2, faces);
+
+			// pick the best one
+			if (new_dist1 < dist && new_dist1 <= new_dist2) {
+				best_params = new_params1;
+				updated = true;
+			}
+			else if (new_dist2 < dist) {
+				best_params = new_params2;
+				updated = true;
+			}
+
+			// 一周しても更新がないなら、deltaを半減する
+			if (param_id == best_params.size() - 1) {
+				if (!updated) {
+					delta /= 2.0;
+				}
+			}
+
+			// 十分収束したら、終了する
+			if (delta < 0.01) {
+				break;
+			}
+		}
+		printf("\n");
+
+		std::cout << "Refined params:";
+		for (int i = 0; i < best_params.size(); ++i) {
+			if (i > 0) std::cout << ", ";
+			std::cout << best_params[i];
+		}
+		std::cout << std::endl;
+	}
 
 	// update camera matrix
 	camera.updatePMatrix(width(), height());
 
 	// render the image
 	cv::Mat renderedImage;
-	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces, renderedImage);
+	std::vector<boost::shared_ptr<glutils::Face> > faces;
+	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, best_params, faces, renderedImage);
 
 	// compute the offset of the rendered image
 	glm::vec2 rendered_offset = getOffsetImage(renderedImage);
@@ -787,7 +809,7 @@ double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int c
 
 	cv::Mat renderedImage;
 	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces, renderedImage);
-	cv::imwrite("renderedImage.png", renderedImage);
+	//cv::imwrite("renderedImage.png", renderedImage);
 
 	// compute the offset of the rendered image
 	glm::vec2 rendered_offset = getOffsetImage(renderedImage);
@@ -802,7 +824,7 @@ double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int c
 	for (int i = 0; i < shiftedSilhouette.size(); ++i) {
 		cv::line(targetImage, cv::Point(shiftedSilhouette[i].start.x, shiftedSilhouette[i].start.y), cv::Point(shiftedSilhouette[i].end.x, shiftedSilhouette[i].end.y), cv::Scalar(0), 1, 8);
 	}
-	cv::imwrite("targetImage.png", targetImage);
+	//cv::imwrite("targetImage.png", targetImage);
 
 	// convert the rendred image to grayscale
 	cv::cvtColor(renderedImage, renderedImage, cv::COLOR_RGBA2GRAY);

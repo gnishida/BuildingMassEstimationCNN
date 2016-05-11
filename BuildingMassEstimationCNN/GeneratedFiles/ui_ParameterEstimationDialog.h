@@ -53,12 +53,16 @@ public:
     QCheckBox *checkBoxApplyTexture;
     QCheckBox *checkBoxRefinement;
     QCheckBox *checkBoxTryMultiples;
+    QLabel *label_17;
+    QLineEdit *lineEditNumMultipleTries;
+    QLabel *label_18;
+    QLineEdit *lineEditMaxNoise;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(502, 320);
+        ParameterEstimationDialog->resize(502, 322);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 190, 16, 20));
@@ -110,10 +114,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 190, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(390, 270, 91, 31));
+        pushButtonCancel->setGeometry(QRect(390, 280, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(290, 270, 91, 31));
+        pushButtonOK->setGeometry(QRect(290, 280, 91, 31));
         label_12 = new QLabel(ParameterEstimationDialog);
         label_12->setObjectName(QStringLiteral("label_12"));
         label_12->setGeometry(QRect(30, 70, 71, 16));
@@ -143,13 +147,27 @@ public:
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(110, 250, 91, 17));
+        checkBoxApplyTexture->setGeometry(QRect(220, 250, 91, 17));
         checkBoxRefinement = new QCheckBox(ParameterEstimationDialog);
         checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
-        checkBoxRefinement->setGeometry(QRect(220, 220, 91, 17));
+        checkBoxRefinement->setGeometry(QRect(110, 250, 91, 17));
         checkBoxTryMultiples = new QCheckBox(ParameterEstimationDialog);
         checkBoxTryMultiples->setObjectName(QStringLiteral("checkBoxTryMultiples"));
         checkBoxTryMultiples->setGeometry(QRect(110, 220, 91, 17));
+        label_17 = new QLabel(ParameterEstimationDialog);
+        label_17->setObjectName(QStringLiteral("label_17"));
+        label_17->setGeometry(QRect(210, 220, 31, 16));
+        label_17->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        lineEditNumMultipleTries = new QLineEdit(ParameterEstimationDialog);
+        lineEditNumMultipleTries->setObjectName(QStringLiteral("lineEditNumMultipleTries"));
+        lineEditNumMultipleTries->setGeometry(QRect(250, 220, 61, 20));
+        label_18 = new QLabel(ParameterEstimationDialog);
+        label_18->setObjectName(QStringLiteral("label_18"));
+        label_18->setGeometry(QRect(330, 220, 61, 16));
+        label_18->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        lineEditMaxNoise = new QLineEdit(ParameterEstimationDialog);
+        lineEditMaxNoise->setObjectName(QStringLiteral("lineEditMaxNoise"));
+        lineEditMaxNoise->setGeometry(QRect(400, 220, 61, 20));
         QWidget::setTabOrder(checkBoxCentering3D, radioButtonCameraTypeStreetView);
         QWidget::setTabOrder(radioButtonCameraTypeStreetView, radioButtonCameraTypeAerialView);
         QWidget::setTabOrder(radioButtonCameraTypeAerialView, lineEditCameraDistance);
@@ -189,6 +207,8 @@ public:
         checkBoxApplyTexture->setText(QApplication::translate("ParameterEstimationDialog", "Apply Texture", 0));
         checkBoxRefinement->setText(QApplication::translate("ParameterEstimationDialog", "Refinement", 0));
         checkBoxTryMultiples->setText(QApplication::translate("ParameterEstimationDialog", "Try Multiples", 0));
+        label_17->setText(QApplication::translate("ParameterEstimationDialog", "# Tries:", 0));
+        label_18->setText(QApplication::translate("ParameterEstimationDialog", "Max Noise:", 0));
     } // retranslateUi
 
 };

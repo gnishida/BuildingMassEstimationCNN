@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>502</width>
-    <height>320</height>
+    <height>322</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -199,7 +199,7 @@
    <property name="geometry">
     <rect>
      <x>390</x>
-     <y>270</y>
+     <y>280</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -212,7 +212,7 @@
    <property name="geometry">
     <rect>
      <x>290</x>
-     <y>270</y>
+     <y>280</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -334,7 +334,7 @@
   <widget class="QCheckBox" name="checkBoxApplyTexture">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>220</x>
      <y>250</y>
      <width>91</width>
      <height>17</height>
@@ -347,8 +347,8 @@
   <widget class="QCheckBox" name="checkBoxRefinement">
    <property name="geometry">
     <rect>
-     <x>220</x>
-     <y>220</y>
+     <x>110</x>
+     <y>250</y>
      <width>91</width>
      <height>17</height>
     </rect>
@@ -368,6 +368,58 @@
    </property>
    <property name="text">
     <string>Try Multiples</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_17">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>220</y>
+     <width>31</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string># Tries:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditNumMultipleTries">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>220</y>
+     <width>61</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_18">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>220</y>
+     <width>61</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Max Noise:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditMaxNoise">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>220</y>
+     <width>61</width>
+     <height>20</height>
+    </rect>
    </property>
   </widget>
  </widget>

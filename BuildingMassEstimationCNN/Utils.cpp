@@ -1,6 +1,10 @@
-#include "Utils.h"
+﻿#include "Utils.h"
 #include <regex>
 #include <sstream>
+
+#ifndef M_PI
+#define	M_PI	3.141592653
+#endif
 
 namespace utils {
 
@@ -12,16 +16,44 @@ namespace utils {
 		else return false;
 	}
 
+	/**
+	 * Generate a random number in [0, 1).
+	 * Note: 1 is exluded!
+	 */
 	float genRand() {
 		return (float)(rand() % 1000) / 1000.0f;
 	}
 
+	/**
+	 * Generate a random number in [0, b).
+	 * Note: b is excluded!
+	 */
 	float genRand(float v) {
 		return genRand() * v;
 	}
 
+	/**
+	 * Generate a random number in [a, b).
+	 * Note: b is excluded!
+	 */
 	float genRand(float a, float b) {
 		return genRand(b - a) + a;
+	}
+
+	/**
+	* Generate a random integer number in [0, a].
+	* Note: a is included!
+	*/
+	int genIntRand(int a) {
+		return genRand(a + 1);
+	}
+
+	/**
+	* Generate a random integer number in [a, b].
+	* Note: b is included!
+	*/
+	int genIntRand(int a, int b) {
+		return genRand(b + 1 - a) + a;
 	}
 
 	/**
@@ -80,6 +112,69 @@ namespace utils {
 		intPoint = a + (*tab)*dirVec;
 
 		return true;
+	}
+
+	void extractEdges(const cv::Mat& img, std::vector<std::pair<glm::vec2, glm::vec2>>& edges) {
+		cv::Mat mat = img.clone();
+		if (mat.channels() > 1) {
+			cv::cvtColor(mat, mat, CV_BGRA2GRAY);
+		}
+
+#if 0
+		cv::imwrite("contour0.png", mat);
+#endif
+
+		cv::threshold(mat, mat, 128, 255, cv::THRESH_BINARY_INV);
+
+		std::vector<cv::Vec4i> lines;
+		cv::HoughLinesP(mat, lines, 1, CV_PI / 180, 10, 10, 10);
+
+		// HoughLinesの結果を、edgesリストにコピー
+		edges.resize(lines.size());
+		for (int i = 0; i < lines.size(); ++i) {
+			edges[i].first = glm::vec2(lines[i][0], lines[i][1]);
+			edges[i].second = glm::vec2(lines[i][2], lines[i][3]);
+		}
+
+#if 0
+		cv::Mat result(mat.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+		std::cout << "contour lines (" << edges.size() << "): " << std::endl;
+		for (int i = 0; i < edges.size(); ++i) {
+			std::cout << "(" << edges[i].first.x << "," << edges[i].first.y << ") - (" << edges[i].second.x << "," << edges[i].second.y << ")" << std::endl;
+			cv::Scalar color(rand() % 250, rand() % 250, rand() % 250);
+			cv::circle(result, cv::Point(edges[i].first.x, edges[i].first.y), 6, color, -1);
+			cv::circle(result, cv::Point(edges[i].second.x, edges[i].second.y), 6, color, -1);
+			cv::line(result, cv::Point(edges[i].first.x, edges[i].first.y), cv::Point(edges[i].second.x, edges[i].second.y), color, 2);
+		}
+		std::cout << std::endl;
+		cv::imwrite("contour.png", result);
+#endif
+
+		utils::cleanEdges(edges, 20, 5.0 / 180.0 * M_PI);
+#if 0
+		cv::Mat result2(mat.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+		for (int i = 0; i < edges.size(); ++i) {
+			std::cout << "(" << edges[i].first.x << "," << edges[i].first.y << ") - (" << edges[i].second.x << "," << edges[i].second.y << ")" << std::endl;
+			cv::line(result2, cv::Point(edges[i].first.x, edges[i].first.y), cv::Point(edges[i].second.x, edges[i].second.y), cv::Scalar(rand() % 250, rand() % 250, rand() % 250), 3);
+		}
+		std::cout << std::endl;
+		cv::imwrite("contour2.png", result2);
+#endif
+
+		utils::cleanContours(edges, 80, 10.0 / 180.0 * M_PI);
+#if 0
+		cv::Mat result3(mat.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+		for (int i = 0; i < edges.size(); ++i) {
+			std::cout << "(" << edges[i].first.x << "," << edges[i].first.y << ") - (" << edges[i].second.x << "," << edges[i].second.y << ")" << std::endl;
+			cv::Scalar color(rand() % 250, rand() % 250, rand() % 250);
+			cv::circle(result3, cv::Point(edges[i].first.x, edges[i].first.y), 6, color, -1);
+			cv::circle(result3, cv::Point(edges[i].second.x, edges[i].second.y), 6, color, -1);
+			cv::line(result3, cv::Point(edges[i].first.x, edges[i].first.y), cv::Point(edges[i].second.x, edges[i].second.y), color, 2);
+		}
+		std::cout << std::endl;
+		cv::imwrite("contour3.png", result3);
+#endif
+
 	}
 
 	void cleanEdges(std::vector<std::pair<glm::vec2, glm::vec2>>& edges, float maxLineGap, float theta) {

@@ -13,6 +13,7 @@ public:
 	~ParameterEstimationDialog();
 
 public slots:
+	void onTryMultiples();
 	void onOK();
 	void onCancel();
 
