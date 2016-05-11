@@ -6,6 +6,10 @@
 #define	M_PI	3.141592653
 #endif
 
+#ifndef SQR
+#define SQR(x)	((x) * (x))
+#endif
+
 namespace utils {
 
 	const float FLOAT_TOL = 1e-6f;
@@ -14,6 +18,44 @@ namespace utils {
 		std::regex e("^-?\\d*\\.?\\d+");
 		if (std::regex_match(str, e)) return true;
 		else return false;
+	}
+
+	void computeMean(const std::vector<std::vector<float>>& values, std::vector<float>& mean) {
+		mean.clear();
+
+		if (values.size() == 0) return;
+
+		// 総和を計算する
+		mean.resize(values[0].size(), 0);
+		for (int i = 0; i < values.size(); ++i) {
+			for (int j = 0; j < values[i].size(); ++j) {
+				mean[j] += values[i][j];
+			}
+		}
+
+		// 平均を計算する
+		for (int i = 0; i < mean.size(); ++i) {
+			mean[i] /= (float)values.size();
+		}
+	}
+
+	void computeVariance(const std::vector<std::vector<float>>& values, const std::vector<float>& mean, std::vector<float>& var) {
+		var.clear();
+
+		if (values.size() == 0) return;
+
+		// 二乗差の総和を計算する
+		var.resize(mean.size(), 0);
+		for (int i = 0; i < values.size(); ++i) {
+			for (int j = 0; j < values[i].size(); ++j) {
+				var[j] += SQR(values[i][j] - mean[j]);
+			}
+		}
+
+		// 二乗差の平均を計算する
+		for (int i = 0; i < var.size(); ++i) {
+			var[i] /= (float)values.size();
+		}
 	}
 
 	/**

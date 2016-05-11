@@ -206,16 +206,17 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	}
 
 	std::vector<float> best_params;
+	std::vector<std::vector<float>> params_list;
 	double best_dist = std::numeric_limits<double>::max();
 	for (int multipleTryIter = 0; multipleTryIter < (tryMultiples ? numMultipleTries : 1); ++multipleTryIter) {
 		// create input image
 		cv::Mat input(128, 128, CV_8U, cv::Scalar(255));
 		for (auto stroke : scaledSilhouette) {
 			if (multipleTryIter > 0) {
-				stroke.start.x += utils::genIntRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f);
-				stroke.start.y += utils::genIntRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f);
-				stroke.end.x += utils::genIntRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f);
-				stroke.end.y += utils::genIntRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f);
+				stroke.start.x += round(utils::genRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f));
+				stroke.start.y += round(utils::genRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f));
+				stroke.end.x += round(utils::genRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f));
+				stroke.end.y += round(utils::genRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f));
 			}
 			cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
 		}
@@ -241,9 +242,24 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 			params.insert(params.begin(), 0.5);
 		}
 
+		params_list.push_back(params);
+
 		// Geometry faces
 		std::vector<boost::shared_ptr<glutils::Face> > faces;
 		double dist = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces);
+
+		if (multipleTryIter == 0) {
+			// display the initial parameters
+			std::cout << "Initial params:" << std::endl;
+			for (int i = 0; i < params.size(); ++i) {
+				if (i > 0) std::cout << ", ";
+				std::cout << params[i];
+			}
+			std::cout << std::endl;
+
+			// display the score
+			std::cout << "Initial dist: " << dist << std::endl;
+		}
 
 		if (dist < best_dist) {
 			best_dist = dist;
@@ -251,14 +267,31 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 		}
 	}
 
+	if (tryMultiples) {
+		std::vector<float> mean;
+		std::vector<float> var;
+		utils::computeMean(params_list, mean);
+		utils::computeVariance(params_list, mean, var);
+
+		// display the mean and stddev
+		std::cout << "Mean (stddev):" << std::endl;
+		for (int i = 0; i < mean.size(); ++i) {
+			if (i > 0) std::cout << ", ";
+			std::cout << mean[i] << " (" << sqrtf(var[i]) << ")";
+		}
+		std::cout << std::endl;
+	}
+
 	// display the best parameters
-	std::cout << "Initial params:";
+	std::cout << "Best initial params:" << std::endl;
 	for (int i = 0; i < best_params.size(); ++i) {
 		if (i > 0) std::cout << ", ";
 		std::cout << best_params[i];
 	}
 	std::cout << std::endl;
-
+	
+	// display the score
+	std::cout << "Best initial dist: " << best_dist << std::endl;
 
 	if (refinement) {
 		printf("Refinement: ");
@@ -313,7 +346,7 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 		}
 		printf("\n");
 
-		std::cout << "Refined params:";
+		std::cout << "Refined params:" << std::endl;
 		for (int i = 0; i < best_params.size(); ++i) {
 			if (i > 0) std::cout << ", ";
 			std::cout << best_params[i];

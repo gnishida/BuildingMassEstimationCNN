@@ -12,6 +12,8 @@
 namespace utils {
 	
 	bool isNumber(const std::string& str);
+	void computeMean(const std::vector<std::vector<float>>& values, std::vector<float>& mean);
+	void computeVariance(const std::vector<std::vector<float>>& values, const std::vector<float>& mean, std::vector<float>& var);
 	float genRand();
 	float genRand(float v);
 	float genRand(float a, float b);
