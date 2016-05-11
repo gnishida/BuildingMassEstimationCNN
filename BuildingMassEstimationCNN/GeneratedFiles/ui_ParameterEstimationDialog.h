@@ -51,12 +51,14 @@ public:
     QLineEdit *lineEditGrammarSnippet;
     QLabel *label_16;
     QCheckBox *checkBoxApplyTexture;
+    QCheckBox *checkBoxRefinement;
+    QCheckBox *checkBoxTryMultiples;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(502, 289);
+        ParameterEstimationDialog->resize(502, 320);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 190, 16, 20));
@@ -108,10 +110,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 190, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(390, 250, 91, 31));
+        pushButtonCancel->setGeometry(QRect(390, 270, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(290, 250, 91, 31));
+        pushButtonOK->setGeometry(QRect(290, 270, 91, 31));
         label_12 = new QLabel(ParameterEstimationDialog);
         label_12->setObjectName(QStringLiteral("label_12"));
         label_12->setGeometry(QRect(30, 70, 71, 16));
@@ -141,7 +143,13 @@ public:
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(110, 220, 91, 17));
+        checkBoxApplyTexture->setGeometry(QRect(110, 250, 91, 17));
+        checkBoxRefinement = new QCheckBox(ParameterEstimationDialog);
+        checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
+        checkBoxRefinement->setGeometry(QRect(220, 220, 91, 17));
+        checkBoxTryMultiples = new QCheckBox(ParameterEstimationDialog);
+        checkBoxTryMultiples->setObjectName(QStringLiteral("checkBoxTryMultiples"));
+        checkBoxTryMultiples->setGeometry(QRect(110, 220, 91, 17));
         QWidget::setTabOrder(checkBoxCentering3D, radioButtonCameraTypeStreetView);
         QWidget::setTabOrder(radioButtonCameraTypeStreetView, radioButtonCameraTypeAerialView);
         QWidget::setTabOrder(radioButtonCameraTypeAerialView, lineEditCameraDistance);
@@ -179,6 +187,8 @@ public:
         label_15->setText(QApplication::translate("ParameterEstimationDialog", "Grammar snippet:", 0));
         label_16->setText(QApplication::translate("ParameterEstimationDialog", "(1 - 14)", 0));
         checkBoxApplyTexture->setText(QApplication::translate("ParameterEstimationDialog", "Apply Texture", 0));
+        checkBoxRefinement->setText(QApplication::translate("ParameterEstimationDialog", "Refinement", 0));
+        checkBoxTryMultiples->setText(QApplication::translate("ParameterEstimationDialog", "Try Multiples", 0));
     } // retranslateUi
 
 };

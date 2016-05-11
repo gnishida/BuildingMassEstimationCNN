@@ -32,7 +32,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent* e) {
  * This is called when the user clicks [File] -> [New].
  */
 void MainWindow::onNew() {
-	glWidget->clearSketch();
+	glWidget->clearSilhouette();
 	glWidget->clearBackground();
 }
 
@@ -57,7 +57,7 @@ void MainWindow::onOpenImage() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open Image file..."), "", tr("Image Files (*.jpg *.png *.bmp)"));
 	if (filename.isEmpty()) return;
 
-	glWidget->clearSketch();
+	glWidget->clearSilhouette();
 	glWidget->clearGeometry();
 	glWidget->loadImage(filename.toUtf8().constData());
 }
@@ -96,9 +96,10 @@ void MainWindow::onParameterEstimation() {
 		int yrotMax = dlg.ui.lineEditYrotMax->text().toInt();
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
+		bool refinement = dlg.ui.checkBoxRefinement->isChecked();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, applyTexture);
+		glWidget->parameterEstimation(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, refinement, applyTexture);
 	}
 }
 

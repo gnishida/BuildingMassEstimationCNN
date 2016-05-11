@@ -42,7 +42,8 @@ private:
 	std::vector<cga::Grammar> grammars;
 
 	QImage bgImage;
-	std::vector<Stroke> sketch;
+	//std::vector<Stroke> sketch;
+	std::vector<Stroke> silhouette;
 	Stroke currentStroke;
 	float opacityOfBackground;
 
@@ -54,7 +55,7 @@ private:
 
 public:
 	GLWidget3D(QWidget *parent);
-	void clearSketch();
+	void clearSilhouette();
 	void clearBackground();
 	void clearGeometry();
 	void drawScene();
@@ -64,13 +65,16 @@ public:
 	void loadImage(const std::string& filename);
 	void loadCGA(const std::string& filename);
 	void undo();
-	void parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool applyTexture);
+	void parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool refinement, bool applyTexture);
 	void parameterEstimationWithCameraCalibration(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
 	void parameterEstimationWithCameraCalibration2(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
+	double computeDistance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces);
+	void render(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, cv::Mat& renderedImage);
+
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void updateStatusBar();
-	void shiftImageAndContour(int shift_x, int shift_y);
+	void shiftImageAndSilhouette(int shift_x, int shift_y, QImage& image, std::vector<Stroke>& silhouette);
 	glm::vec2 getOffsetImage(cv::Mat& img);
 
 protected:
