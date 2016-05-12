@@ -50,24 +50,22 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		"../models/words.txt"));*/
 
 	// caffe modelを読み込む
-	for (int i = 0; i < 5; ++i) {
-		QString deploy = QString("..\\models\\deploy_%1.prototxt").arg(i + 1);
-		QString model = QString("..\\models\\contour%1_iter_240000.caffemodel").arg(i + 1);
-		boost::shared_ptr<Regression> regression = boost::shared_ptr<Regression>(new Regression(deploy.toUtf8().constData(), model.toUtf8().constData()));
-		regressions.push_back(regression);
+	{
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_1.prototxt", "..\\models\\contour1b_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_2.prototxt", "..\\models\\contour2b_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_3.prototxt", "..\\models\\contour3_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_4.prototxt", "..\\models\\contour4_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_5.prototxt", "..\\models\\contour5_iter_240000.caffemodel")));
 	}
 
 	// Grammarを読み込む
 	{
-		QDir dir("..\\cga\\");
-		QStringList filters;
-		filters << "*.xml";
-		QFileInfoList fileInfoList = dir.entryInfoList(filters, QDir::Files | QDir::NoDotAndDotDot);
-		for (int i = 0; i < fileInfoList.size(); ++i) {
-			cga::Grammar grammar;
-			cga::parseGrammar(fileInfoList[i].absoluteFilePath().toUtf8().constData(), grammar);
-			grammars.push_back(grammar);
-		}
+		grammars.resize(5);
+		cga::parseGrammar("..\\cga\\contour_01b.xml", grammars[0]);
+		cga::parseGrammar("..\\cga\\contour_02b.xml", grammars[1]);
+		cga::parseGrammar("..\\cga\\contour_03.xml", grammars[2]);
+		cga::parseGrammar("..\\cga\\contour_04.xml", grammars[3]);
+		cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
 	}
 }
 
