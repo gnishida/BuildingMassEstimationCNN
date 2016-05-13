@@ -156,6 +156,11 @@ namespace utils {
 		return true;
 	}
 
+	glm::vec2 projectPoint(int screen_width, int screen_height, const glm::vec3& p, const glm::mat4& mvpMatrix) {
+		glm::vec4 pp = mvpMatrix * glm::vec4(p, 1);
+		return glm::vec2((pp.x / pp.w + 1.0f) * 0.5f * screen_width, (1.0f - pp.y / pp.w) * 0.5f * screen_height);
+	}
+
 	void extractEdges(const cv::Mat& img, std::vector<std::pair<glm::vec2, glm::vec2>>& edges) {
 		cv::Mat mat = img.clone();
 		if (mat.channels() > 1) {
