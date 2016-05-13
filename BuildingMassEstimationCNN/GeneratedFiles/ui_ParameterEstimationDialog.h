@@ -57,12 +57,15 @@ public:
     QLineEdit *lineEditNumMultipleTries;
     QLabel *label_18;
     QLineEdit *lineEditMaxNoise;
+    QRadioButton *radioButtonRefineFromBest;
+    QRadioButton *radioButtonRefineFromAll;
+    QLabel *label_19;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(502, 322);
+        ParameterEstimationDialog->resize(502, 353);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 190, 16, 20));
@@ -114,10 +117,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 190, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(390, 280, 91, 31));
+        pushButtonCancel->setGeometry(QRect(390, 310, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(290, 280, 91, 31));
+        pushButtonOK->setGeometry(QRect(290, 310, 91, 31));
         label_12 = new QLabel(ParameterEstimationDialog);
         label_12->setObjectName(QStringLiteral("label_12"));
         label_12->setGeometry(QRect(30, 70, 71, 16));
@@ -147,7 +150,7 @@ public:
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(220, 250, 91, 17));
+        checkBoxApplyTexture->setGeometry(QRect(110, 280, 91, 17));
         checkBoxRefinement = new QCheckBox(ParameterEstimationDialog);
         checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
         checkBoxRefinement->setGeometry(QRect(110, 250, 91, 17));
@@ -167,7 +170,17 @@ public:
         label_18->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditMaxNoise = new QLineEdit(ParameterEstimationDialog);
         lineEditMaxNoise->setObjectName(QStringLiteral("lineEditMaxNoise"));
-        lineEditMaxNoise->setGeometry(QRect(400, 220, 61, 20));
+        lineEditMaxNoise->setGeometry(QRect(400, 220, 41, 20));
+        radioButtonRefineFromBest = new QRadioButton(ParameterEstimationDialog);
+        radioButtonRefineFromBest->setObjectName(QStringLiteral("radioButtonRefineFromBest"));
+        radioButtonRefineFromBest->setGeometry(QRect(240, 250, 91, 17));
+        radioButtonRefineFromAll = new QRadioButton(ParameterEstimationDialog);
+        radioButtonRefineFromAll->setObjectName(QStringLiteral("radioButtonRefineFromAll"));
+        radioButtonRefineFromAll->setGeometry(QRect(360, 250, 82, 17));
+        label_19 = new QLabel(ParameterEstimationDialog);
+        label_19->setObjectName(QStringLiteral("label_19"));
+        label_19->setGeometry(QRect(446, 220, 21, 20));
+        label_19->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         QWidget::setTabOrder(checkBoxCentering3D, radioButtonCameraTypeStreetView);
         QWidget::setTabOrder(radioButtonCameraTypeStreetView, radioButtonCameraTypeAerialView);
         QWidget::setTabOrder(radioButtonCameraTypeAerialView, lineEditCameraDistance);
@@ -209,6 +222,9 @@ public:
         checkBoxTryMultiples->setText(QApplication::translate("ParameterEstimationDialog", "Try Multiples", 0));
         label_17->setText(QApplication::translate("ParameterEstimationDialog", "# Tries:", 0));
         label_18->setText(QApplication::translate("ParameterEstimationDialog", "Max Noise:", 0));
+        radioButtonRefineFromBest->setText(QApplication::translate("ParameterEstimationDialog", "From Best one", 0));
+        radioButtonRefineFromAll->setText(QApplication::translate("ParameterEstimationDialog", "From All", 0));
+        label_19->setText(QApplication::translate("ParameterEstimationDialog", "%", 0));
     } // retranslateUi
 
 };

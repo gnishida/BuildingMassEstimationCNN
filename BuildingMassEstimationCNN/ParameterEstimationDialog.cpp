@@ -4,6 +4,14 @@
 ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
+	QButtonGroup* group1 = new QButtonGroup();
+	group1->addButton(ui.radioButtonCameraTypeStreetView);
+	group1->addButton(ui.radioButtonCameraTypeAerialView);
+
+	QButtonGroup* group2 = new QButtonGroup();
+	group2->addButton(ui.radioButtonRefineFromBest);
+	group2->addButton(ui.radioButtonRefineFromAll);
+
 	ui.lineEditGrammarSnippet->setText("1");
 	ui.checkBoxCentering3D->setChecked(true);
 	ui.checkBoxMeanSubtraction->setChecked(false);
@@ -17,12 +25,15 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditFovMin->setText("20");
 	ui.lineEditFovMax->setText("30");
 	ui.checkBoxTryMultiples->setChecked(true);
-	ui.lineEditNumMultipleTries->setText("100");
-	ui.lineEditMaxNoise->setText("3");
-	ui.checkBoxRefinement->setChecked(false);
+	ui.lineEditNumMultipleTries->setText("5");
+	ui.lineEditMaxNoise->setText("2");
+	ui.checkBoxRefinement->setChecked(true);
+	ui.radioButtonRefineFromBest->setChecked(true);
+	ui.radioButtonRefineFromAll->setChecked(false);
 	ui.checkBoxApplyTexture->setChecked(false);
 
 	connect(ui.checkBoxTryMultiples, SIGNAL(clicked()), this, SLOT(onTryMultiples()));
+	connect(ui.checkBoxRefinement, SIGNAL(clicked()), this, SLOT(onRefinement()));
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
 }
@@ -33,6 +44,11 @@ ParameterEstimationDialog::~ParameterEstimationDialog() {
 void ParameterEstimationDialog::onTryMultiples() {
 	ui.lineEditNumMultipleTries->setEnabled(ui.checkBoxTryMultiples->isChecked());
 	ui.lineEditMaxNoise->setEnabled(ui.checkBoxTryMultiples->isChecked());
+}
+
+void ParameterEstimationDialog::onRefinement() {
+	ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
+	ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
 }
 
 void ParameterEstimationDialog::onOK() {

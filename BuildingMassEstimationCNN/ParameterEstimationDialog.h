@@ -14,6 +14,7 @@ public:
 
 public slots:
 	void onTryMultiples();
+	void onRefinement();
 	void onOK();
 	void onCancel();
 
