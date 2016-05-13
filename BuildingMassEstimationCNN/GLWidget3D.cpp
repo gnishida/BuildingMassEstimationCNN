@@ -51,11 +51,11 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	// caffe modelを読み込む
 	{
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_1.prototxt", "..\\models\\contour1b_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_2.prototxt", "..\\models\\contour2b_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_3.prototxt", "..\\models\\contour3_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_4.prototxt", "..\\models\\contour4_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_5.prototxt", "..\\models\\contour5_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_01.prototxt", "..\\models\\contour_01b_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_02.prototxt", "..\\models\\contour_02b_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_03.prototxt", "..\\models\\contour_03b_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_04.prototxt", "..\\models\\contour_04_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_05.prototxt", "..\\models\\contour_05_iter_240000.caffemodel")));
 	}
 
 	// Grammarを読み込む
@@ -63,7 +63,7 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		grammars.resize(5);
 		cga::parseGrammar("..\\cga\\contour_01b.xml", grammars[0]);
 		cga::parseGrammar("..\\cga\\contour_02b.xml", grammars[1]);
-		cga::parseGrammar("..\\cga\\contour_03.xml", grammars[2]);
+		cga::parseGrammar("..\\cga\\contour_03b.xml", grammars[2]);
 		cga::parseGrammar("..\\cga\\contour_04.xml", grammars[3]);
 		cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
 	}
