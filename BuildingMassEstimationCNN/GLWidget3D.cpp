@@ -244,7 +244,7 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 
 		// Geometry faces
 		std::vector<boost::shared_ptr<glutils::Face> > faces;
-		double dist = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces);
+		double dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces, false, multipleTryIter);
 
 		if (multipleTryIter == 0) {
 			// display the initial parameters
@@ -308,7 +308,7 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 			double dist;
 			for (int refinement_iter = 0;; ++refinement_iter) {
 				std::vector<boost::shared_ptr<glutils::Face> > faces;
-				dist = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params_list[initial_params_id], faces);
+				dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false);
 
 				// show the progress
 				printf("\rRefinement: %d (delta: %lf, dist: %lf)        ", refinement_iter, delta, dist);
@@ -323,12 +323,12 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 				// compute the score of -Delta
 				std::vector<float> new_params1 = params_list[initial_params_id];
 				new_params1[param_id] -= delta;
-				double new_dist1 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params1, faces);
+				double new_dist1 = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params1, faces, false);
 
 				// compute the score of Delta
 				std::vector<float> new_params2 = params_list[initial_params_id];
 				new_params2[param_id] += delta;
-				double new_dist2 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params2, faces);
+				double new_dist2 = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params2, faces, false);
 
 				// pick the best one
 				if (new_dist1 < dist && new_dist1 <= new_dist2) {
@@ -351,6 +351,7 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 
 				// 十分収束したら、終了する
 				if (delta < 0.01) {
+					dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false, initial_params_id);
 					break;
 				}
 			}
@@ -853,7 +854,7 @@ void GLWidget3D::parameterEstimationWithCameraCalibration2(int grammarSnippetId,
 	update();
 }
 
-double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces) {
+double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
 	// contour modeで描画
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
 
@@ -900,7 +901,123 @@ double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int c
 		}
 	}
 
-	return dist / renderedImage.rows / renderedImage.cols;
+	dist = dist / renderedImage.rows / renderedImage.cols;
+	if (saveFile) {
+		QString filename = QString("renderedImage_%1_%2.png").arg(fileId).arg(dist);
+		cv::imwrite(filename.toUtf8().constData(), renderedImage);
+	}
+
+
+	return dist;
+}
+
+double GLWidget3D::computeDistance2(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
+	//std::cout << "ComputeDist2!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+
+	// contour modeで描画
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
+
+	cv::Mat renderedImage;
+	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces, renderedImage);
+	//cv::imwrite("renderedImage.png", renderedImage);
+
+	/*
+	std::cout << "Original silhouette: " << std::endl;
+	for (int i = 0; i < silhouette.size(); ++i) {
+		std::cout << "  (" << silhouette[i].start.x << ", " << silhouette[i].start.y << ") - (" << silhouette[i].end.x << ", " << silhouette[i].end.y << ")" << std::endl;
+	}
+	*/
+
+	// compute the offset of the rendered image
+	glm::vec2 rendered_offset = getOffsetImage(renderedImage);
+	//std::cout << "Offset: (" << rendered_offset.x << ", " << rendered_offset.y << ")" << std::endl;
+
+	// translate the background image and contour lines
+	QImage shiftedBgImage = bgImage;
+	std::vector<Stroke> shiftedSilhouette = silhouette;
+	shiftImageAndSilhouette(rendered_offset.x, rendered_offset.y, shiftedBgImage, shiftedSilhouette);
+
+	/*
+	std::cout << "Shifted silhouette: " << std::endl;
+	for (int i = 0; i < shiftedSilhouette.size(); ++i) {
+		std::cout << "  (" << shiftedSilhouette[i].start.x << ", " << shiftedSilhouette[i].start.y << ") - (" << shiftedSilhouette[i].end.x << ", " << shiftedSilhouette[i].end.y << ")" << std::endl;
+	}
+	*/
+
+	// コストを計算
+	double dist = 0.0;
+	for (int i = 0; i < shiftedSilhouette.size(); ++i) {
+		//std::cout << "Edge: (" << shiftedSilhouette[i].start.x << ", " << shiftedSilhouette[i].start.y << ") - (" << shiftedSilhouette[i].end.x << ", " << shiftedSilhouette[i].end.y << ")" << std::endl;
+
+		// 直近の3D頂点を探す
+		float min_dist1 = std::numeric_limits<float>::max();
+		float min_dist2 = std::numeric_limits<float>::max();
+		glm::vec2 min_pt1, min_pt2;
+		glm::vec3 min_pt13D, min_pt23D;
+
+		for (int j = 0; j < faces.size(); ++j) {
+			/*
+			std::cout << " Face " << j << ":" << std::endl;
+			for (int k = 0; k < faces[j]->vertices.size(); ++k) {
+				std::cout << "   (" << faces[j]->vertices[k].position.x << ", " << faces[j]->vertices[k].position.y << ", " << faces[j]->vertices[k].position.z << ")" << std::endl;
+			}
+			*/
+
+			// 面の法線ベクトルを、カメラ座標系に変換する
+			glm::vec4 n = camera.mvMatrix * glm::vec4(faces[j]->vertices[0].normal, 0);
+			//std::cout << " face normal: (" << n.x << ", " << n.y << ", " << n.z << ")" << std::endl;
+
+			// この面が、カメラの反対方向を向いているなら、スキップ
+			if (glm::dot(glm::vec3(n), glm::vec3(0, 0, 1)) < 0) {
+				//std::cout << " backfaced!" << std::endl;
+				continue;
+			}
+
+			for (int k = 0; k < faces[j]->vertices.size(); ++k) {
+				glm::vec2 pp = utils::projectPoint(width(), height(), faces[j]->vertices[k].position, camera.mvpMatrix);
+				//std::cout << "  v " << k << ": (" << pp.x << ", " << pp.y << ")" << std::endl;
+
+
+				float dist1 = glm::length(pp - shiftedSilhouette[i].start);
+				if (dist1 < min_dist1) {
+					min_dist1 = dist1;
+					min_pt1 = pp;
+					min_pt13D = faces[j]->vertices[k].position;
+				}
+
+				float dist2 = glm::length(pp - shiftedSilhouette[i].end);
+				if (dist2 < min_dist2) {
+					min_dist2 = dist2;
+					min_pt2 = pp;
+					min_pt23D = faces[j]->vertices[k].position;
+				}
+			}
+		}
+
+		/*
+		std::cout << "Closed point: (" << min_pt13D.x << ", " << min_pt13D.y << ", " << min_pt13D.z << ")" << std::endl;
+		std::cout << "Closed point: (" << min_pt23D.x << ", " << min_pt23D.y << ", " << min_pt23D.z << ")" << std::endl;
+		*/
+
+		// エッジのベクトルを計算する
+		glm::vec2 v1 = shiftedSilhouette[i].end - shiftedSilhouette[i].start;
+		v1 /= glm::length(v1);
+		glm::vec2 v2 = min_pt2 - min_pt1;
+		v2 /= glm::length(v2);
+
+
+		// コストを追加する
+		dist += min_dist1;
+		dist += min_dist2;
+		dist += (1.0f - fabs(glm::dot(v1, v2))) * 1000.0f;
+	}
+
+	if (saveFile) {
+		QString filename = QString("renderedImage_%1_%2.png").arg(fileId).arg(dist);
+		cv::imwrite(filename.toUtf8().constData(), renderedImage);
+	}
+
+	return dist;
 }
 
 void GLWidget3D::render(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, cv::Mat& renderedImage) {
