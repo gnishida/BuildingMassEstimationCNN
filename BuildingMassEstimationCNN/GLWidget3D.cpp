@@ -1009,7 +1009,9 @@ double GLWidget3D::computeDistance2(int grammarSnippetId, bool centering3D, int 
 		// コストを追加する
 		dist += min_dist1;
 		dist += min_dist2;
-		dist += (1.0f - fabs(glm::dot(v1, v2))) * 1000.0f;
+		if (v1.x != v2.x || v1.y != v2.y) {
+			dist += (1.0f - fabs(glm::dot(v1, v2))) * 1000.0f;
+		}
 	}
 
 	if (saveFile) {
