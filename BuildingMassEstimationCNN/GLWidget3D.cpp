@@ -176,7 +176,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool applyTexture) {
+void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, bool applyTexture) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : silhouette) {
@@ -291,65 +291,84 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 	// display the score
 	std::cout << "Best initial dist: " << best_dist << std::endl;
 
+	// Refine from Best なら、ベストの初期パラメータ値のみを、リストにいれる
+	// このリストの各パラメータ値について、local refinementを実施する
+	if (refineFromBest) {
+		params_list.clear();
+		params_list.push_back(best_params);
+	}
+
 	if (refinement) {
 		printf("Refinement: ");
 
-		float delta = 0.1f;
-		bool updated = false;
-		for (int refinement_iter = 0;; ++refinement_iter) {
-			std::vector<boost::shared_ptr<glutils::Face> > faces;
-			double dist = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, best_params, faces);
+		best_dist = std::numeric_limits<double>::max();
+		for (int initial_params_id = 0; initial_params_id < params_list.size(); ++initial_params_id) {
+			float delta = 0.1f;
+			bool updated = false;
+			double dist;
+			for (int refinement_iter = 0;; ++refinement_iter) {
+				std::vector<boost::shared_ptr<glutils::Face> > faces;
+				dist = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params_list[initial_params_id], faces);
 
-			// show the progress
-			printf("\rRefinement: %d (delta: %lf, dist: %lf)        ", refinement_iter, delta, dist);
-			fflush(stdout);
+				// show the progress
+				printf("\rRefinement: %d (delta: %lf, dist: %lf)        ", refinement_iter, delta, dist);
+				fflush(stdout);
 
-			// index for coordinate descent
-			int param_id = refinement_iter % best_params.size();
-			if (param_id == 0) {
-				updated = false;
-			}
+				// index for coordinate descent
+				int param_id = refinement_iter % params_list[initial_params_id].size();
+				if (param_id == 0) {
+					updated = false;
+				}
 
-			// compute the score of -Delta
-			std::vector<float> new_params1 = best_params;
-			new_params1[param_id] -= delta;
-			double new_dist1 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params1, faces);
+				// compute the score of -Delta
+				std::vector<float> new_params1 = params_list[initial_params_id];
+				new_params1[param_id] -= delta;
+				double new_dist1 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params1, faces);
 
-			// compute the score of Delta
-			std::vector<float> new_params2 = best_params;
-			new_params2[param_id] += delta;
-			double new_dist2 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params2, faces);
+				// compute the score of Delta
+				std::vector<float> new_params2 = params_list[initial_params_id];
+				new_params2[param_id] += delta;
+				double new_dist2 = computeDistance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params2, faces);
 
-			// pick the best one
-			if (new_dist1 < dist && new_dist1 <= new_dist2) {
-				best_params = new_params1;
-				updated = true;
-			}
-			else if (new_dist2 < dist) {
-				best_params = new_params2;
-				updated = true;
-			}
+				// pick the best one
+				if (new_dist1 < dist && new_dist1 <= new_dist2) {
+					params_list[initial_params_id] = new_params1;
+					dist = new_dist1;
+					updated = true;
+				}
+				else if (new_dist2 < dist) {
+					params_list[initial_params_id] = new_params2;
+					dist = new_dist2;
+					updated = true;
+				}
 
-			// 一周しても更新がないなら、deltaを半減する
-			if (param_id == best_params.size() - 1) {
-				if (!updated) {
-					delta /= 2.0;
+				// 一周しても更新がないなら、deltaを半減する
+				if (param_id == params_list[initial_params_id].size() - 1) {
+					if (!updated) {
+						delta /= 2.0;
+					}
+				}
+
+				// 十分収束したら、終了する
+				if (delta < 0.01) {
+					break;
 				}
 			}
+			printf("\n");
 
-			// 十分収束したら、終了する
-			if (delta < 0.01) {
-				break;
+			std::cout << "Refined params:" << std::endl;
+			for (int i = 0; i < params_list[initial_params_id].size(); ++i) {
+				if (i > 0) std::cout << ", ";
+				std::cout << params_list[initial_params_id][i];
+			}
+			std::cout << std::endl;
+
+			// best paramsを更新
+			if (dist < best_dist) {
+				best_dist = dist;
+				best_params = params_list[initial_params_id];
 			}
 		}
-		printf("\n");
-
-		std::cout << "Refined params:" << std::endl;
-		for (int i = 0; i < best_params.size(); ++i) {
-			if (i > 0) std::cout << ", ";
-			std::cout << best_params[i];
-		}
-		std::cout << std::endl;
 	}
 
 	// update camera matrix
