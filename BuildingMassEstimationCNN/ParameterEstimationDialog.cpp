@@ -12,7 +12,9 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	group2->addButton(ui.radioButtonRefineFromBest);
 	group2->addButton(ui.radioButtonRefineFromAll);
 
+	ui.checkBoxAutomaticRecognition->setChecked(true);
 	ui.lineEditGrammarSnippet->setText("1");
+	ui.lineEditGrammarSnippet->setEnabled(false);
 	ui.checkBoxCentering3D->setChecked(true);
 	ui.checkBoxMeanSubtraction->setChecked(false);
 	ui.radioButtonCameraTypeStreetView->setChecked(false);
@@ -32,6 +34,7 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.radioButtonRefineFromAll->setChecked(false);
 	ui.checkBoxApplyTexture->setChecked(false);
 
+	connect(ui.checkBoxAutomaticRecognition, SIGNAL(clicked()), this, SLOT(onAutomaticRecognition()));
 	connect(ui.checkBoxTryMultiples, SIGNAL(clicked()), this, SLOT(onTryMultiples()));
 	connect(ui.checkBoxRefinement, SIGNAL(clicked()), this, SLOT(onRefinement()));
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
@@ -39,6 +42,10 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 }
 
 ParameterEstimationDialog::~ParameterEstimationDialog() {
+}
+
+void ParameterEstimationDialog::onAutomaticRecognition() {
+	ui.lineEditGrammarSnippet->setEnabled(ui.checkBoxAutomaticRecognition->isChecked());
 }
 
 void ParameterEstimationDialog::onTryMultiples() {

@@ -308,7 +308,7 @@
   <widget class="QLineEdit" name="lineEditGrammarSnippet">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>250</x>
      <y>10</y>
      <width>31</width>
      <height>20</height>
@@ -318,7 +318,7 @@
   <widget class="QLabel" name="label_16">
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>290</x>
      <y>10</y>
      <width>41</width>
      <height>20</height>
@@ -464,10 +464,26 @@
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
+  <widget class="QCheckBox" name="checkBoxAutomaticRecognition">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>10</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Automatic recognition</string>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
+  <tabstop>checkBoxAutomaticRecognition</tabstop>
+  <tabstop>lineEditGrammarSnippet</tabstop>
   <tabstop>checkBoxCentering3D</tabstop>
+  <tabstop>checkBoxMeanSubtraction</tabstop>
   <tabstop>radioButtonCameraTypeStreetView</tabstop>
   <tabstop>radioButtonCameraTypeAerialView</tabstop>
   <tabstop>lineEditCameraDistance</tabstop>
@@ -477,6 +493,13 @@
   <tabstop>lineEditYrotMax</tabstop>
   <tabstop>lineEditFovMin</tabstop>
   <tabstop>lineEditFovMax</tabstop>
+  <tabstop>checkBoxTryMultiples</tabstop>
+  <tabstop>lineEditNumMultipleTries</tabstop>
+  <tabstop>lineEditMaxNoise</tabstop>
+  <tabstop>checkBoxRefinement</tabstop>
+  <tabstop>radioButtonRefineFromBest</tabstop>
+  <tabstop>radioButtonRefineFromAll</tabstop>
+  <tabstop>checkBoxApplyTexture</tabstop>
   <tabstop>pushButtonOK</tabstop>
   <tabstop>pushButtonCancel</tabstop>
  </tabstops>

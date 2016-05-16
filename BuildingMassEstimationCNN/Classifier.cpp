@@ -138,7 +138,7 @@ void Classifier::WrapInputLayer(std::vector<cv::Mat>* input_channels) {
 	}
 }
 
-void Classifier::Preprocess(const cv::Mat& img,	std::vector<cv::Mat>* input_channels) {
+void Classifier::Preprocess(const cv::Mat& img, std::vector<cv::Mat>* input_channels) {
 	/* Convert the input image to the input image format of the network. */
 	cv::Mat sample;
 	if (img.channels() == 3 && num_channels_ == 1)

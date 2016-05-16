@@ -60,6 +60,7 @@ public:
     QRadioButton *radioButtonRefineFromBest;
     QRadioButton *radioButtonRefineFromAll;
     QLabel *label_19;
+    QCheckBox *checkBoxAutomaticRecognition;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
@@ -143,10 +144,10 @@ public:
         label_15->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditGrammarSnippet = new QLineEdit(ParameterEstimationDialog);
         lineEditGrammarSnippet->setObjectName(QStringLiteral("lineEditGrammarSnippet"));
-        lineEditGrammarSnippet->setGeometry(QRect(110, 10, 31, 20));
+        lineEditGrammarSnippet->setGeometry(QRect(250, 10, 31, 20));
         label_16 = new QLabel(ParameterEstimationDialog);
         label_16->setObjectName(QStringLiteral("label_16"));
-        label_16->setGeometry(QRect(150, 10, 41, 20));
+        label_16->setGeometry(QRect(290, 10, 41, 20));
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
@@ -181,7 +182,13 @@ public:
         label_19->setObjectName(QStringLiteral("label_19"));
         label_19->setGeometry(QRect(446, 220, 21, 20));
         label_19->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
-        QWidget::setTabOrder(checkBoxCentering3D, radioButtonCameraTypeStreetView);
+        checkBoxAutomaticRecognition = new QCheckBox(ParameterEstimationDialog);
+        checkBoxAutomaticRecognition->setObjectName(QStringLiteral("checkBoxAutomaticRecognition"));
+        checkBoxAutomaticRecognition->setGeometry(QRect(110, 10, 131, 17));
+        QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
+        QWidget::setTabOrder(lineEditGrammarSnippet, checkBoxCentering3D);
+        QWidget::setTabOrder(checkBoxCentering3D, checkBoxMeanSubtraction);
+        QWidget::setTabOrder(checkBoxMeanSubtraction, radioButtonCameraTypeStreetView);
         QWidget::setTabOrder(radioButtonCameraTypeStreetView, radioButtonCameraTypeAerialView);
         QWidget::setTabOrder(radioButtonCameraTypeAerialView, lineEditCameraDistance);
         QWidget::setTabOrder(lineEditCameraDistance, lineEditXrotMin);
@@ -190,7 +197,14 @@ public:
         QWidget::setTabOrder(lineEditYrotMin, lineEditYrotMax);
         QWidget::setTabOrder(lineEditYrotMax, lineEditFovMin);
         QWidget::setTabOrder(lineEditFovMin, lineEditFovMax);
-        QWidget::setTabOrder(lineEditFovMax, pushButtonOK);
+        QWidget::setTabOrder(lineEditFovMax, checkBoxTryMultiples);
+        QWidget::setTabOrder(checkBoxTryMultiples, lineEditNumMultipleTries);
+        QWidget::setTabOrder(lineEditNumMultipleTries, lineEditMaxNoise);
+        QWidget::setTabOrder(lineEditMaxNoise, checkBoxRefinement);
+        QWidget::setTabOrder(checkBoxRefinement, radioButtonRefineFromBest);
+        QWidget::setTabOrder(radioButtonRefineFromBest, radioButtonRefineFromAll);
+        QWidget::setTabOrder(radioButtonRefineFromAll, checkBoxApplyTexture);
+        QWidget::setTabOrder(checkBoxApplyTexture, pushButtonOK);
         QWidget::setTabOrder(pushButtonOK, pushButtonCancel);
 
         retranslateUi(ParameterEstimationDialog);
@@ -225,6 +239,7 @@ public:
         radioButtonRefineFromBest->setText(QApplication::translate("ParameterEstimationDialog", "From Best one", 0));
         radioButtonRefineFromAll->setText(QApplication::translate("ParameterEstimationDialog", "From All", 0));
         label_19->setText(QApplication::translate("ParameterEstimationDialog", "%", 0));
+        checkBoxAutomaticRecognition->setText(QApplication::translate("ParameterEstimationDialog", "Automatic recognition", 0));
     } // retranslateUi
 
 };

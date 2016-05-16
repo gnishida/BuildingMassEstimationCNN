@@ -13,6 +13,7 @@ public:
 	~ParameterEstimationDialog();
 
 public slots:
+	void onAutomaticRecognition();
 	void onTryMultiples();
 	void onRefinement();
 	void onOK();

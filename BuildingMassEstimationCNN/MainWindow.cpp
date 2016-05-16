@@ -1,5 +1,4 @@
 #include "MainWindow.h"
-#include "Classifier.h"
 #include <QFileDialog>
 #include "ParameterEstimationDialog.h"
 
@@ -82,6 +81,7 @@ void MainWindow::onUndo() {
 void MainWindow::onParameterEstimation() {
 	ParameterEstimationDialog dlg;
 	if (dlg.exec()) {
+		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
 		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
 		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
 		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
@@ -103,7 +103,7 @@ void MainWindow::onParameterEstimation() {
 		bool refineFromBest = dlg.ui.radioButtonRefineFromBest->isChecked();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, applyTexture);
+		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, applyTexture);
 	}
 }
 

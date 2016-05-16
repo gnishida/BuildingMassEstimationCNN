@@ -2,7 +2,6 @@
 #include "GLWidget3D.h"
 #include "MainWindow.h"
 #include <GL/GLU.h>
-//#include "Classifier.h"
 #include <QDir>
 #include <QFileInfoList>
 #include <iostream>
@@ -44,10 +43,9 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	glm::mat4 light_mvMatrix = glm::lookAt(-light_dir * 50.0f, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	light_mvpMatrix = light_pMatrix * light_mvMatrix;
 
-	/*classifier = boost::shared_ptr<Classifer>(new Classifier("../models/deploy.prototxt",
-		"../models/train.caffemodel",
-		"../models/mean.binaryproto",
-		"../models/words.txt"));*/
+	classifier = boost::shared_ptr<Classifier>(new Classifier("../models/deploy.prototxt",
+		"../models/contour_iter_20000.caffemodel",
+		"../models/contour_mean.binaryproto"));
 
 	// caffe modelを読み込む
 	{
@@ -176,7 +174,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, bool applyTexture) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : silhouette) {
@@ -191,6 +189,41 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 
 	// shift the image and silhouette
 	shiftImageAndSilhouette(offset.x, offset.y, bgImage, silhouette);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// classification
+	if (automaticRecognition) {
+		// scale the contour to 128x128 size
+		glm::vec2 scale(256.0 / width(), 256.0 / height());
+
+		std::vector<Stroke> scaledSilhouette;
+		for (auto stroke : silhouette) {
+			Stroke s;
+			s.start = glm::vec2(stroke.start.x * scale.x, stroke.start.y * scale.y);
+			s.end = glm::vec2(stroke.end.x * scale.x, stroke.end.y * scale.y);
+			scaledSilhouette.push_back(s);
+		}
+
+		// create input image
+		cv::Mat input(256, 256, CV_8UC3, cv::Scalar(255, 255, 255));
+		for (auto stroke : scaledSilhouette) {
+			cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
+		}
+
+		std::vector<Prediction> prediction = classifier->Classify(input, 5);
+		std::cout << "/////////////////////////////////////////////////////////////" << std::endl;
+		std::cout << "// Classification" << std::endl;
+		for (int i = 0; i < prediction.size(); ++i) {
+			std::cout << prediction[i].first + 1 << ": " << prediction[i].second << std::endl;
+		}
+		std::cout << "/////////////////////////////////////////////////////////////" << std::endl;
+
+		grammarSnippetId = prediction[0].first;
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// regression
 
 	// scale the contour to 128x128 size
 	glm::vec2 scale(128.0 / width(), 128.0 / height());
@@ -391,7 +424,8 @@ void GLWidget3D::parameterEstimation(int grammarSnippetId, bool centering3D, boo
 
 	if (applyTexture) {
 		// convert bgImage to cv::Mat object
-		cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
+		cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
+
 		// rectify the facade image
 		for (int i = 0; i < faces.size(); ++i) {
 			std::vector<cv::Point2f> pts;
