@@ -43,28 +43,32 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	glm::mat4 light_mvMatrix = glm::lookAt(-light_dir * 50.0f, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	light_mvpMatrix = light_pMatrix * light_mvMatrix;
 
-	classifier = boost::shared_ptr<Classifier>(new Classifier("../models/deploy.prototxt",
-		"../models/contour_iter_20000.caffemodel",
-		"../models/contour_mean.binaryproto"));
+	//classifier = boost::shared_ptr<Classifier>(new Classifier("../models/deploy.prototxt", "../models/contour_iter_20000.caffemodel", "../models/contour_mean.binaryproto"));
+
+	std::cout << "OK" << std::endl;
 
 	// caffe modelを読み込む
 	{
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_01.prototxt", "..\\models\\contour_01b_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_02.prototxt", "..\\models\\contour_02b_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_03.prototxt", "..\\models\\contour_03b_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_04.prototxt", "..\\models\\contour_04_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_05.prototxt", "..\\models\\contour_05_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_01.prototxt", "..\\models\\train_01_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_02.prototxt", "..\\models\\train_02_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_03.prototxt", "..\\models\\train_03_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_04.prototxt", "..\\models\\train_04_iter_240000.caffemodel")));
+		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_05.prototxt", "..\\models\\train_05_iter_240000.caffemodel")));
 	}
+
+	std::cout << "OK2" << std::endl;
 
 	// Grammarを読み込む
 	{
-		grammars.resize(5);
+		grammars.resize(4);
 		cga::parseGrammar("..\\cga\\contour_01b.xml", grammars[0]);
 		cga::parseGrammar("..\\cga\\contour_02b.xml", grammars[1]);
 		cga::parseGrammar("..\\cga\\contour_03b.xml", grammars[2]);
-		cga::parseGrammar("..\\cga\\contour_04.xml", grammars[3]);
-		cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
+		cga::parseGrammar("..\\cga\\contour_04b.xml", grammars[3]);
+		//cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
 	}
+
+	std::cout << "OK3" << std::endl;
 }
 
 /**
@@ -270,7 +274,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 		// FOV固定の場合には、ダミーでパラメータを入れちゃう
 		if (fovMin == fovMax) {
-			params.insert(params.begin(), 0.5);
+			params.insert(params.begin() + 2, 0.5);
 		}
 
 		params_list.push_back(params);
@@ -292,7 +296,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			std::cout << "Initial dist: " << dist << std::endl;
 		}
 
-		if (dist < best_dist) {
+		if (!tryMultiples || dist < best_dist) {
 			best_dist = dist;
 			best_params = params;
 		}
