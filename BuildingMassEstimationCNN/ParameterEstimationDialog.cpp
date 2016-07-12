@@ -12,19 +12,22 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	group2->addButton(ui.radioButtonRefineFromBest);
 	group2->addButton(ui.radioButtonRefineFromAll);
 
-	ui.checkBoxAutomaticRecognition->setChecked(true);
+	ui.checkBoxAutomaticRecognition->setChecked(false);
 	ui.lineEditGrammarSnippet->setText("1");
+	ui.lineEditGrammarSnippet->setEnabled(ui.checkBoxAutomaticRecognition->isChecked());
 	ui.lineEditGrammarSnippet->setEnabled(false);
 	ui.checkBoxCentering3D->setChecked(true);
 	ui.checkBoxMeanSubtraction->setChecked(false);
 	ui.radioButtonCameraTypeStreetView->setChecked(false);
 	ui.radioButtonCameraTypeAerialView->setChecked(true);
 	ui.lineEditCameraDistance->setText("25");
-	ui.lineEditXrotMin->setText("30");
-	ui.lineEditXrotMax->setText("60");
-	ui.lineEditYrotMin->setText("30");
-	ui.lineEditYrotMax->setText("60");
-	ui.lineEditFovMin->setText("20");
+	ui.lineEditXrotMin->setText("50");
+	ui.lineEditXrotMax->setText("70");
+	ui.lineEditYrotMin->setText("20");
+	ui.lineEditYrotMax->setText("70");
+	ui.lineEditZrotMin->setText("-20");
+	ui.lineEditZrotMax->setText("20");
+	ui.lineEditFovMin->setText("30");
 	ui.lineEditFovMax->setText("30");
 	ui.checkBoxTryMultiples->setChecked(true);
 	ui.lineEditNumMultipleTries->setText("5");

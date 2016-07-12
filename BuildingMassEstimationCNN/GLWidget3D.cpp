@@ -178,7 +178,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, bool applyTexture) {
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : silhouette) {
@@ -191,8 +191,11 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	offset.x = width() * 0.5f - bbox.center().x;
 	offset.y = height() * 0.5f - bbox.center().y;
 
+	std::cout << "OK" << std::endl;
+
 	// shift the image and silhouette
 	shiftImageAndSilhouette(offset.x, offset.y, bgImage, silhouette);
+	std::cout << "OK2" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// classification
@@ -225,6 +228,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		grammarSnippetId = prediction[0].first;
 	}
 
+	std::cout << "OK3" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// regression
@@ -239,6 +243,9 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		s.end = glm::vec2(stroke.end.x * scale.x, stroke.end.y * scale.y);
 		scaledSilhouette.push_back(s);
 	}
+
+	std::cout << "OK4" << std::endl;
+
 
 	std::vector<float> best_params;
 	std::vector<std::vector<float>> params_list;
@@ -265,23 +272,37 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 		// estimate parameters
 		std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
+		std::cout << "OK5" << std::endl;
+
 
 		// rotation固定の場合には、ダミーでパラメータを入れちゃう
-		if (xrotMin == xrotMax && yrotMin == yrotMax) {
-			params.insert(params.begin(), 0.5);
-			params.insert(params.begin(), 0.5);
+		if (xrotMin == xrotMax) {
+			params.insert(params.begin() + 0, 0.5);
+		}
+		if (yrotMin == yrotMax) {
+			params.insert(params.begin() + 1, 0.5);
+		}
+		if (zrotMin == zrotMax) {
+			params.insert(params.begin() + 2, 0.5);
 		}
 
 		// FOV固定の場合には、ダミーでパラメータを入れちゃう
 		if (fovMin == fovMax) {
-			params.insert(params.begin() + 2, 0.5);
+			params.insert(params.begin() + 3, 0.5);
 		}
+
+		std::cout << "Params: ";
+		for (int i = 0; i < params.size(); ++i) {
+			if (i > 0) std::cout << ",";
+			std::cout << params[i];
+		}
+		std::cout << std::endl;
 
 		params_list.push_back(params);
 
 		// Geometry faces
 		std::vector<boost::shared_ptr<glutils::Face> > faces;
-		double dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces, false, multipleTryIter);
+		double dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, false, multipleTryIter);
 
 		if (multipleTryIter == 0) {
 			// display the initial parameters
@@ -301,6 +322,9 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			best_params = params;
 		}
 	}
+
+	std::cout << "OK6" << std::endl;
+
 
 	if (tryMultiples) {
 		std::vector<float> mean;
@@ -345,7 +369,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			double dist;
 			for (int refinement_iter = 0;; ++refinement_iter) {
 				std::vector<boost::shared_ptr<glutils::Face> > faces;
-				dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false);
+				dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false);
 
 				// show the progress
 				printf("\rRefinement: %d (delta: %lf, dist: %lf)        ", refinement_iter, delta, dist);
@@ -360,12 +384,12 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 				// compute the score of -Delta
 				std::vector<float> new_params1 = params_list[initial_params_id];
 				new_params1[param_id] -= delta;
-				double new_dist1 = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params1, faces, false);
+				double new_dist1 = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, new_params1, faces, false);
 
 				// compute the score of Delta
 				std::vector<float> new_params2 = params_list[initial_params_id];
 				new_params2[param_id] += delta;
-				double new_dist2 = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, new_params2, faces, false);
+				double new_dist2 = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax,  fovMin, fovMax, new_params2, faces, false);
 
 				// pick the best one
 				if (new_dist1 < dist && new_dist1 <= new_dist2) {
@@ -388,7 +412,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 				// 十分収束したら、終了する
 				if (delta < 0.01) {
-					dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false, initial_params_id);
+					dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false, initial_params_id);
 					break;
 				}
 			}
@@ -415,7 +439,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	// render the image
 	cv::Mat renderedImage;
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
-	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, best_params, faces, renderedImage);
+	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, best_params, faces, renderedImage);
 
 	// compute the offset of the rendered image
 	glm::vec2 rendered_offset = getOffsetImage(renderedImage);
@@ -892,12 +916,12 @@ void GLWidget3D::parameterEstimationWithCameraCalibration2(int grammarSnippetId,
 	update();
 }
 
-double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
+double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
 	// contour modeで描画
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
 
 	cv::Mat renderedImage;
-	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces, renderedImage);
+	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, renderedImage);
 	//cv::imwrite("renderedImage.png", renderedImage);
 
 	// compute the offset of the rendered image
@@ -949,14 +973,14 @@ double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int c
 	return dist;
 }
 
-double GLWidget3D::computeDistance2(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
+double GLWidget3D::computeDistance2(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
 	//std::cout << "ComputeDist2!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
 	// contour modeで描画
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
 
 	cv::Mat renderedImage;
-	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, params, faces, renderedImage);
+	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, renderedImage);
 	//cv::imwrite("renderedImage.png", renderedImage);
 
 	/*
@@ -1060,12 +1084,12 @@ double GLWidget3D::computeDistance2(int grammarSnippetId, bool centering3D, int 
 	return dist;
 }
 
-void GLWidget3D::render(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, cv::Mat& renderedImage) {
+void GLWidget3D::render(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, cv::Mat& renderedImage) {
 	// setup the camera
 	camera.xrot = xrotMin + (xrotMax - xrotMin) * params[0];
 	camera.yrot = yrotMin + (yrotMax - yrotMin) * params[1];
-	camera.zrot = 0;
-	camera.fovy = fovMin + params[0] * (fovMax - fovMin);
+	camera.zrot = zrotMin + (zrotMax - zrotMin) * params[2];
+	camera.fovy = fovMin + params[3] * (fovMax - fovMin);
 	float cameraDistance = cameraDistanceBase / tanf(camera.fovy * 0.5 / 180.0f * M_PI);
 
 	if (cameraType == 0) { // street view
@@ -1086,9 +1110,13 @@ void GLWidget3D::render(int grammarSnippetId, bool centering3D, int cameraType, 
 
 	// set parameters
 	std::vector<float> pm_params;
-	for (int i = 3; i < params.size(); ++i) {
+	std::cout << "PM params: ";
+	for (int i = 4; i < params.size(); ++i) {
 		pm_params.push_back(params[i]);
+		if (i > 4) std::cout << ",";
+		std::cout << params[i];
 	}
+	std::cout << std::endl;
 	cga.setParamValues(grammars[grammarSnippetId], pm_params);
 
 	// set axiom
@@ -1171,6 +1199,9 @@ void GLWidget3D::mouseMoveEvent(QMouseEvent *e) {
 		else {
 			camera.rotate(e->x(), e->y());
 		}
+	}
+	else if (e->buttons() & Qt::MidButton) { // Rotate around viewing direction
+		camera.rotateAroundZ(e->x(), e->y());
 	}
 	else if (e->buttons() & Qt::LeftButton) {
 		currentStroke.end = glm::vec2(e->x(), e->y());

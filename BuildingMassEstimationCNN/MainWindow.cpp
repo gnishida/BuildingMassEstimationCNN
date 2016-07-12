@@ -94,6 +94,8 @@ void MainWindow::onParameterEstimation() {
 		int xrotMax = dlg.ui.lineEditXrotMax->text().toInt();
 		int yrotMin = dlg.ui.lineEditYrotMin->text().toInt();
 		int yrotMax = dlg.ui.lineEditYrotMax->text().toInt();
+		int zrotMin = dlg.ui.lineEditZrotMin->text().toInt();
+		int zrotMax = dlg.ui.lineEditZrotMax->text().toInt();
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
 		bool tryMultiples = dlg.ui.checkBoxTryMultiples->isChecked();
@@ -103,7 +105,7 @@ void MainWindow::onParameterEstimation() {
 		bool refineFromBest = dlg.ui.radioButtonRefineFromBest->isChecked();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, applyTexture);
+		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, applyTexture);
 	}
 }
 
