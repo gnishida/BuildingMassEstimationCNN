@@ -27,14 +27,18 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditYrotMax->setText("70");
 	ui.lineEditZrotMin->setText("-20");
 	ui.lineEditZrotMax->setText("20");
-	ui.lineEditFovMin->setText("30");
-	ui.lineEditFovMax->setText("30");
-	ui.checkBoxTryMultiples->setChecked(true);
+	ui.lineEditFovMin->setText("10");
+	ui.lineEditFovMax->setText("10");
+	ui.checkBoxTryMultiples->setChecked(false);
 	ui.lineEditNumMultipleTries->setText("5");
+	ui.lineEditNumMultipleTries->setEnabled(ui.checkBoxTryMultiples->isChecked());
 	ui.lineEditMaxNoise->setText("2");
-	ui.checkBoxRefinement->setChecked(true);
+	ui.lineEditMaxNoise->setEnabled(ui.checkBoxTryMultiples->isChecked());
+	ui.checkBoxRefinement->setChecked(false);
 	ui.radioButtonRefineFromBest->setChecked(true);
+	ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.radioButtonRefineFromAll->setChecked(false);
+	ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.checkBoxApplyTexture->setChecked(false);
 
 	connect(ui.checkBoxAutomaticRecognition, SIGNAL(clicked()), this, SLOT(onAutomaticRecognition()));
