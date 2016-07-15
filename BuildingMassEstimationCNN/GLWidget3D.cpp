@@ -451,6 +451,9 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
 
 	if (applyTexture) {
+		// create texture folder
+		if (!QDir("textures").exists()) QDir().mkdir("textures");
+
 		// convert bgImage to cv::Mat object
 		cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
 
@@ -468,7 +471,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			if (pts.size() == 4) {
 				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
 
-				if (!QDir("textures").exists()) QDir().mkdir("textures");
 				time_t now = clock();
 				QString name = QString("textures\\rectified_%1_%2.png").arg(now).arg(i);
 				cv::imwrite(name.toUtf8().constData(), rectifiedImage);
@@ -482,6 +484,9 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
 
 		opacityOfBackground = 0.1f;
+
+		// remove the texture folder
+		if (QDir("textures").exists()) QDir("textures").removeRecursively();
 	}
 
 	updateStatusBar();
@@ -1309,7 +1314,8 @@ void GLWidget3D::paintEvent(QPaintEvent *event) {
 	painter.setOpacity(opacityOfBackground);
 	painter.drawImage(0, 0, bgImage);
 
-	//painter.setPen(QPen(Qt::black, 3));
+	// draw silhouette
+	painter.setOpacity(1.0f);
 	painter.setPen(QPen(QColor(0, 0, 255), 3));
 	for (auto stroke : silhouette) {
 		painter.drawLine(stroke.start.x, stroke.start.y, stroke.end.x, stroke.end.y);
