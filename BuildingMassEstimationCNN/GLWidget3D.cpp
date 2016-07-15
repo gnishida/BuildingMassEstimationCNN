@@ -460,13 +460,22 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		// rectify the facade image
 		for (int i = 0; i < faces.size(); ++i) {
 			std::vector<cv::Point2f> pts;
+			std::vector<glm::vec3> pts3d;
 			for (int j = 0; j < faces[i]->vertices.size(); ++j) {
 				if (j == 3 || j == 4) continue;
+
+				pts3d.push_back(faces[i]->vertices[j].position);
 
 				glm::vec4 result = camera.mvpMatrix * glm::vec4(faces[i]->vertices[j].position, 1);
 				glm::vec2 pp((result.x / result.w + 1) * 0.5 * width(), (1 - result.y / result.w) * 0.5 * height());
 				pts.push_back(cv::Point2f(pp.x, pp.y));
 			}
+
+			// check if the face is visible
+			if (pts3d.size() < 3) continue;
+			glm::vec3 normal = glm::cross(pts3d[1] - pts3d[0], pts3d[2] - pts3d[1]);
+			glm::vec4 normalInCameraCoordinates = camera.mvMatrix * glm::vec4(normal, 0);
+			if (glm::dot(glm::vec3(normalInCameraCoordinates), glm::vec3(0, 0, 1)) <= 0) continue;
 
 			if (pts.size() == 4) {
 				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);

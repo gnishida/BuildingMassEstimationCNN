@@ -42,7 +42,7 @@ void Camera::rotateAroundZ(int mouse_x, int mouse_y) {
  * Call this function whenever the mouse moves while zooming.
  */
 void Camera::zoom(float delta) {
-	pos.z -= delta * 0.1f;
+	pos.z -= delta;
 	updateMVPMatrix();
 }
 
