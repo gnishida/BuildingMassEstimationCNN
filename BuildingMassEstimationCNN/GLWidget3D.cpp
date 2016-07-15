@@ -45,8 +45,6 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	//classifier = boost::shared_ptr<Classifier>(new Classifier("../models/deploy.prototxt", "../models/contour_iter_20000.caffemodel", "../models/contour_mean.binaryproto"));
 
-	std::cout << "OK" << std::endl;
-
 	// caffe modelを読み込む
 	{
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_01.prototxt", "..\\models\\train_01_iter_240000.caffemodel")));
@@ -55,8 +53,6 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_04.prototxt", "..\\models\\train_04_iter_240000.caffemodel")));
 		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_05.prototxt", "..\\models\\train_05_iter_240000.caffemodel")));
 	}
-
-	std::cout << "OK2" << std::endl;
 
 	// Grammarを読み込む
 	{
@@ -67,8 +63,6 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		cga::parseGrammar("..\\cga\\contour_04b.xml", grammars[3]);
 		//cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
 	}
-
-	std::cout << "OK3" << std::endl;
 }
 
 /**
@@ -82,6 +76,7 @@ void GLWidget3D::clearSilhouette() {
 
 void GLWidget3D::clearBackground() {
 	bgImage = QImage(width(), height(), QImage::Format_RGB32);
+	bgImageOrig = bgImage;
 	mainWin->setWindowTitle("Photo to 3D");
 
 	update();
@@ -121,11 +116,10 @@ void GLWidget3D::saveContour(const std::string& filename) {
 * This is for test usage.
 */
 void GLWidget3D::loadImage(const std::string& filename) {
-	QImage newImage;
-	newImage.load(filename.c_str());
+	bgImageOrig.load(filename.c_str());
 
-	float scale = std::min((float)width() / newImage.width(), (float)height() / newImage.height());
-	newImage = newImage.scaled(newImage.width() * scale, newImage.height() * scale);
+	float scale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
+	QImage newImage = bgImageOrig.scaled(bgImageOrig.width() * scale, bgImageOrig.height() * scale);
 
 	bgImage = QImage(width(), height(), QImage::Format_RGB32);
 	QPainter painter(&bgImage);
@@ -179,6 +173,10 @@ void GLWidget3D::undo() {
  * Then, display the options ordered by the probabilities.
  */
 void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, bool applyTexture) {
+	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
+	float bgImageScale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
+	resizeImageCanvasSize(bgImageOrig, width() / bgImageScale, height() / bgImageScale);
+
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : silhouette) {
@@ -190,12 +188,10 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	glm::vec2 offset;
 	offset.x = width() * 0.5f - bbox.center().x;
 	offset.y = height() * 0.5f - bbox.center().y;
-
-	std::cout << "OK" << std::endl;
-
+		
 	// shift the image and silhouette
 	shiftImageAndSilhouette(offset.x, offset.y, bgImage, silhouette);
-	std::cout << "OK2" << std::endl;
+	shiftImage(offset.x / bgImageScale, offset.y / bgImageScale, bgImageOrig);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// classification
@@ -228,8 +224,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		grammarSnippetId = prediction[0].first;
 	}
 
-	std::cout << "OK3" << std::endl;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// regression
 
@@ -243,9 +237,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		s.end = glm::vec2(stroke.end.x * scale.x, stroke.end.y * scale.y);
 		scaledSilhouette.push_back(s);
 	}
-
-	std::cout << "OK4" << std::endl;
-
 
 	std::vector<float> best_params;
 	std::vector<std::vector<float>> params_list;
@@ -272,8 +263,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 		// estimate parameters
 		std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
-		std::cout << "OK5" << std::endl;
-
 
 		// rotation固定の場合には、ダミーでパラメータを入れちゃう
 		if (xrotMin == xrotMax) {
@@ -322,9 +311,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			best_params = params;
 		}
 	}
-
-	std::cout << "OK6" << std::endl;
-
 
 	if (tryMultiples) {
 		std::vector<float> mean;
@@ -446,6 +432,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 	// translate the background image and contour lines
 	shiftImageAndSilhouette(rendered_offset.x, rendered_offset.y, bgImage, silhouette);
+	shiftImage(rendered_offset.x / bgImageScale, rendered_offset.y / bgImageScale, bgImageOrig);
 
 	// line modeで描画
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
@@ -455,7 +442,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		if (!QDir("textures").exists()) QDir().mkdir("textures");
 
 		// convert bgImage to cv::Mat object
-		cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
+		cv::Mat bgImageMat = cv::Mat(bgImageOrig.height(), bgImageOrig.width(), CV_8UC4, const_cast<uchar*>(bgImageOrig.bits()), bgImageOrig.bytesPerLine()).clone();
 
 		// rectify the facade image
 		for (int i = 0; i < faces.size(); ++i) {
@@ -478,11 +465,16 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			if (glm::dot(glm::vec3(normalInCameraCoordinates), glm::vec3(0, 0, 1)) <= 0) continue;
 
 			if (pts.size() == 4) {
-				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
+				std::vector<cv::Point2f> pts_scaled;
+				for (auto pt : pts) {
+					pts_scaled.push_back(cv::Point2f(pt.x / bgImageScale, pt.y / bgImageScale));
+				}
+
+				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts_scaled);
 				rectifiedImage = cvutils::adjust_contrast(rectifiedImage);
 
 				time_t now = clock();
-				QString name = QString("textures\\rectified_%1_%2.png").arg(now).arg(i);
+				QString name = QString("textures/rectified_%1_%2.png").arg(now).arg(i);
 				cv::imwrite(name.toUtf8().constData(), rectifiedImage);
 
 				faces[i]->texture = name.toUtf8().constData();
@@ -496,7 +488,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		opacityOfBackground = 0.1f;
 
 		// remove the texture folder
-		if (QDir("textures").exists()) QDir("textures").removeRecursively();
+		//if (QDir("textures").exists()) QDir("textures").removeRecursively();
 	}
 
 	updateStatusBar();
@@ -532,6 +524,7 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 	QImage newImage = bgImage;
 	QPainter painter(&bgImage);
 	painter.drawImage(offset.x, offset.y, newImage);
+	
 
 	// scale the contour to 128x128 size
 	glm::vec2 scale(128.0 / width(), 128.0 / height());
@@ -1602,6 +1595,12 @@ void GLWidget3D::updateStatusBar() {
 	mainWin->statusBar()->showMessage(msg);
 }
 
+void GLWidget3D::shiftImage(int shift_x, int shift_y, QImage& image) {
+	QImage newImage = image;
+	QPainter painter(&image);
+	painter.drawImage(shift_x, shift_y, newImage);
+}
+
 void GLWidget3D::shiftImageAndSilhouette(int shift_x, int shift_y, QImage& image, std::vector<Stroke>& silhouette) {
 	// shift the silhouette
 	for (int i = 0; i < silhouette.size(); ++i) {
@@ -1611,10 +1610,14 @@ void GLWidget3D::shiftImageAndSilhouette(int shift_x, int shift_y, QImage& image
 		silhouette[i].end.y += shift_y;
 	}
 
+	float scale = std::min((float)width() / image.width(), (float)height() / image.height());
+	int scaled_shift_x = (float)shift_x / scale;
+	int scaled_shift_y = (float)shift_y / scale;
+
 	// shift the image
 	QImage newImage = image;
 	QPainter painter(&image);
-	painter.drawImage(shift_x, shift_y, newImage);
+	painter.drawImage(scaled_shift_x, scaled_shift_y, newImage);
 }
 
 /**
@@ -1676,4 +1679,14 @@ glm::vec2 GLWidget3D::getOffsetImage(cv::Mat& img) {
 	int offset_r = (min_r + max_r) * 0.5 - img.rows * 0.5;
 
 	return glm::vec2(offset_c, offset_r);
+}
+
+/**
+ * Resize the canvas size while keeping the image size. 
+ */
+void GLWidget3D::resizeImageCanvasSize(QImage& image, int width, int height) {
+	QImage tmp = image;
+	image = QImage(width, height, tmp.format());
+	QPainter painter(&image);
+	painter.drawImage((image.width() - tmp.width()) / 2, (image.height() - tmp.height()) / 2, tmp);
 }

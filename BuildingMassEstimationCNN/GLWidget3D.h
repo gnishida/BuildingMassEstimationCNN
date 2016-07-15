@@ -42,7 +42,7 @@ private:
 	std::vector<cga::Grammar> grammars;
 
 	QImage bgImage;
-	//std::vector<Stroke> sketch;
+	QImage bgImageOrig;
 	std::vector<Stroke> silhouette;
 	Stroke currentStroke;
 	float opacityOfBackground;
@@ -75,8 +75,10 @@ public:
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void updateStatusBar();
+	void shiftImage(int shift_x, int shift_y, QImage& image);
 	void shiftImageAndSilhouette(int shift_x, int shift_y, QImage& image, std::vector<Stroke>& silhouette);
 	glm::vec2 getOffsetImage(cv::Mat& img);
+	void resizeImageCanvasSize(QImage& image, int width, int height);
 
 protected:
 	void mousePressEvent(QMouseEvent *e);
