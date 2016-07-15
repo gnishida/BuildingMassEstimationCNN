@@ -46,4 +46,47 @@ namespace cvutils {
 		return warped;
 	}
 
+	cv::Mat adjust_contrast(const cv::Mat& image) {
+		// convert the image to HSV format
+		cv::Mat src;
+		if (image.channels() == 1) {
+			cv::cvtColor(image, src, cv::COLOR_GRAY2BGR);
+			cv::cvtColor(image, src, cv::COLOR_BGR2HSV);
+		}
+		else if (image.channels() == 3) {
+			cv::cvtColor(image, src, cv::COLOR_BGR2HSV);
+		}
+		else if (image.channels() == 4) {
+			cv::cvtColor(image, src, cv::COLOR_BGRA2BGR);
+			cv::cvtColor(image, src, cv::COLOR_BGR2HSV);
+		}
+
+		// split the image into 3 channels
+		std::vector<cv::Mat> splittedChannels(3);
+		cv::split(src, splittedChannels);
+		
+		// adjusst the contrast and brightness
+		/*
+		// equalize the histogram
+		cv::equalizeHist(splittedChannels[2], splittedChannels[2]);
+		*/
+
+		cv::Mat adjusted;
+		splittedChannels[2].convertTo(adjusted, CV_64F, 1.0 / 255.0);
+		cv::Scalar mean, stddev;
+		cv::meanStdDev(adjusted, mean, stddev);
+		adjusted = adjusted - (mean - stddev * 2);// *stddev;// / 4.0;
+		cv::Mat diviser(adjusted.size(), adjusted.type(), stddev * 4);
+		cv::divide(adjusted, diviser, adjusted);
+		adjusted.convertTo(splittedChannels[2], CV_8U, 255.0);
+
+		// merge the channels back to a single image
+		cv::merge(splittedChannels, src);
+
+		// convert the HSV to BGR format
+		cv::Mat result;
+		cv::cvtColor(src, result, cv::COLOR_HSV2BGR);
+
+		return result;
+	}
 }

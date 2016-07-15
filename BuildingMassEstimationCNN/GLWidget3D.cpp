@@ -470,6 +470,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 			if (pts.size() == 4) {
 				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts);
+				rectifiedImage = cvutils::adjust_contrast(rectifiedImage);
 
 				time_t now = clock();
 				QString name = QString("textures\\rectified_%1_%2.png").arg(now).arg(i);
