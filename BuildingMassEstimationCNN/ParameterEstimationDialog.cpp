@@ -14,8 +14,7 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 
 	ui.checkBoxAutomaticRecognition->setChecked(false);
 	ui.lineEditGrammarSnippet->setText("1");
-	ui.lineEditGrammarSnippet->setEnabled(ui.checkBoxAutomaticRecognition->isChecked());
-	ui.lineEditGrammarSnippet->setEnabled(false);
+	ui.lineEditGrammarSnippet->setEnabled(!ui.checkBoxAutomaticRecognition->isChecked());
 	ui.checkBoxCentering3D->setChecked(true);
 	ui.checkBoxMeanSubtraction->setChecked(false);
 	ui.radioButtonCameraTypeStreetView->setChecked(false);
