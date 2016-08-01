@@ -112,6 +112,7 @@ void MainWindow::onParameterEstimation() {
 void MainWindow::onParameterEstimationWithCameraCalibration() {
 	ParameterEstimationDialog dlg;
 	if (dlg.exec()) {
+		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
 		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
 		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
 		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
@@ -124,9 +125,11 @@ void MainWindow::onParameterEstimationWithCameraCalibration() {
 		int xrotMax = dlg.ui.lineEditXrotMax->text().toInt();
 		int yrotMin = dlg.ui.lineEditYrotMin->text().toInt();
 		int yrotMax = dlg.ui.lineEditYrotMax->text().toInt();
+		int zrotMin = dlg.ui.lineEditZrotMin->text().toInt();
+		int zrotMax = dlg.ui.lineEditZrotMax->text().toInt();
 		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
 		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
 
-		glWidget->parameterEstimationWithCameraCalibration(grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, fovMin, fovMax);
+		glWidget->parameterEstimationWithCameraCalibration(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax);
 	}
 }

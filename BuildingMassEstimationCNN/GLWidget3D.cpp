@@ -499,7 +499,11 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
 * Then, display the options ordered by the probabilities.
 */
-void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax) {
+void GLWidget3D::parameterEstimationWithCameraCalibration(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax) {
+	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
+	float bgImageScale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
+	resizeImageCanvasSize(bgImageOrig, width() / bgImageScale, height() / bgImageScale);
+
 	// compute the bbox
 	glutils::BoundingBox bbox;
 	for (auto stroke : silhouette) {
@@ -512,19 +516,20 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 	offset.x = width() * 0.5f - bbox.center().x;
 	offset.y = height() * 0.5f - bbox.center().y;
 
-	// shift the silhouette
-	for (int i = 0; i < silhouette.size(); ++i) {
-		silhouette[i].start.x += offset.x;
-		silhouette[i].start.y += offset.y;
-		silhouette[i].end.x += offset.x;
-		silhouette[i].end.y += offset.y;
-	}
+	// shift the image and silhouette
+	shiftImageAndSilhouette(offset.x, offset.y, bgImage, silhouette);
+	shiftImage(offset.x / bgImageScale, offset.y / bgImageScale, bgImageOrig);
 
-	// shift the image
-	QImage newImage = bgImage;
-	QPainter painter(&bgImage);
-	painter.drawImage(offset.x, offset.y, newImage);
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// classification
+	if (automaticRecognition) {
+
+
+
+	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// regression
 
 	// scale the contour to 128x128 size
 	glm::vec2 scale(128.0 / width(), 128.0 / height());
@@ -542,7 +547,6 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 	for (auto stroke : scaledSilhouette) {
 		cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
 	}
-	//cv::imwrite("input.png", input);
 
 	if (meanSubtraction) {
 		cv::Mat meanImg = cv::imread("../models/mean.png");
@@ -550,7 +554,50 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 		input -= meanImg;
 	}
 
+	// estimate parameters
+	std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
 
+	// rotation固定の場合には、ダミーでパラメータを入れちゃう
+	if (xrotMin == xrotMax) {
+		params.insert(params.begin() + 0, 0.5);
+	}
+	if (yrotMin == yrotMax) {
+		params.insert(params.begin() + 1, 0.5);
+	}
+	if (zrotMin == zrotMax) {
+		params.insert(params.begin() + 2, 0.5);
+	}
+
+	// FOV固定の場合には、ダミーでパラメータを入れちゃう
+	if (fovMin == fovMax) {
+		params.insert(params.begin() + 3, 0.5);
+	}
+
+	std::cout << "Params: ";
+	for (int i = 0; i < params.size(); ++i) {
+		if (i > 0) std::cout << ",";
+		std::cout << params[i];
+	}
+	std::cout << std::endl;
+
+	// Geometry faces
+	std::vector<boost::shared_ptr<glutils::Face> > faces;
+	computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, false);
+	/*
+	std::cout << "----------------------------------------------" << std::endl;
+	std::cout << "faces:" << std::endl;
+	for (int i = 0; i < faces.size(); ++i) {
+		std::cout << "face " << i + 1 << std::endl;
+		for (int j = 0; j < faces[i]->vertices.size(); ++j) {
+			std::cout << "(" << faces[i]->vertices[j].position.x << "," << faces[i]->vertices[j].position.y << "," << faces[i]->vertices[j].position.z << ")" << std::endl;
+		}
+		std::cout << std::endl;
+	}
+	std::cout << "----------------------------------------------" << std::endl;
+	*/
+
+	// update camera matrix
+	camera.updatePMatrix(width(), height());
 
 	///////////////////////////////////////////////////////////////////////////////////
 	// contourの頂点の座標を取得
@@ -587,73 +634,6 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 	///////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-	//input = cv::imread("..\\photos\\image_001550.png");
-	//std::cout << "ch: " << input.channels() << std::endl;
-
-
-	// estimate parameters
-	std::vector<float> params = regressions[grammarSnippetId]->Predict(input);
-	for (int i = 0; i < params.size(); ++i) {
-		if (i > 0) std::cout << ",";
-		std::cout << params[i];
-	}
-	std::cout << std::endl;
-
-	// setup the camera
-	if (xrotMin != xrotMax && yrotMin != yrotMax) {
-		camera.xrot = xrotMin + (xrotMax - xrotMin) * params[0];
-		camera.yrot = yrotMin + (yrotMax - yrotMin) * params[1];
-		params.erase(params.begin());
-		params.erase(params.begin());
-	}
-	else {
-		camera.xrot = xrotMin;
-		camera.yrot = yrotMin;
-	}
-	camera.zrot = 0;
-	if (fovMin != fovMax) {
-		camera.fovy = fovMin + params[0] * (fovMax - fovMin);
-		params.erase(params.begin());
-
-	}
-	else {
-		camera.fovy = fovMin;
-	}
-	float cameraDistance = cameraDistanceBase / tanf(camera.fovy * 0.5 / 180.0f * M_PI);
-	if (cameraType == 0) { // street view
-		camera.pos.x = 0;
-		camera.pos.y = -cameraDistance * sinf(camera.xrot / 180.0f * M_PI) + cameraHeight * cosf(camera.xrot / 180.0f * M_PI);
-		camera.pos.z = cameraDistance * cosf(camera.xrot / 180.0f * M_PI) + cameraHeight * sinf(camera.xrot / 180.0f * M_PI);
-	}
-	else { // aerial view
-		camera.pos.x = 0;
-		camera.pos.y = cameraHeight;
-		camera.pos.z = cameraDistance;
-	}
-	camera.updatePMatrix(width(), height());
-
-	// setup CGA
-	cga::CGA cga;
-	cga.modelMat = glm::rotate(glm::mat4(), -(float)M_PI * 0.5f, glm::vec3(1, 0, 0));
-
-	// set parameters
-	cga.setParamValues(grammars[grammarSnippetId], params);
-
-	// set axiom
-	cga::Rectangle* start = new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -3.141592f * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1));
-	cga.stack.push_back(boost::shared_ptr<cga::Shape>(start));
-
-	// generate 3d model
-	renderManager.removeObjects();
-	cga.derive(grammars[grammarSnippetId], true);
-	std::vector<boost::shared_ptr<glutils::Face> > faces;
-	cga.generateGeometry(faces, centering3D);
-	renderManager.addFaces(faces, true);
-
-
-	///////////////////////////////////////////////////////////////////////////////////
 	// 3Dの頂点の座標を取得
 	std::vector<glm::vec3> objectPointsTemp;
 	for (int i = 0; i < faces.size(); ++i) {
@@ -702,9 +682,24 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 
 
 	///////////////////////////////////////////////////////////////////////////////////
+	std::cout << "--------------------------------------------------------------------------" << std::endl;
+	std::cout << "Points correspondence (2D point by sketch --> 3D point --> 2D projection from 3D)" << std::endl;
+	double dist = 0.0;
 	for (int i = 0; i < objectPoints[0].size(); ++i) {
-		std::cout << "(" << imagePoints[0][i].x << "," << imagePoints[0][i].y << ") --> (" << objectPoints[0][i].x << "," << objectPoints[0][i].y << "," << objectPoints[0][i].z << ")" << std::endl;
+		cv::Mat cameraMat = cv::Mat::eye(3, 3, CV_64F);
+		cameraMat.at<double>(0, 0) = camera.pMatrix[0][0];
+		cameraMat.at<double>(1, 1) = camera.pMatrix[1][1];
+		cameraMat.at<double>(2, 0) = camera.pMatrix[2][0];
+		cameraMat.at<double>(2, 1) = camera.pMatrix[2][1];
+
+		glm::vec4 p2(objectPoints[0][i].x, objectPoints[0][i].y, objectPoints[0][i].z, 1);
+		glm::vec4 pp2 = camera.mvpMatrix * p2;
+		std::cout << "(" << imagePoints[0][i].x << "," << imagePoints[0][i].y << ") --> (" << objectPoints[0][i].x << "," << objectPoints[0][i].y << "," << objectPoints[0][i].z << ") --> (" << pp2.x / pp2.w << "," << pp2.y / pp2.w << ")" << std::endl;
+
+		dist += SQR(imagePoints[0][i].x - pp2.x / pp2.w) + SQR(imagePoints[0][i].y - pp2.y / pp2.w);
 	}
+	dist = sqrt(dist);
+	std::cout << "Dist: " << dist << std::endl;
 
 	// Camera calibration
 	cv::Mat cameraMat = cv::Mat::eye(3, 3, CV_64F);
@@ -712,13 +707,14 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 	cameraMat.at<double>(1, 1) = camera.pMatrix[1][1];
 	cameraMat.at<double>(2, 0) = camera.pMatrix[2][0];
 	cameraMat.at<double>(2, 1) = camera.pMatrix[2][1];
-	std::cout << "Camera Matrix: " << std::endl;
+	std::cout << "--------------------------------------------" << std::endl;
+	std::cout << "Camera matrix: " << std::endl;
 	std::cout << cameraMat << std::endl;
 	cv::Mat distortion = cv::Mat::zeros(1, 8, CV_64F);
 	std::vector<cv::Mat> rvecs, tvecs;
 	cv::calibrateCamera(objectPoints, imagePoints, cv::Size(128, 128), cameraMat, distortion, rvecs, tvecs, cv::CALIB_USE_INTRINSIC_GUESS | cv::CALIB_FIX_ASPECT_RATIO | cv::CALIB_FIX_PRINCIPAL_POINT | cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_K2 | cv::CALIB_FIX_K3 | cv::CALIB_FIX_K4 | cv::CALIB_FIX_K5 | cv::CALIB_FIX_K6);
-	std::cout << "<<< OpenCV results >>>" << std::endl;
-	std::cout << "Camera Matrix:" << std::endl << cameraMat << std::endl;
+	std::cout << "--------------------------------------------" << std::endl;
+	std::cout << "Updated camera matrix:" << std::endl << cameraMat << std::endl;
 	for (int i = 0; i < rvecs.size(); ++i) {
 		std::cout << "R:" << std::endl << rvecs[i] << std::endl;
 		std::cout << "T:" << std::endl << tvecs[i] << std::endl;
@@ -745,11 +741,36 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(int grammarSnippetId, 
 
 	cv::Mat P(3, 4, CV_64F);
 	for (int r = 0; r < 3; ++r) {
-		for (int c = 0; c < 3; ++c) {}
+	for (int c = 0; c < 3; ++c) {}
 	}
 	*/
 	///////////////////////////////////////////////////////////////////////////////////
 
+	cv::Mat M(3, 4, CV_64F);
+	cv::Mat roi = M(cv::Rect(0, 0, 3, 3));
+	R.copyTo(roi);
+	roi = M(cv::Rect(3, 0, 1, 3));
+	tvecs[0].copyTo(roi);
+	std::cout << "-------------------------" << std::endl;
+	std::cout << "Updated model view matrix:" << std::endl;
+	std::cout << M << std::endl;
+
+	std::cout << "-------------------------------------------------" << std::endl;
+	std::cout << "Reprojected points by updated camera parameters" << std::endl;
+	dist = 0;
+	for (int i = 0; i < objectPoints[0].size(); ++i) {
+		cv::Mat_<double> p(4, 1);
+		p(0, 0) = objectPoints[0][i].x;
+		p(1, 0) = objectPoints[0][i].y;
+		p(2, 0) = objectPoints[0][i].z;
+		p(3, 0) = 1;
+		cv::Mat result = cameraMat * M * p;
+		std::cout << "(" << result.at<double>(0, 0) / result.at<double>(2, 0) << "," << result.at<double>(1, 0) / result.at<double>(2, 0) << ")" << std::endl;
+
+		dist += SQR(imagePoints[0][i].x - result.at<double>(0, 0) / result.at<double>(2, 0)) + SQR(imagePoints[0][i].y - result.at<double>(1, 0) / result.at<double>(2, 0));
+	}
+	dist = sqrt(dist);
+	std::cout << "Updated dist: " << dist << std::endl;
 
 
 
