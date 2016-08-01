@@ -14,6 +14,8 @@
 #include <map>
 #include "CVUtils.h"
 #include "Utils.h"
+#include <QFile>
+#include <QTextStream>
 
 #ifndef M_PI
 #define	M_PI	3.141592653
@@ -172,7 +174,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, int maxIters, bool applyTexture) {
 	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
 	float bgImageScale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
 	resizeImageCanvasSize(bgImageOrig, width() / bgImageScale, height() / bgImageScale);
@@ -280,12 +282,14 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			params.insert(params.begin() + 3, 0.5);
 		}
 
+		/*
 		std::cout << "Params: ";
 		for (int i = 0; i < params.size(); ++i) {
 			if (i > 0) std::cout << ",";
 			std::cout << params[i];
 		}
 		std::cout << std::endl;
+		*/
 
 		params_list.push_back(params);
 
@@ -312,9 +316,9 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		}
 	}
 
+	std::vector<float> var;
 	if (tryMultiples) {
 		std::vector<float> mean;
-		std::vector<float> var;
 		utils::computeMean(params_list, mean);
 		utils::computeVariance(params_list, mean, var);
 
@@ -345,6 +349,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		params_list.push_back(best_params);
 	}
 
+#if 0
 	if (refinement) {
 		printf("Refinement: ");
 
@@ -417,6 +422,76 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 				best_params = params_list[initial_params_id];
 			}
 		}
+	}
+#endif
+
+	if (refinement) {
+		QFile file("refinement.txt");
+		file.open(QIODevice::WriteOnly);
+		QTextStream out(&file);
+
+		printf("Refinement: ");
+
+		std::vector<float> params = params_list[0];
+		best_params = params_list[0];
+		std::vector<boost::shared_ptr<glutils::Face> > faces;
+
+		double dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, false);
+		best_dist = dist;
+
+		// if variance is not computed, set a default value
+		if (var.size() == 0) {
+			for (int i = 0; i < params.size(); ++i) {
+				var.push_back(0.5);
+			}
+		}
+
+		double T = 100.0;
+		for (int iter = 0; iter < maxIters; ++iter) {
+			// propse the next state
+			std::vector<float> next_params = params;
+			for (int i = 0; i < params.size(); ++i) {
+				next_params[i] = utils::genNormal(params[i], sqrtf(var[i]) * T * 0.01);
+			}
+			double next_dist = computeDistance2(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params, faces, false);
+			std::cout << "next dist:" << next_dist << std::endl;
+			for (int k = 0; k < next_params.size(); ++k) {
+				if (k > 0) std::cout << ",";
+				std::cout << next_params[k];
+			}
+			std::cout << std::endl;
+
+			if (next_dist < dist || utils::genRand() < exp((double)(dist - next_dist) / T)) {
+				std::cout << "accepted" << std::endl;
+				// accept the proposal
+				dist = next_dist;
+				params = next_params;
+			}
+
+			// update the best
+			if (dist < best_dist) {
+				best_dist = dist;
+				best_params = params;
+			}
+
+			// write the params to the file
+			out << dist;
+			for (auto value : params) {
+				out << "," << value;
+			}
+			out << "\n";
+
+			// show the progress
+			/*
+			printf("\rRefinement: %d (best dist: %lf)        ", iter, best_dist);
+			fflush(stdout);
+			*/
+
+			// update the temperature
+			T = 100.0 - (double)iter / (maxIters / 100.0);
+		}
+
+		file.close();
 	}
 
 	// update camera matrix
@@ -1090,19 +1165,22 @@ double GLWidget3D::computeDistance2(int grammarSnippetId, bool centering3D, int 
 		std::cout << "Closed point: (" << min_pt23D.x << ", " << min_pt23D.y << ", " << min_pt23D.z << ")" << std::endl;
 		*/
 
+		/*
 		// エッジのベクトルを計算する
 		glm::vec2 v1 = shiftedSilhouette[i].end - shiftedSilhouette[i].start;
 		v1 /= glm::length(v1);
 		glm::vec2 v2 = min_pt2 - min_pt1;
 		v2 /= glm::length(v2);
-
+		*/
 
 		// コストを追加する
 		dist += min_dist1;
 		dist += min_dist2;
+		/*
 		if (v1.x != v2.x || v1.y != v2.y) {
 			dist += (1.0f - fabs(glm::dot(v1, v2))) * 1000.0f;
 		}
+		*/
 	}
 
 	if (saveFile) {
@@ -1139,13 +1217,13 @@ void GLWidget3D::render(int grammarSnippetId, bool centering3D, int cameraType, 
 
 	// set parameters
 	std::vector<float> pm_params;
-	std::cout << "PM params: ";
+	//std::cout << "PM params: ";
 	for (int i = 4; i < params.size(); ++i) {
 		pm_params.push_back(params[i]);
-		if (i > 4) std::cout << ",";
-		std::cout << params[i];
+		//if (i > 4) std::cout << ",";
+		//std::cout << params[i];
 	}
-	std::cout << std::endl;
+	//std::cout << std::endl;
 	cga.setParamValues(grammars[grammarSnippetId], pm_params);
 
 	// set axiom

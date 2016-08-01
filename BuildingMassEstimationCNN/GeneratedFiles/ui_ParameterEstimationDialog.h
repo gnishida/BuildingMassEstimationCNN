@@ -65,12 +65,14 @@ public:
     QLabel *label_9;
     QLineEdit *lineEditZrotMax;
     QLabel *label_20;
+    QLineEdit *lineEditIterations;
+    QLabel *label;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(500, 383);
+        ParameterEstimationDialog->resize(585, 412);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 220, 16, 20));
@@ -122,10 +124,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 220, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(390, 340, 91, 31));
+        pushButtonCancel->setGeometry(QRect(470, 370, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(290, 340, 91, 31));
+        pushButtonOK->setGeometry(QRect(370, 370, 91, 31));
         label_12 = new QLabel(ParameterEstimationDialog);
         label_12->setObjectName(QStringLiteral("label_12"));
         label_12->setGeometry(QRect(30, 70, 71, 16));
@@ -155,7 +157,7 @@ public:
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(110, 310, 91, 17));
+        checkBoxApplyTexture->setGeometry(QRect(110, 340, 91, 17));
         checkBoxRefinement = new QCheckBox(ParameterEstimationDialog);
         checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
         checkBoxRefinement->setGeometry(QRect(110, 280, 91, 17));
@@ -203,6 +205,12 @@ public:
         label_20->setObjectName(QStringLiteral("label_20"));
         label_20->setGeometry(QRect(173, 190, 16, 20));
         label_20->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        lineEditIterations = new QLineEdit(ParameterEstimationDialog);
+        lineEditIterations->setObjectName(QStringLiteral("lineEditIterations"));
+        lineEditIterations->setGeometry(QRect(280, 310, 91, 20));
+        label = new QLabel(ParameterEstimationDialog);
+        label->setObjectName(QStringLiteral("label"));
+        label->setGeometry(QRect(210, 310, 71, 20));
         QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
         QWidget::setTabOrder(lineEditGrammarSnippet, checkBoxCentering3D);
         QWidget::setTabOrder(checkBoxCentering3D, checkBoxMeanSubtraction);
@@ -260,6 +268,7 @@ public:
         checkBoxAutomaticRecognition->setText(QApplication::translate("ParameterEstimationDialog", "Automatic recognition", 0));
         label_9->setText(QApplication::translate("ParameterEstimationDialog", "Zrot:", 0));
         label_20->setText(QApplication::translate("ParameterEstimationDialog", "~", 0));
+        label->setText(QApplication::translate("ParameterEstimationDialog", "#Iterations:", 0));
     } // retranslateUi
 
 };

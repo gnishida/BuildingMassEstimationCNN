@@ -14,11 +14,12 @@ namespace utils {
 	bool isNumber(const std::string& str);
 	void computeMean(const std::vector<std::vector<float>>& values, std::vector<float>& mean);
 	void computeVariance(const std::vector<std::vector<float>>& values, const std::vector<float>& mean, std::vector<float>& var);
-	float genRand();
-	float genRand(float v);
-	float genRand(float a, float b);
+	double genRand();
+	double genRand(double v);
+	double genRand(double a, double b);
 	int genIntRand(int v);
 	int genIntRand(int a, int b);
+	double genNormal(double mu, double sigma);
 	bool segmentSegmentIntersect(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, const glm::vec2& d, float *tab, float *tcd, bool segmentOnly, glm::vec2& intPoint);
 
 	glm::vec2 projectPoint(int screen_width, int screen_height, const glm::vec3& p, const glm::mat4& mvpMatrix);

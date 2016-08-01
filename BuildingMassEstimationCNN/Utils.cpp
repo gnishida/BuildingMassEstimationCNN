@@ -62,15 +62,16 @@ namespace utils {
 	 * Generate a random number in [0, 1).
 	 * Note: 1 is exluded!
 	 */
-	float genRand() {
-		return (float)(rand() % 1000) / 1000.0f;
+	double genRand() {
+		//return (float)(rand() % 1000) / 1000.0f;
+		return ((double)rand() + 1.0) / ((double)RAND_MAX + 2.0);
 	}
 
 	/**
 	 * Generate a random number in [0, b).
 	 * Note: b is excluded!
 	 */
-	float genRand(float v) {
+	double genRand(double v) {
 		return genRand() * v;
 	}
 
@@ -78,7 +79,7 @@ namespace utils {
 	 * Generate a random number in [a, b).
 	 * Note: b is excluded!
 	 */
-	float genRand(float a, float b) {
+	double genRand(double a, double b) {
 		return genRand(b - a) + a;
 	}
 
@@ -96,6 +97,11 @@ namespace utils {
 	*/
 	int genIntRand(int a, int b) {
 		return genRand(b + 1 - a) + a;
+	}
+
+	double genNormal(double mu, double sigma) {
+		double z = sqrt(-2.0 * log(genRand())) * sin(2.0 * M_PI * genRand());
+		return mu + sigma * z;
 	}
 
 	/**

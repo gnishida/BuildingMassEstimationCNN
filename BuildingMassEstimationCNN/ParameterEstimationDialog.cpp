@@ -29,15 +29,17 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditFovMin->setText("10");
 	ui.lineEditFovMax->setText("10");
 	ui.checkBoxTryMultiples->setChecked(false);
-	ui.lineEditNumMultipleTries->setText("5");
+	ui.lineEditNumMultipleTries->setText("100");
 	ui.lineEditNumMultipleTries->setEnabled(ui.checkBoxTryMultiples->isChecked());
-	ui.lineEditMaxNoise->setText("2");
+	ui.lineEditMaxNoise->setText("1");
 	ui.lineEditMaxNoise->setEnabled(ui.checkBoxTryMultiples->isChecked());
 	ui.checkBoxRefinement->setChecked(false);
 	ui.radioButtonRefineFromBest->setChecked(true);
 	ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.radioButtonRefineFromAll->setChecked(false);
 	ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
+	ui.lineEditIterations->setText("1000000");
+	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.checkBoxApplyTexture->setChecked(false);
 
 	connect(ui.checkBoxAutomaticRecognition, SIGNAL(clicked()), this, SLOT(onAutomaticRecognition()));
@@ -62,6 +64,7 @@ void ParameterEstimationDialog::onTryMultiples() {
 void ParameterEstimationDialog::onRefinement() {
 	ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
+	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
 }
 
 void ParameterEstimationDialog::onOK() {

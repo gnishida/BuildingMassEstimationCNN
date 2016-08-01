@@ -103,9 +103,10 @@ void MainWindow::onParameterEstimation() {
 		float maxNoise = dlg.ui.lineEditMaxNoise->text().toFloat();
 		bool refinement = dlg.ui.checkBoxRefinement->isChecked();
 		bool refineFromBest = dlg.ui.radioButtonRefineFromBest->isChecked();
+		int maxIters = dlg.ui.lineEditIterations->text().toInt();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, applyTexture);
+		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, maxIters, applyTexture);
 	}
 }
 
