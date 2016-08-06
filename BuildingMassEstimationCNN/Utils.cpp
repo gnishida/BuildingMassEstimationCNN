@@ -1,6 +1,7 @@
 ﻿#include "Utils.h"
 #include <regex>
 #include <sstream>
+#include <iostream>
 
 #ifndef M_PI
 #define	M_PI	3.141592653
@@ -433,5 +434,13 @@ namespace utils {
 		}
 
 		edges = contour;
+	}
+
+	void output_vector(const std::vector<float>& values) {
+		for (int i = 0; i < values.size(); ++i) {
+			if (i > 0) std::cout << ", ";
+			std::cout << values[i];
+		}
+		std::cout << std::endl;
 	}
 }

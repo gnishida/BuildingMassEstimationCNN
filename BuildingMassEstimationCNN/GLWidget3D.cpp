@@ -98,7 +98,7 @@ void GLWidget3D::loadContour(const std::string& filename) {
 	
 	while (!in.eof()) {
 		Stroke stroke;
-		if (!(in >> stroke.start.x >> stroke.start.y >> stroke.end.x >> stroke.end.y)) break;
+		if (!(in >> stroke.start.x >> stroke.start.y >> stroke.end.x >> stroke.end.y >> stroke.type)) break;
 		
 		silhouette.push_back(stroke);
 	}
@@ -182,7 +182,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 	////////////////////////////////////////////////////////////////////////////////
 	// rotate everything such that the silhouette stands upright
-	/*
+
 	// compute the rotation
 	float rot = getRotation(silhouette);
 
@@ -192,7 +192,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	rotateImage(-rot, center, bgImage);
 	rotateImage(-rot, center / bgImageScale, bgImageOrig);
 	rotateSilhouette(-rot, center, silhouette);
-	*/
 
 	////////////////////////////////////////////////////////////////////////////////
 	// shift everything such that their center is aligned
@@ -292,15 +291,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			params.insert(params.begin() + 3, 0.5);
 		}
 
-		/*
-		std::cout << "Params: ";
-		for (int i = 0; i < params.size(); ++i) {
-			if (i > 0) std::cout << ",";
-			std::cout << params[i];
-		}
-		std::cout << std::endl;
-		*/
-
 		params_list.push_back(params);
 
 		// Geometry faces
@@ -310,11 +300,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		if (multipleTryIter == 0) {
 			// display the initial parameters
 			std::cout << "Initial params:" << std::endl;
-			for (int i = 0; i < params.size(); ++i) {
-				if (i > 0) std::cout << ", ";
-				std::cout << params[i];
-			}
-			std::cout << std::endl;
+			utils::output_vector(params);
 
 			// display the score
 			std::cout << "Initial dist: " << dist << std::endl;
@@ -343,11 +329,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 	// display the best parameters
 	std::cout << "Best initial params:" << std::endl;
-	for (int i = 0; i < best_params.size(); ++i) {
-		if (i > 0) std::cout << ", ";
-		std::cout << best_params[i];
-	}
-	std::cout << std::endl;
+	utils::output_vector(best_params);
 	
 	// display the score
 	std::cout << "Best initial dist: " << best_dist << std::endl;
@@ -518,6 +500,11 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		file.close();
 	}
 	printf("\n");
+
+	if (refinement) {
+		std::cout << "Refined parameter:" << std::endl;
+		utils::output_vector(best_params);
+	}
 
 	estimated_pm_params.clear();
 	for (int i = 4; i < best_params.size(); ++i) {
@@ -1841,17 +1828,18 @@ glm::vec2 GLWidget3D::getCenter(const std::vector<Stroke>& silhouette) {
 
 /**
  * ユーザ指定のシルエットの傾き角度[rad]を返却する。
+ * type=1のedgeのみについて、傾きの最小と最大のものを取得し、その平均を計算する。
  */
 float GLWidget3D::getRotation(const std::vector<Stroke>& silhouette) {
 	float min_theta = std::numeric_limits<float>::max();
 	float max_theta = -std::numeric_limits<float>::max();
 	int count = 0;
 	for (auto line : silhouette) {
-		// 下向きが正なので、y座標を反転させる
-		float theta = atan2(-line.end.y + line.start.y, line.end.x - line.start.x);
-		std::cout << "theta: " << theta << std::endl;
-		if (fabs(theta) > 52.0 / 180.0 * M_PI && fabs(theta) < 128.0 / 180.0 * M_PI) {
-			std::cout << "   Vertical!" << std::endl;
+		if (line.type == Stroke::TYPE_VERTICAL) {
+			std::cout << "Vertical!" << std::endl;
+			// 下向きが正なので、y座標を反転させる
+			float theta = atan2(-line.end.y + line.start.y, line.end.x - line.start.x);
+
 			if (theta < 0) {
 				theta += M_PI;
 			}

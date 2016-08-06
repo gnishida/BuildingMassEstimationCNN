@@ -21,8 +21,12 @@ class MainWindow;
 
 class Stroke {
 public:
+	static enum { TYPE_LINE = 0, TYPE_VERTICAL };
+
+public:
 	glm::vec2 start;
 	glm::vec2 end;
+	int type;
 
 public:
 	Stroke() {}
