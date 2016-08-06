@@ -30,7 +30,7 @@ public:
 };
 
 class GLWidget3D : public QGLWidget {
-private:
+public:
 	static enum{ VERTEX, NORMAL, COLOR, TOTAL_VBO_ID };
 
 	MainWindow* mainWin;
@@ -52,6 +52,11 @@ private:
 	glm::mat4 light_mvpMatrix;
 	RenderManager renderManager;
 	cga::CGA system;
+	
+	std::vector<boost::shared_ptr<glutils::Face>> estimated_faces;
+	std::vector<float> estimated_pm_params;
+	int grammar_id;
+	float estimation_error;
 
 public:
 	GLWidget3D(QWidget *parent);
@@ -69,7 +74,8 @@ public:
 	void parameterEstimationWithCameraCalibration(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax);
 	void parameterEstimationWithCameraCalibration2(int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int fovMin, int fovMax);
 	double computeDistance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId = 0);
-	double computeDistance2(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId = 0);
+	double distance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId = 0);
+	void setupGeometry(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, float xrot, float yrot, float zrot, float fov, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces);
 	void render(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, cv::Mat& renderedImage);
 
 	void keyPressEvent(QKeyEvent* e);
@@ -77,7 +83,13 @@ public:
 	void updateStatusBar();
 	void shiftImage(int shift_x, int shift_y, QImage& image);
 	void shiftImageAndSilhouette(int shift_x, int shift_y, QImage& image, std::vector<Stroke>& silhouette);
-	glm::vec2 getOffsetImage(cv::Mat& img);
+	void rotateImage(float theta, const glm::vec2& center, QImage& image);
+	void rotateSilhouette(float theta, const glm::vec2& center, std::vector<Stroke>& silhouette);
+	glm::vec2 getOffset(const cv::Mat& img);
+	glm::vec2 getOffset(const std::vector<Stroke>& silhouette);
+	glm::vec2 getCenter(const std::vector<Stroke>& silhouette);
+	float getRotation(const std::vector<Stroke>& silhouette);
+	double distance(const std::vector<Stroke>& silhouette, const cv::Mat& renderedImg);
 	void resizeImageCanvasSize(QImage& image, int width, int height);
 
 protected:

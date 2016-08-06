@@ -4,13 +4,17 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
 #include "GLWidget3D.h"
+#include "ParameterDialog.h"
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 
-private:
+public:
 	Ui::MainWindowClass ui;
 	GLWidget3D* glWidget;
+
+public:
+	ParameterDialog* parameterDialog;
 
 public:
 	MainWindow(QWidget *parent = 0);
@@ -28,6 +32,7 @@ public slots:
 	void onUndo();
 	void onParameterEstimation();
 	void onParameterEstimationWithCameraCalibration();
+	void onParameterDialog();
 };
 
 #endif // MAINWINDOW_H

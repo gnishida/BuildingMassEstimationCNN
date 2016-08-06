@@ -14,9 +14,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionParameterEstimation, SIGNAL(triggered()), this, SLOT(onParameterEstimation()));
 	connect(ui.actionParameterEstimationWithCameraCalibration, SIGNAL(triggered()), this, SLOT(onParameterEstimationWithCameraCalibration()));
+	connect(ui.actionParameterDialog, SIGNAL(triggered()), this, SLOT(onParameterDialog()));
 
 	glWidget = new GLWidget3D(this);
 	this->setCentralWidget(glWidget);
+
+	parameterDialog = new ParameterDialog(this);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e) {
@@ -133,4 +136,8 @@ void MainWindow::onParameterEstimationWithCameraCalibration() {
 
 		glWidget->parameterEstimationWithCameraCalibration(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax);
 	}
+}
+
+void MainWindow::onParameterDialog() {
+	parameterDialog->show();
 }

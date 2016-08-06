@@ -36,6 +36,7 @@ public:
     QAction *actionUndo;
     QAction *actionExtractCameraParameter;
     QAction *actionParameterEstimationWithCameraCalibration;
+    QAction *actionParameterDialog;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -69,6 +70,8 @@ public:
         actionExtractCameraParameter->setObjectName(QStringLiteral("actionExtractCameraParameter"));
         actionParameterEstimationWithCameraCalibration = new QAction(MainWindowClass);
         actionParameterEstimationWithCameraCalibration->setObjectName(QStringLiteral("actionParameterEstimationWithCameraCalibration"));
+        actionParameterDialog = new QAction(MainWindowClass);
+        actionParameterDialog->setObjectName(QStringLiteral("actionParameterDialog"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -103,6 +106,8 @@ public:
         menuFile->addAction(actionExit);
         menuTool->addAction(actionParameterEstimation);
         menuTool->addAction(actionParameterEstimationWithCameraCalibration);
+        menuTool->addSeparator();
+        menuTool->addAction(actionParameterDialog);
         menuEdit->addAction(actionUndo);
 
         retranslateUi(MainWindowClass);
@@ -128,6 +133,7 @@ public:
         actionUndo->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+Z", 0));
         actionExtractCameraParameter->setText(QApplication::translate("MainWindowClass", "Extract Camera Parameter", 0));
         actionParameterEstimationWithCameraCalibration->setText(QApplication::translate("MainWindowClass", "Parameter Estimation with Camera Calibration", 0));
+        actionParameterDialog->setText(QApplication::translate("MainWindowClass", "Parameter Dialog", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuTool->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
         menuEdit->setTitle(QApplication::translate("MainWindowClass", "Edit", 0));

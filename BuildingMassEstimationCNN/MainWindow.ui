@@ -43,6 +43,8 @@
     </property>
     <addaction name="actionParameterEstimation"/>
     <addaction name="actionParameterEstimationWithCameraCalibration"/>
+    <addaction name="separator"/>
+    <addaction name="actionParameterDialog"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -126,6 +128,11 @@
   <action name="actionParameterEstimationWithCameraCalibration">
    <property name="text">
     <string>Parameter Estimation with Camera Calibration</string>
+   </property>
+  </action>
+  <action name="actionParameterDialog">
+   <property name="text">
+    <string>Parameter Dialog</string>
    </property>
   </action>
  </widget>
