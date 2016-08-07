@@ -67,6 +67,7 @@ public:
     QLabel *label_20;
     QLineEdit *lineEditIterations;
     QLabel *label;
+    QCheckBox *checkBoxRotateContour;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
@@ -211,6 +212,9 @@ public:
         label = new QLabel(ParameterEstimationDialog);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(210, 310, 71, 20));
+        checkBoxRotateContour = new QCheckBox(ParameterEstimationDialog);
+        checkBoxRotateContour->setObjectName(QStringLiteral("checkBoxRotateContour"));
+        checkBoxRotateContour->setGeometry(QRect(350, 100, 91, 17));
         QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
         QWidget::setTabOrder(lineEditGrammarSnippet, checkBoxCentering3D);
         QWidget::setTabOrder(checkBoxCentering3D, checkBoxMeanSubtraction);
@@ -269,6 +273,7 @@ public:
         label_9->setText(QApplication::translate("ParameterEstimationDialog", "Zrot:", 0));
         label_20->setText(QApplication::translate("ParameterEstimationDialog", "~", 0));
         label->setText(QApplication::translate("ParameterEstimationDialog", "#Iterations:", 0));
+        checkBoxRotateContour->setText(QApplication::translate("ParameterEstimationDialog", "Rotate Contour", 0));
     } // retranslateUi
 
 };

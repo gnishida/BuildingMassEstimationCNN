@@ -552,6 +552,19 @@
     <string>#Iterations:</string>
    </property>
   </widget>
+  <widget class="QCheckBox" name="checkBoxRotateContour">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>100</y>
+     <width>91</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Rotate Contour</string>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>

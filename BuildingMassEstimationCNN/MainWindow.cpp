@@ -93,6 +93,7 @@ void MainWindow::onParameterEstimation() {
 			cameraType = 1;
 		}
 		float cameraDistanceBase = dlg.ui.lineEditCameraDistance->text().toFloat();
+		bool rotateContour = dlg.ui.checkBoxRotateContour->isChecked();
 		int xrotMin = dlg.ui.lineEditXrotMin->text().toInt();
 		int xrotMax = dlg.ui.lineEditXrotMax->text().toInt();
 		int yrotMin = dlg.ui.lineEditYrotMin->text().toInt();
@@ -109,7 +110,7 @@ void MainWindow::onParameterEstimation() {
 		int maxIters = dlg.ui.lineEditIterations->text().toInt();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, maxIters, applyTexture);
+		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, rotateContour, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, refineFromBest, maxIters, applyTexture);
 	}
 }
 

@@ -175,23 +175,24 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, int maxIters, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, int maxIters, bool applyTexture) {
 	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
 	float bgImageScale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
 	resizeImageCanvasSize(bgImageOrig, width() / bgImageScale, height() / bgImageScale);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// rotate everything such that the silhouette stands upright
+	if (rotateContour) {
+		// compute the rotation
+		float rot = getRotation(silhouette);
 
-	// compute the rotation
-	float rot = getRotation(silhouette);
+		// compute the center
+		glm::vec2 center = getCenter(silhouette);
 
-	// compute the center
-	glm::vec2 center = getCenter(silhouette);
-
-	rotateImage(-rot, center, bgImage);
-	rotateImage(-rot, center / bgImageScale, bgImageOrig);
-	rotateSilhouette(-rot, center, silhouette);
+		rotateImage(-rot, center, bgImage);
+		rotateImage(-rot, center / bgImageScale, bgImageOrig);
+		rotateSilhouette(-rot, center, silhouette);
+	}
 
 	////////////////////////////////////////////////////////////////////////////////
 	// shift everything such that their center is aligned
@@ -295,7 +296,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 		// Geometry faces
 		std::vector<boost::shared_ptr<glutils::Face> > faces;
-		double dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, false, multipleTryIter);
+		double dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces);
 
 		if (multipleTryIter == 0) {
 			// display the initial parameters
@@ -428,7 +429,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		best_params = params_list[0];
 		std::vector<boost::shared_ptr<glutils::Face> > faces;
 
-		double dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, false);
+		double dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces);
 		best_dist = dist;
 
 		// if variance is not computed, set a default value
@@ -445,7 +446,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			for (int i = 0; i < params.size(); ++i) {
 				next_params[i] = utils::genNormal(params_mean[i], sqrtf(params_var[i]));
 			}
-			double next_dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params, faces, false);
+			double next_dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params, faces);
 	
 			// update the best
 			if (next_dist < best_dist) {
@@ -458,12 +459,12 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 						// option 1
 						std::vector<float> next_params1 = next_params;
 						next_params1[k] += sqrt(params_var[k]) * delta;
-						double next_dist1 = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params1, faces, false);
+						double next_dist1 = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params1, faces);
 
 						// option 2
 						std::vector<float> next_params2 = next_params;
 						next_params2[k] -= sqrt(params_var[k]) * delta;
-						double next_dist2 = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params2, faces, false);
+						double next_dist2 = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params2, faces);
 
 						if (next_dist1 < next_dist && next_dist1 < next_dist2) {
 							next_dist = next_dist1;
@@ -518,6 +519,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	// render the image
 	cv::Mat renderedImage;
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
 	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, best_params, faces, renderedImage);
 	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, best_params, estimated_faces, renderedImage);
 
@@ -530,6 +532,8 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	// translate the background image and contour lines
 	shiftImageAndSilhouette(rendered_offset.x - offset.x, rendered_offset.y - offset.y, bgImage, silhouette);
 	shiftImage((rendered_offset.x - offset.x) / bgImageScale, (rendered_offset.y - offset.y) / bgImageScale, bgImageOrig);
+
+	std::cout << "dist: " << distance(silhouette, renderedImage) << std::endl;
 
 	// line modeで描画
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
@@ -679,7 +683,7 @@ void GLWidget3D::parameterEstimationWithCameraCalibration(bool automaticRecognit
 
 	// Geometry faces
 	std::vector<boost::shared_ptr<glutils::Face> > faces;
-	distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, false);
+	distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces);
 	/*
 	std::cout << "----------------------------------------------" << std::endl;
 	std::cout << "faces:" << std::endl;
@@ -1042,89 +1046,63 @@ void GLWidget3D::parameterEstimationWithCameraCalibration2(int grammarSnippetId,
 	update();
 }
 
-double GLWidget3D::computeDistance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
-	// contour modeで描画
-	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
-
-	cv::Mat renderedImage;
-	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, renderedImage);
-	//cv::imwrite("renderedImage.png", renderedImage);
-
-	// compute the offset of the rendered image
-	glm::vec2 rendered_offset = getOffset(renderedImage);
-
-	// translate the background image and contour lines
-	QImage shiftedBgImage = bgImage;
-	std::vector<Stroke> shiftedSilhouette = silhouette;
-	shiftImageAndSilhouette(rendered_offset.x, rendered_offset.y, shiftedBgImage, shiftedSilhouette);
-
-	// create the cv::Mat object of input contour
-	cv::Mat targetImage(renderedImage.rows, renderedImage.cols, CV_8U, cv::Scalar(255));
-	for (int i = 0; i < shiftedSilhouette.size(); ++i) {
-		cv::line(targetImage, cv::Point(shiftedSilhouette[i].start.x, shiftedSilhouette[i].start.y), cv::Point(shiftedSilhouette[i].end.x, shiftedSilhouette[i].end.y), cv::Scalar(0), 1, 8);
-	}
-	//cv::imwrite("targetImage.png", targetImage);
-
-	// convert the rendred image to grayscale
-	cv::cvtColor(renderedImage, renderedImage, cv::COLOR_RGBA2GRAY);
-
-	// compute the distance transform of the rendered image
-	cv::Mat renderedDist;
-	cv::distanceTransform(renderedImage, renderedDist, CV_DIST_L2, 3);
-
-	// compute the distance transform of the target image
-	cv::Mat targetDist;
-	cv::distanceTransform(targetImage, targetDist, CV_DIST_L2, 3);
-
-	// compute score
-	double dist = 0.0;
-	for (int r = 0; r < renderedDist.rows; ++r) {
-		for (int c = 0; c < renderedDist.cols; ++c) {
-			if (renderedDist.at<float>(r, c) == 0) {
-				dist += targetDist.at<float>(r, c);
-			}
-			if (targetDist.at<float>(r, c) == 0) {
-				dist += renderedDist.at<float>(r, c);
-			}
-		}
-	}
-
-	dist = dist / renderedImage.rows / renderedImage.cols;
-	if (saveFile) {
-		QString filename = QString("renderedImage_%1_%2.png").arg(fileId).arg(dist);
-		cv::imwrite(filename.toUtf8().constData(), renderedImage);
-	}
-
-
-	return dist;
-}
-
 /**
  * 指定されたカメラパラメータ、PMパラメータでrenderした結果と、ユーザ指定のsilhouetteの距離を返却する。
  * renderした画像の中心とユーザ指定のsilhouetteの中心がずれている場合は、自動で調節する。
  */
-double GLWidget3D::distance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, bool saveFile, int fileId) {
-	// contour modeで描画
-	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
+double GLWidget3D::distance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces) {
+	float xrot = (xrotMax - xrotMin) * params[0] + xrotMin;
+	float yrot = (yrotMax - yrotMin) * params[1] + yrotMin;
+	float zrot = (zrotMax - zrotMin) * params[2] + zrotMin;
+	float fov = (fovMax - fovMin) * params[3] + fovMin;
 
-	cv::Mat renderedImage;
-	render(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces, renderedImage);
+	std::vector<float> pm_params;
+	for (int i = 4; i < params.size(); ++i) {
+		pm_params.push_back(params[i]);
+	}
 
-	/*
-	// compute the offset of the rendered image
-	glm::vec2 rendered_offset = getOffset(renderedImage);
+	setupGeometry(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrot, yrot, zrot, fov, pm_params, faces);
 
-	// translate the background image and contour lines
-	QImage shiftedBgImage = bgImage;
-	std::vector<Stroke> shiftedSilhouette = silhouette;
-	shiftImageAndSilhouette(rendered_offset.x, rendered_offset.y, shiftedBgImage, shiftedSilhouette);
-	*/
+	glutils::BoundingBox bbox;
+	std::vector<glm::vec2> points;
+	for (auto face : faces) {
+		// check if the face is visible
+		//std::cout << "normal: " << face->vertices[0].normal.x << "," << face->vertices[0].normal.y << "," << face->vertices[0].normal.z << std::endl;
+		glm::vec3 normal = glm::vec3(camera.mvMatrix * glm::vec4(face->vertices[0].normal, 0));
+		//std::cout << "normal 2: " << normal.x << "," << normal.y << "," << normal.z << std::endl;
+		if (glm::dot(normal, glm::vec3(0, 0, 1)) < 0) continue;
 
-	double dist = distance(silhouette, renderedImage);
+		for (auto vert : face->vertices) {
+			glm::vec2 pp = utils::projectPoint(width(), height(), vert.position, camera.mvpMatrix);
+			bbox.addPoint(pp);
+			points.push_back(pp);
+		}
+	}
+	glm::vec2 rendered_offset(bbox.center().x - width() * 0.5, bbox.center().y - height() * 0.5);
 
-	if (saveFile) {
-		QString filename = QString("renderedImage_%1_%2.png").arg(fileId).arg(dist);
-		cv::imwrite(filename.toUtf8().constData(), renderedImage);
+	glm::vec2 offset = rendered_offset - getOffset(silhouette);
+
+	float dist = 0.0f;
+	for (auto line : silhouette) {
+		glm::vec2 p1 = line.start + offset;
+		float min_dist1 = std::numeric_limits<float>::max();
+		for (int i = 0; i < points.size(); ++i) {
+			float dist = glm::length(points[i] - p1);
+			if (dist < min_dist1) {
+				min_dist1 = dist;
+			}
+		}
+
+		glm::vec2 p2 = line.end + offset;
+		float min_dist2 = std::numeric_limits<float>::max();
+		for (int i = 0; i < points.size(); ++i) {
+			float dist = glm::length(points[i] - p2);
+			if (dist < min_dist2) {
+				min_dist2 = dist;
+			}
+		}
+
+		dist += (min_dist1 + min_dist2) * glm::length(line.end - line.start);
 	}
 
 	return dist;
@@ -1241,7 +1219,9 @@ void GLWidget3D::mouseReleaseEvent(QMouseEvent *e) {
 	}
 	else if (e->button() == Qt::RightButton) {
 		// compute the distance
+		/*
 		if (estimated_pm_params.size() > 0) {
+			std::vector<float> params;
 			std::vector<boost::shared_ptr<glutils::Face>> faces;
 
 			setupGeometry(grammar_id, true, 1, 25, 0, camera.xrot, camera.yrot, camera.zrot, camera.fovy, estimated_pm_params, faces);
@@ -1261,6 +1241,7 @@ void GLWidget3D::mouseReleaseEvent(QMouseEvent *e) {
 			renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
 			render();
 		}
+		*/
 	}
 
 	updateStatusBar();
