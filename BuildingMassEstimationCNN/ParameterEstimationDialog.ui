@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>585</width>
-    <height>412</height>
+    <height>382</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -199,7 +199,7 @@
    <property name="geometry">
     <rect>
      <x>470</x>
-     <y>370</y>
+     <y>340</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -212,7 +212,7 @@
    <property name="geometry">
     <rect>
      <x>370</x>
-     <y>370</y>
+     <y>340</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -335,7 +335,7 @@
    <property name="geometry">
     <rect>
      <x>110</x>
-     <y>340</y>
+     <y>310</y>
      <width>91</width>
      <height>17</height>
     </rect>
@@ -422,32 +422,6 @@
     </rect>
    </property>
   </widget>
-  <widget class="QRadioButton" name="radioButtonRefineFromBest">
-   <property name="geometry">
-    <rect>
-     <x>240</x>
-     <y>280</y>
-     <width>91</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>From Best one</string>
-   </property>
-  </widget>
-  <widget class="QRadioButton" name="radioButtonRefineFromAll">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>280</y>
-     <width>82</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>From All</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_19">
    <property name="geometry">
     <rect>
@@ -532,8 +506,8 @@
   <widget class="QLineEdit" name="lineEditIterations">
    <property name="geometry">
     <rect>
-     <x>280</x>
-     <y>310</y>
+     <x>300</x>
+     <y>280</y>
      <width>91</width>
      <height>20</height>
     </rect>
@@ -542,8 +516,8 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>310</y>
+     <x>230</x>
+     <y>280</y>
      <width>71</width>
      <height>20</height>
     </rect>
@@ -557,7 +531,7 @@
     <rect>
      <x>350</x>
      <y>100</y>
-     <width>91</width>
+     <width>101</width>
      <height>17</height>
     </rect>
    </property>
@@ -575,18 +549,20 @@
   <tabstop>radioButtonCameraTypeStreetView</tabstop>
   <tabstop>radioButtonCameraTypeAerialView</tabstop>
   <tabstop>lineEditCameraDistance</tabstop>
+  <tabstop>checkBoxRotateContour</tabstop>
   <tabstop>lineEditXrotMin</tabstop>
   <tabstop>lineEditXrotMax</tabstop>
   <tabstop>lineEditYrotMin</tabstop>
   <tabstop>lineEditYrotMax</tabstop>
+  <tabstop>lineEditZrotMin</tabstop>
+  <tabstop>lineEditZrotMax</tabstop>
   <tabstop>lineEditFovMin</tabstop>
   <tabstop>lineEditFovMax</tabstop>
   <tabstop>checkBoxTryMultiples</tabstop>
   <tabstop>lineEditNumMultipleTries</tabstop>
   <tabstop>lineEditMaxNoise</tabstop>
   <tabstop>checkBoxRefinement</tabstop>
-  <tabstop>radioButtonRefineFromBest</tabstop>
-  <tabstop>radioButtonRefineFromAll</tabstop>
+  <tabstop>lineEditIterations</tabstop>
   <tabstop>checkBoxApplyTexture</tabstop>
   <tabstop>pushButtonOK</tabstop>
   <tabstop>pushButtonCancel</tabstop>

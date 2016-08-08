@@ -57,8 +57,6 @@ public:
     QLineEdit *lineEditNumMultipleTries;
     QLabel *label_18;
     QLineEdit *lineEditMaxNoise;
-    QRadioButton *radioButtonRefineFromBest;
-    QRadioButton *radioButtonRefineFromAll;
     QLabel *label_19;
     QCheckBox *checkBoxAutomaticRecognition;
     QLineEdit *lineEditZrotMin;
@@ -73,7 +71,7 @@ public:
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(585, 412);
+        ParameterEstimationDialog->resize(585, 382);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 220, 16, 20));
@@ -125,10 +123,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 220, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(470, 370, 91, 31));
+        pushButtonCancel->setGeometry(QRect(470, 340, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(370, 370, 91, 31));
+        pushButtonOK->setGeometry(QRect(370, 340, 91, 31));
         label_12 = new QLabel(ParameterEstimationDialog);
         label_12->setObjectName(QStringLiteral("label_12"));
         label_12->setGeometry(QRect(30, 70, 71, 16));
@@ -158,7 +156,7 @@ public:
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(110, 340, 91, 17));
+        checkBoxApplyTexture->setGeometry(QRect(110, 310, 91, 17));
         checkBoxRefinement = new QCheckBox(ParameterEstimationDialog);
         checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
         checkBoxRefinement->setGeometry(QRect(110, 280, 91, 17));
@@ -179,12 +177,6 @@ public:
         lineEditMaxNoise = new QLineEdit(ParameterEstimationDialog);
         lineEditMaxNoise->setObjectName(QStringLiteral("lineEditMaxNoise"));
         lineEditMaxNoise->setGeometry(QRect(400, 250, 41, 20));
-        radioButtonRefineFromBest = new QRadioButton(ParameterEstimationDialog);
-        radioButtonRefineFromBest->setObjectName(QStringLiteral("radioButtonRefineFromBest"));
-        radioButtonRefineFromBest->setGeometry(QRect(240, 280, 91, 17));
-        radioButtonRefineFromAll = new QRadioButton(ParameterEstimationDialog);
-        radioButtonRefineFromAll->setObjectName(QStringLiteral("radioButtonRefineFromAll"));
-        radioButtonRefineFromAll->setGeometry(QRect(360, 280, 82, 17));
         label_19 = new QLabel(ParameterEstimationDialog);
         label_19->setObjectName(QStringLiteral("label_19"));
         label_19->setGeometry(QRect(446, 250, 21, 20));
@@ -208,32 +200,34 @@ public:
         label_20->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditIterations = new QLineEdit(ParameterEstimationDialog);
         lineEditIterations->setObjectName(QStringLiteral("lineEditIterations"));
-        lineEditIterations->setGeometry(QRect(280, 310, 91, 20));
+        lineEditIterations->setGeometry(QRect(300, 280, 91, 20));
         label = new QLabel(ParameterEstimationDialog);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(210, 310, 71, 20));
+        label->setGeometry(QRect(230, 280, 71, 20));
         checkBoxRotateContour = new QCheckBox(ParameterEstimationDialog);
         checkBoxRotateContour->setObjectName(QStringLiteral("checkBoxRotateContour"));
-        checkBoxRotateContour->setGeometry(QRect(350, 100, 91, 17));
+        checkBoxRotateContour->setGeometry(QRect(350, 100, 101, 17));
         QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
         QWidget::setTabOrder(lineEditGrammarSnippet, checkBoxCentering3D);
         QWidget::setTabOrder(checkBoxCentering3D, checkBoxMeanSubtraction);
         QWidget::setTabOrder(checkBoxMeanSubtraction, radioButtonCameraTypeStreetView);
         QWidget::setTabOrder(radioButtonCameraTypeStreetView, radioButtonCameraTypeAerialView);
         QWidget::setTabOrder(radioButtonCameraTypeAerialView, lineEditCameraDistance);
-        QWidget::setTabOrder(lineEditCameraDistance, lineEditXrotMin);
+        QWidget::setTabOrder(lineEditCameraDistance, checkBoxRotateContour);
+        QWidget::setTabOrder(checkBoxRotateContour, lineEditXrotMin);
         QWidget::setTabOrder(lineEditXrotMin, lineEditXrotMax);
         QWidget::setTabOrder(lineEditXrotMax, lineEditYrotMin);
         QWidget::setTabOrder(lineEditYrotMin, lineEditYrotMax);
-        QWidget::setTabOrder(lineEditYrotMax, lineEditFovMin);
+        QWidget::setTabOrder(lineEditYrotMax, lineEditZrotMin);
+        QWidget::setTabOrder(lineEditZrotMin, lineEditZrotMax);
+        QWidget::setTabOrder(lineEditZrotMax, lineEditFovMin);
         QWidget::setTabOrder(lineEditFovMin, lineEditFovMax);
         QWidget::setTabOrder(lineEditFovMax, checkBoxTryMultiples);
         QWidget::setTabOrder(checkBoxTryMultiples, lineEditNumMultipleTries);
         QWidget::setTabOrder(lineEditNumMultipleTries, lineEditMaxNoise);
         QWidget::setTabOrder(lineEditMaxNoise, checkBoxRefinement);
-        QWidget::setTabOrder(checkBoxRefinement, radioButtonRefineFromBest);
-        QWidget::setTabOrder(radioButtonRefineFromBest, radioButtonRefineFromAll);
-        QWidget::setTabOrder(radioButtonRefineFromAll, checkBoxApplyTexture);
+        QWidget::setTabOrder(checkBoxRefinement, lineEditIterations);
+        QWidget::setTabOrder(lineEditIterations, checkBoxApplyTexture);
         QWidget::setTabOrder(checkBoxApplyTexture, pushButtonOK);
         QWidget::setTabOrder(pushButtonOK, pushButtonCancel);
 
@@ -266,8 +260,6 @@ public:
         checkBoxTryMultiples->setText(QApplication::translate("ParameterEstimationDialog", "Try Multiples", 0));
         label_17->setText(QApplication::translate("ParameterEstimationDialog", "# Tries:", 0));
         label_18->setText(QApplication::translate("ParameterEstimationDialog", "Max Noise:", 0));
-        radioButtonRefineFromBest->setText(QApplication::translate("ParameterEstimationDialog", "From Best one", 0));
-        radioButtonRefineFromAll->setText(QApplication::translate("ParameterEstimationDialog", "From All", 0));
         label_19->setText(QApplication::translate("ParameterEstimationDialog", "%", 0));
         checkBoxAutomaticRecognition->setText(QApplication::translate("ParameterEstimationDialog", "Automatic recognition", 0));
         label_9->setText(QApplication::translate("ParameterEstimationDialog", "Zrot:", 0));

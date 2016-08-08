@@ -175,7 +175,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, bool refineFromBest, int maxIters, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
 	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
 	float bgImageScale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
 	resizeImageCanvasSize(bgImageOrig, width() / bgImageScale, height() / bgImageScale);
@@ -334,89 +334,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	
 	// display the score
 	std::cout << "Best initial dist: " << best_dist << std::endl;
-
-	// Refine from Best なら、ベストの初期パラメータ値のみを、リストにいれる
-	// このリストの各パラメータ値について、local refinementを実施する
-	if (refineFromBest) {
-		params_list.clear();
-		params_list.push_back(best_params);
-	}
-
-#if 0
-	if (refinement) {
-		printf("Refinement: ");
-
-		best_dist = std::numeric_limits<double>::max();
-		for (int initial_params_id = 0; initial_params_id < params_list.size(); ++initial_params_id) {
-			float delta = 0.1f;
-			bool updated = false;
-			double dist;
-			for (int refinement_iter = 0;; ++refinement_iter) {
-				std::vector<boost::shared_ptr<glutils::Face> > faces;
-				dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false);
-
-				// show the progress
-				printf("\rRefinement: %d (delta: %lf, dist: %lf)        ", refinement_iter, delta, dist);
-				fflush(stdout);
-
-				// index for coordinate descent
-				int param_id = refinement_iter % params_list[initial_params_id].size();
-				if (param_id == 0) {
-					updated = false;
-				}
-
-				// compute the score of -Delta
-				std::vector<float> new_params1 = params_list[initial_params_id];
-				new_params1[param_id] -= delta;
-				double new_dist1 = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, new_params1, faces, false);
-
-				// compute the score of Delta
-				std::vector<float> new_params2 = params_list[initial_params_id];
-				new_params2[param_id] += delta;
-				double new_dist2 = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax,  fovMin, fovMax, new_params2, faces, false);
-
-				// pick the best one
-				if (new_dist1 < dist && new_dist1 <= new_dist2) {
-					params_list[initial_params_id] = new_params1;
-					dist = new_dist1;
-					updated = true;
-				}
-				else if (new_dist2 < dist) {
-					params_list[initial_params_id] = new_params2;
-					dist = new_dist2;
-					updated = true;
-				}
-
-				// 一周しても更新がないなら、deltaを半減する
-				if (param_id == params_list[initial_params_id].size() - 1) {
-					if (!updated) {
-						delta /= 2.0;
-					}
-				}
-
-				// 十分収束したら、終了する
-				if (delta < 0.01) {
-					dist = distance(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params_list[initial_params_id], faces, false, initial_params_id);
-					break;
-				}
-			}
-			printf("\n");
-
-			std::cout << "Refined params:" << std::endl;
-			for (int i = 0; i < params_list[initial_params_id].size(); ++i) {
-				if (i > 0) std::cout << ", ";
-				std::cout << params_list[initial_params_id][i];
-			}
-			std::cout << std::endl;
-
-			// best paramsを更新
-			if (dist < best_dist) {
-				best_dist = dist;
-				best_params = params_list[initial_params_id];
-			}
-		}
-	}
-#endif
 
 	if (refinement) {
 		QFile file("refinement.txt");
@@ -1047,8 +964,10 @@ void GLWidget3D::parameterEstimationWithCameraCalibration2(int grammarSnippetId,
 }
 
 /**
- * 指定されたカメラパラメータ、PMパラメータでrenderした結果と、ユーザ指定のsilhouetteの距離を返却する。
- * renderした画像の中心とユーザ指定のsilhouetteの中心がずれている場合は、自動で調節する。
+ * 指定されたカメラパラメータ、PMパラメータによる生成されたgeometryの結果と、ユーザ指定のsilhouetteの距離を返却する。
+ * silhouetteの各頂点について、直近のgeometryのprojectされた頂点を探し、その距離にsilhouetteのエッジの長さを掛けたものの和を計算し、
+ * silhouetteの全長で割ってnormalizeする。
+ * なお、geometryをprojectした画像の中心とユーザ指定のsilhouetteの中心がずれている場合は、自動で調節する。
  */
 double GLWidget3D::distance(int grammarSnippetId, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces) {
 	float xrot = (xrotMax - xrotMin) * params[0] + xrotMin;
@@ -1056,6 +975,7 @@ double GLWidget3D::distance(int grammarSnippetId, bool centering3D, int cameraTy
 	float zrot = (zrotMax - zrotMin) * params[2] + zrotMin;
 	float fov = (fovMax - fovMin) * params[3] + fovMin;
 
+	// geometryを生成する。
 	std::vector<float> pm_params;
 	for (int i = 4; i < params.size(); ++i) {
 		pm_params.push_back(params[i]);
@@ -1063,6 +983,7 @@ double GLWidget3D::distance(int grammarSnippetId, bool centering3D, int cameraTy
 
 	setupGeometry(grammarSnippetId, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrot, yrot, zrot, fov, pm_params, faces);
 
+	// geometryのprojectした画像のズレを計算する
 	glutils::BoundingBox bbox;
 	std::vector<glm::vec2> points;
 	for (auto face : faces) {
@@ -1080,8 +1001,10 @@ double GLWidget3D::distance(int grammarSnippetId, bool centering3D, int cameraTy
 	}
 	glm::vec2 rendered_offset(bbox.center().x - width() * 0.5, bbox.center().y - height() * 0.5);
 
+	// silhouetteをずらすための距離を計算する
 	glm::vec2 offset = rendered_offset - getOffset(silhouette);
 
+	// compute the distance
 	float dist = 0.0f;
 	for (auto line : silhouette) {
 		glm::vec2 p1 = line.start + offset;
@@ -1104,6 +1027,9 @@ double GLWidget3D::distance(int grammarSnippetId, bool centering3D, int cameraTy
 
 		dist += (min_dist1 + min_dist2) * glm::length(line.end - line.start);
 	}
+
+	// normalize the dist by dividing it by the total length of silhouette
+	dist /= silhouetteLength(silhouette);
 
 	return dist;
 }
@@ -1860,23 +1786,13 @@ double GLWidget3D::distance(const std::vector<Stroke>& silhouette, const cv::Mat
 	// compute the offset of the rendered image
 	glm::vec2 rendered_offset = getOffset(renderedImg);
 
-	// compute the offset of the target silhouette
-	glm::vec2 target_offset = getOffset(silhouette);
+	// シルエットをずらす距離を計算
+	glm::vec2 offset = rendered_offset - getOffset(silhouette);
 
-	// shift the silhouette
-	std::vector<Stroke> shiftedSilhouette = silhouette;
-	for (int i = 0; i < shiftedSilhouette.size(); ++i) {
-		shiftedSilhouette[i].start.x += rendered_offset.x - target_offset.x;
-		shiftedSilhouette[i].start.y += rendered_offset.y - target_offset.y;
-		shiftedSilhouette[i].end.x += rendered_offset.x - target_offset.x;
-		shiftedSilhouette[i].end.y += rendered_offset.y - target_offset.y;
-	}
-
-
-	// compute the distance transform of the target silhouette
+	// create an image of the target silhouette
 	cv::Mat targetImg(height(), width(), CV_8U, cv::Scalar(255));
-	for (auto line : shiftedSilhouette) {
-		cv::line(targetImg, cv::Point(line.start.x, line.start.y), cv::Point(line.end.x, line.end.y), cv::Scalar(0), 1);
+	for (auto line : silhouette) {
+		cv::line(targetImg, cv::Point(line.start.x + offset.x, line.start.y + offset.y), cv::Point(line.end.x + offset.x, line.end.y + offset.y), cv::Scalar(0), 1);
 	}
 
 	cv::Mat targetDistMap;
@@ -1896,7 +1812,25 @@ double GLWidget3D::distance(const std::vector<Stroke>& silhouette, const cv::Mat
 		}
 	}
 
+	// シルエット側とrendered image側で2回距離を計算しているので、2で割る
+	dist *= 0.5f;
+
+	// normalize the distance
+	dist /= silhouetteLength(silhouette);
+
 	return dist;
+}
+
+/**
+ * シルエットの全長を返却する。
+ */
+float GLWidget3D::silhouetteLength(const std::vector<Stroke>& silhouette) {
+	float silhouette_length = 0.0f;
+	for (auto line : silhouette) {
+		silhouette_length += glm::length(line.end - line.start);
+	}
+
+	return silhouette_length;
 }
 
 /**

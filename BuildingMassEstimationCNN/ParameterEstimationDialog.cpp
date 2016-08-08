@@ -8,9 +8,9 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	group1->addButton(ui.radioButtonCameraTypeStreetView);
 	group1->addButton(ui.radioButtonCameraTypeAerialView);
 
-	QButtonGroup* group2 = new QButtonGroup();
+/*	QButtonGroup* group2 = new QButtonGroup();
 	group2->addButton(ui.radioButtonRefineFromBest);
-	group2->addButton(ui.radioButtonRefineFromAll);
+	group2->addButton(ui.radioButtonRefineFromAll);*/
 
 	ui.checkBoxAutomaticRecognition->setChecked(false);
 	ui.lineEditGrammarSnippet->setText("1");
@@ -20,6 +20,7 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.radioButtonCameraTypeStreetView->setChecked(false);
 	ui.radioButtonCameraTypeAerialView->setChecked(true);
 	ui.lineEditCameraDistance->setText("25");
+	ui.checkBoxRotateContour->setChecked(true);
 	ui.lineEditXrotMin->setText("50");
 	ui.lineEditXrotMax->setText("70");
 	ui.lineEditYrotMin->setText("20");
@@ -34,10 +35,10 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditMaxNoise->setText("1");
 	ui.lineEditMaxNoise->setEnabled(ui.checkBoxTryMultiples->isChecked());
 	ui.checkBoxRefinement->setChecked(false);
-	ui.radioButtonRefineFromBest->setChecked(true);
-	ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
-	ui.radioButtonRefineFromAll->setChecked(false);
-	ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
+	//ui.radioButtonRefineFromBest->setChecked(true);
+	//ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
+	//ui.radioButtonRefineFromAll->setChecked(false);
+	//ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.lineEditIterations->setText("1000000");
 	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.checkBoxApplyTexture->setChecked(false);
@@ -62,8 +63,6 @@ void ParameterEstimationDialog::onTryMultiples() {
 }
 
 void ParameterEstimationDialog::onRefinement() {
-	ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
-	ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
 }
 
