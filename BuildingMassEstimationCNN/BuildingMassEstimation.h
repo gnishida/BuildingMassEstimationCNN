@@ -18,10 +18,12 @@ namespace bme {
 	int classify(int screen_width, int screen_height, std::vector<Stroke>& silhouette, boost::shared_ptr<Classifier> classifier);
 	std::vector<float> regress(int screen_width, int screen_height, std::vector<Stroke>& silhouette, boost::shared_ptr<Regression> regression, cga::Grammar& grammar, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture);
 
+	void coordinateDescent(std::vector<float>& params, double& dist, std::vector<float>& params_var, int screen_width, int screen_height, std::vector<Stroke>& silhouette, boost::shared_ptr<Regression> regression, cga::Grammar& grammar, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax);
+
 	void generateTextures(const Camera& camera, const QImage& bgImage, int screen_width, int screen_height, std::vector<boost::shared_ptr<glutils::Face>>& faces);
 
 	double distance(const std::vector<Stroke>& silhouette, const cv::Mat& renderedImg, int screen_width, int screen_height);
-	double distance(int screen_width, int screen_height, const std::vector<Stroke>& silhouette, cga::Grammar& grammar, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces);
+	double distance(int screen_width, int screen_height, const std::vector<Stroke>& silhouette, cga::Grammar& grammar, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params);
 	void setupGeometry(cga::Grammar& grammar, bool centering3D, const std::vector<float>& pm_params, std::vector<boost::shared_ptr<glutils::Face>>& faces);
 
 	void shiftImage(int shift_x, int shift_y, QImage& image);

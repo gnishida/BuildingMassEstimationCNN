@@ -121,7 +121,7 @@ namespace bme {
 
 			// Geometry faces
 			std::vector<boost::shared_ptr<glutils::Face> > faces;
-			double dist = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces);
+			double dist = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params);
 
 			if (multipleTryIter == 0) {
 				// display the initial parameters
@@ -169,9 +169,8 @@ namespace bme {
 
 			std::vector<float> params = params_list[0];
 			best_params = params_list[0];
-			std::vector<boost::shared_ptr<glutils::Face> > faces;
 
-			double dist = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params, faces);
+			double dist = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params);
 			best_dist = dist;
 
 			// if variance is not computed, set a default value
@@ -188,41 +187,12 @@ namespace bme {
 				for (int i = 0; i < params.size(); ++i) {
 					next_params[i] = utils::genNormal(params_mean[i], sqrtf(params_var[i]));
 				}
-				double next_dist = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params, faces);
-
+				double next_dist = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params);
+				
 				// update the best
 				if (next_dist < best_dist) {
 					// coordinate descent
-					double delta = 0.01;
-					for (int iter2 = 0; iter2 < 10000; ++iter2) {
-						bool updated = false;
-
-						for (int k = 0; k < next_params.size(); ++k) {
-							// option 1
-							std::vector<float> next_params1 = next_params;
-							next_params1[k] += sqrt(params_var[k]) * delta;
-							double next_dist1 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params1, faces);
-
-							// option 2
-							std::vector<float> next_params2 = next_params;
-							next_params2[k] -= sqrt(params_var[k]) * delta;
-							double next_dist2 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params2, faces);
-
-							if (next_dist1 < next_dist && next_dist1 < next_dist2) {
-								next_dist = next_dist1;
-								next_params = next_params1;
-								updated = true;
-							}
-							else if (next_dist2 < next_dist && next_dist2 < next_dist1) {
-								next_dist = next_dist2;
-								next_params = next_params2;
-								updated = true;
-							}
-						}
-
-						// stop when converged
-						if (!updated) break;
-					}
+					coordinateDescent(next_params, next_dist, params_var, screen_width, screen_height, silhouette, regression, grammar, centering3D, meanSubtraction, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax);
 
 					best_dist = next_dist;
 					best_params = next_params;
@@ -251,6 +221,44 @@ namespace bme {
 
 		return best_params;
 	}
+
+	/**
+	 * パラメータ値を、coordinate descentにより改善する。
+	 */
+	void coordinateDescent(std::vector<float>& params, double& dist, std::vector<float>& params_var, int screen_width, int screen_height, std::vector<Stroke>& silhouette, boost::shared_ptr<Regression> regression, cga::Grammar& grammar, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax) {
+		double delta = 0.01;
+
+		for (int iter2 = 0; iter2 < 1000; ++iter2) {
+			bool updated = false;
+
+			for (int k = 0; k < params.size(); ++k) {
+				// option 1
+				std::vector<float> params1 = params;
+				params1[k] += sqrt(params_var[k]) * delta;
+				double dist1 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params1);
+
+				// option 2
+				std::vector<float> params2 = params;
+				params2[k] -= sqrt(params_var[k]) * delta;
+				double dist2 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params2);
+
+				if (dist1 < dist && dist1 < dist2) {
+					dist = dist1;
+					params = params1;
+					updated = true;
+				}
+				else if (dist2 < dist && dist2 < dist1) {
+					dist = dist2;
+					params = params2;
+					updated = true;
+				}
+			}
+
+			// stop when converged
+			if (!updated) break;
+		}
+	}
+
 
 	/**
 	 * 指定されたカメラ、画像、geometryに基づいて、各faceの画像をrectifyしてテクスチャ画像を生成する。
@@ -347,7 +355,7 @@ namespace bme {
 		}
 
 		// シルエット側とrendered image側で2回距離を計算しているので、2で割る
-		dist *= 0.5f;
+		dist *= 0.5;
 
 		// normalize the distance
 		dist /= silhouetteLength(silhouette);
@@ -361,7 +369,7 @@ namespace bme {
 	* silhouetteの全長で割ってnormalizeする。
 	* なお、geometryをprojectした画像の中心とユーザ指定のsilhouetteの中心がずれている場合は、自動で調節する。
 	*/
-	double distance(int screen_width, int screen_height, const std::vector<Stroke>& silhouette, cga::Grammar& grammar, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces) {
+	double distance(int screen_width, int screen_height, const std::vector<Stroke>& silhouette, cga::Grammar& grammar, bool centering3D, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, const std::vector<float>& params) {
 		// setup the camera
 		Camera camera;
 		camera.xrot = (xrotMax - xrotMin) * params[0] + xrotMin;
@@ -387,6 +395,7 @@ namespace bme {
 		for (int i = 4; i < params.size(); ++i) {
 			pm_params.push_back(params[i]);
 		}
+		std::vector<boost::shared_ptr<glutils::Face>> faces;
 		setupGeometry(grammar, centering3D, pm_params, faces);
 
 		// geometryのprojectした画像のズレを計算する
