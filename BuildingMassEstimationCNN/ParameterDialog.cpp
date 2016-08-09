@@ -1,6 +1,7 @@
 #include "ParameterDialog.h"
 #include "MainWindow.h"
 #include "GLWidget3D.h"
+#include "BuildingMassEstimation.h"
 
 ParameterDialog::ParameterDialog(QWidget *parent) : QDialog(parent) {
 	mainWin = (MainWindow*)parent;
@@ -27,13 +28,23 @@ ParameterDialog::~ParameterDialog()
 void ParameterDialog::onValueChanged() {
 	if (manual) return;
 	
-	std::vector<float> params;
-	params.push_back(ui.doubleSpinBoxDepth1->value());
-	params.push_back(ui.doubleSpinBoxDepth2->value());
-	params.push_back(ui.doubleSpinBoxHeight->value());
-	params.push_back(ui.doubleSpinBoxWidth1->value());
-	params.push_back(ui.doubleSpinBoxWidth2->value());
-	std::vector<boost::shared_ptr<glutils::Face>> faces;
-	mainWin->glWidget->setupGeometry(1, true, 1, 25, 0, ui.doubleSpinBoxXrot->value(), ui.doubleSpinBoxYrot->value(), ui.doubleSpinBoxZrot->value(), ui.doubleSpinBoxFOV->value(), params, faces);
+	mainWin->glWidget->camera.xrot = ui.doubleSpinBoxXrot->value();
+	mainWin->glWidget->camera.yrot = ui.doubleSpinBoxYrot->value();
+	mainWin->glWidget->camera.zrot = ui.doubleSpinBoxZrot->value();
+	mainWin->glWidget->camera.fovy = ui.doubleSpinBoxFOV->value();
+	mainWin->glWidget->camera.updatePMatrix(mainWin->glWidget->width(), mainWin->glWidget->height());
+
+	std::vector<float> pm_params;
+	pm_params.push_back(ui.doubleSpinBoxDepth1->value());
+	pm_params.push_back(ui.doubleSpinBoxDepth2->value());
+	pm_params.push_back(ui.doubleSpinBoxHeight->value());
+	pm_params.push_back(ui.doubleSpinBoxWidth1->value());
+	pm_params.push_back(ui.doubleSpinBoxWidth2->value());
+	mainWin->glWidget->estimated_pm_params = pm_params;
+	//std::vector<boost::shared_ptr<glutils::Face>> faces;
+	bme::setupGeometry(mainWin->glWidget->grammars[mainWin->glWidget->grammar_id], true, pm_params, mainWin->glWidget->estimated_faces);
+	mainWin->glWidget->renderManager.removeObjects();
+	mainWin->glWidget->renderManager.addFaces(mainWin->glWidget->estimated_faces, true);
+
 	mainWin->glWidget->update();
 }

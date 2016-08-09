@@ -1,3 +1,5 @@
+#pragma once
+
 #undef ERROR
 #undef STRICT
 

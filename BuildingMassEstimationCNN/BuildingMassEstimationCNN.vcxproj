@@ -208,6 +208,7 @@
   <ItemGroup>
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="BoundingBox.cpp" />
+    <ClCompile Include="BuildingMassEstimation.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraCalibration.cpp" />
     <ClCompile Include="CenterOperator.cpp" />
@@ -386,6 +387,7 @@
   <ItemGroup>
     <ClInclude Include="Asset.h" />
     <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="BuildingMassEstimation.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraCalibration.h" />
     <ClInclude Include="CenterOperator.h" />
@@ -481,6 +483,7 @@
     <ClInclude Include="SizeOperator.h" />
     <ClInclude Include="SketchyRenderingBuffer.h" />
     <ClInclude Include="SplitOperator.h" />
+    <ClInclude Include="Stroke.h" />
     <ClInclude Include="TaperOperator.h" />
     <ClInclude Include="TextureOperator.h" />
     <ClInclude Include="TranslateOperator.h" />
