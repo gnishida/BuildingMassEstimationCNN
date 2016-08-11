@@ -6,10 +6,11 @@
 #include <QTextStream>
 #include "CVUtils.h"
 #include <QDir>
+#include "FacadeEstimation.h"
 
 namespace bme {
 
-	const double M_PI = 3.14159265358;
+	const double M_PI = 3.1415926535897932384626433832795;
 
 	std::vector<float> estimate(int screen_width, int screen_height, std::vector<Stroke> silhouette, boost::shared_ptr<Classifier> classifier, std::vector<boost::shared_ptr<Regression>> regressions, std::vector<cga::Grammar>& grammars, bool automaticRecognition, int& grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
 
@@ -271,6 +272,7 @@ namespace bme {
 
 		// convert bgImage to cv::Mat object
 		cv::Mat bgImageMat = cv::Mat(bgImage.height(), bgImage.width(), CV_8UC4, const_cast<uchar*>(bgImage.bits()), bgImage.bytesPerLine()).clone();
+		cv::cvtColor(bgImageMat, bgImageMat, cv::COLOR_BGRA2BGR);
 
 		// rectify the facade image
 		for (int i = 0; i < faces.size(); ++i) {
@@ -302,14 +304,21 @@ namespace bme {
 				rectifiedImage = cvutils::adjust_contrast(rectifiedImage);
 
 				time_t now = clock();
+
+				{
+					QString name = QString("textures/rectified_%1_%2_original.png").arg(now).arg(i);
+					cv::imwrite(name.toUtf8().constData(), rectifiedImage);
+				}
+
+				// adjust the rectified image such that the dominant orientation is horizontal
+				fe::adjustFacadeImage(rectifiedImage);
+
 				QString name = QString("textures/rectified_%1_%2.png").arg(now).arg(i);
 				cv::imwrite(name.toUtf8().constData(), rectifiedImage);
 
 				faces[i]->texture = name.toUtf8().constData();
 			}
 		}
-
-
 	}
 
 	/**
