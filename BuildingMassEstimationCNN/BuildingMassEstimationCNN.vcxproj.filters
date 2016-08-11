@@ -236,7 +236,10 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="BuildingMassEstimation.cpp">
-      <Filter>Generated Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FacadeEstimation.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -522,10 +525,13 @@
     <ClInclude Include="GeneratedFiles\ui_ParameterDialog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="BuildingMassEstimation.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stroke.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildingMassEstimation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FacadeEstimation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
