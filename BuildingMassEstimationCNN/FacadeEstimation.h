@@ -7,6 +7,5 @@
 namespace fe {
 
 	void adjustFacadeImage(cv::Mat& img);
-	double getDominantOrientation(const cv::Mat& img);
 
 }

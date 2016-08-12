@@ -310,7 +310,7 @@ namespace bme {
 					cv::imwrite(name.toUtf8().constData(), rectifiedImage);
 				}
 
-				// adjust the rectified image such that the dominant orientation is horizontal
+				// adjust the rectified image based on the dominant orientations
 				fe::adjustFacadeImage(rectifiedImage);
 
 				QString name = QString("textures/rectified_%1_%2.png").arg(now).arg(i);

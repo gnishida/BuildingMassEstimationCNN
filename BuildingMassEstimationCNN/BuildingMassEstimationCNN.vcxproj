@@ -272,6 +272,7 @@
     <ClCompile Include="Hemisphere.cpp" />
     <ClCompile Include="HemisphereOperator.cpp" />
     <ClCompile Include="HipRoof.cpp" />
+    <ClCompile Include="HoughTransform.cpp" />
     <ClCompile Include="InnerCircleOperator.cpp" />
     <ClCompile Include="InnerSemiCircleOperator.cpp" />
     <ClCompile Include="InsertOperator.cpp" />
@@ -419,6 +420,7 @@
     <ClInclude Include="Hemisphere.h" />
     <ClInclude Include="HemisphereOperator.h" />
     <ClInclude Include="HipRoof.h" />
+    <ClInclude Include="HoughTransform.h" />
     <ClInclude Include="InnerCircleOperator.h" />
     <ClInclude Include="InnerSemiCircleOperator.h" />
     <ClInclude Include="InsertOperator.h" />
