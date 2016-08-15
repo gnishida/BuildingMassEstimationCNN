@@ -61,10 +61,10 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// Grammarを読み込む
 	{
 		grammars.resize(4);
-		cga::parseGrammar("..\\cga\\contour_01b.xml", grammars[0]);
-		cga::parseGrammar("..\\cga\\contour_02b.xml", grammars[1]);
-		cga::parseGrammar("..\\cga\\contour_03b.xml", grammars[2]);
-		cga::parseGrammar("..\\cga\\contour_04b.xml", grammars[3]);
+		cga::parseGrammar("..\\cga\\contour_01.xml", grammars[0]);
+		cga::parseGrammar("..\\cga\\contour_02.xml", grammars[1]);
+		cga::parseGrammar("..\\cga\\contour_03.xml", grammars[2]);
+		cga::parseGrammar("..\\cga\\contour_04.xml", grammars[3]);
 		//cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
 	}
 }
