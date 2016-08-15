@@ -51,14 +51,14 @@ namespace cvutils {
 		cv::Mat src;
 		if (image.channels() == 1) {
 			cv::cvtColor(image, src, cv::COLOR_GRAY2BGR);
-			cv::cvtColor(image, src, cv::COLOR_BGR2HSV);
+			cv::cvtColor(src, src, cv::COLOR_BGR2HSV);
 		}
 		else if (image.channels() == 3) {
 			cv::cvtColor(image, src, cv::COLOR_BGR2HSV);
 		}
 		else if (image.channels() == 4) {
 			cv::cvtColor(image, src, cv::COLOR_BGRA2BGR);
-			cv::cvtColor(image, src, cv::COLOR_BGR2HSV);
+			cv::cvtColor(src, src, cv::COLOR_BGR2HSV);
 		}
 
 		// split the image into 3 channels
@@ -86,6 +86,66 @@ namespace cvutils {
 		// convert the HSV to BGR format
 		cv::Mat result;
 		cv::cvtColor(src, result, cv::COLOR_HSV2BGR);
+
+		return result;
+	}
+
+	cv::Mat adjust_contrast2(const cv::Mat& image, float threshold) {
+		cv::Mat hsvImg;
+		if (image.channels() == 1) {
+			cv::cvtColor(image, hsvImg, cv::COLOR_GRAY2BGR);
+			cv::cvtColor(hsvImg, hsvImg, cv::COLOR_BGR2HSV);
+		}
+		else if (image.channels() == 3) {
+			cv::cvtColor(image, hsvImg, cv::COLOR_BGR2HSV);
+		}
+		else if (image.channels() == 4) {
+			cv::cvtColor(image, hsvImg, cv::COLOR_BGRA2BGR);
+			cv::cvtColor(hsvImg, hsvImg, cv::COLOR_BGR2HSV);
+		}
+
+		std::vector<float> histogram(256, 0.0f);
+		for (int r = 0; r < hsvImg.rows; ++r) {
+			for (int c = 0; c < hsvImg.cols; ++c) {
+				int intensity = hsvImg.at<cv::Vec3b>(r, c)[2];
+				histogram[intensity]++;
+			}
+		}
+
+		int min_val;
+		float total = 0.0f;
+		for (int i = 0; i < histogram.size(); ++i) {
+			total += histogram[i];
+			if (total > hsvImg.rows * hsvImg.cols * threshold) {
+				min_val = i;
+				break;
+			}
+		}
+
+		int max_val;
+		total = 0.0f;
+		for (int i = histogram.size() - 1; i >= 0; --i) {
+			total += histogram[i];
+			if (total > hsvImg.rows * hsvImg.cols * threshold) {
+				max_val = i;
+				break;
+			}
+		}
+
+		//std::cout << "Max val: " << max_val << ", Min val: " << min_val << std::endl;
+
+		for (int r = 0; r < hsvImg.rows; ++r) {
+			for (int c = 0; c < hsvImg.cols; ++c) {
+				int intensity = hsvImg.at<cv::Vec3b>(r, c)[2];
+
+				int new_intensity = std::max(0, std::min(255, (int)((float)(intensity - min_val) / (max_val - min_val) * 255.0)));
+				cv::Vec3b new_val(hsvImg.at<cv::Vec3b>(r, c)[0], hsvImg.at<cv::Vec3b>(r, c)[1], new_intensity);
+				hsvImg.at<cv::Vec3b>(r, c) = new_val;
+			}
+		}
+
+		cv::Mat result;
+		cv::cvtColor(hsvImg, result, cv::COLOR_HSV2BGR);
 
 		return result;
 	}

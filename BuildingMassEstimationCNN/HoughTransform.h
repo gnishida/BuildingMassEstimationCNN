@@ -15,6 +15,10 @@ namespace ht {
 	float getHorizontalAccumMax(const cv::Mat& accum, float max_degree);
 	bool isLocalMaximum(const cv::Mat& mat, int r, int c, int size);
 
+	void autoCanny(const cv::Mat& grayImg, cv::Mat& edgeImg, float sigma = 0.33f);
+	void autoCanny2(const cv::Mat& grayImg, cv::Mat& edgeImg, float sigma = 0.33f);
+	double median(const cv::Mat& grayImg);
+
 	void saveImage(const cv::Mat& image, const std::string& filename);
 	void saveHistogram(const cv::Mat& mat, const std::string& filename);
 
