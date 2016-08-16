@@ -229,6 +229,7 @@
     <ClCompile Include="CylinderSide.cpp" />
     <ClCompile Include="ExtrudeOperator.cpp" />
     <ClCompile Include="FacadeEstimation.cpp" />
+    <ClCompile Include="FacadeSegmentation.cpp" />
     <ClCompile Include="GableRoof.cpp" />
     <ClCompile Include="GeneralObject.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_MainWindow.cpp">
@@ -410,6 +411,7 @@
     <ClInclude Include="CylinderSide.h" />
     <ClInclude Include="ExtrudeOperator.h" />
     <ClInclude Include="FacadeEstimation.h" />
+    <ClInclude Include="FacadeSegmentation.h" />
     <ClInclude Include="GableRoof.h" />
     <ClInclude Include="GeneralObject.h" />
     <ClInclude Include="GeneratedFiles\ui_ParameterDialog.h" />

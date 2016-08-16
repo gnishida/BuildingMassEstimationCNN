@@ -3,16 +3,13 @@
 #include <sstream>
 #include <iostream>
 
-#ifndef M_PI
-#define	M_PI	3.141592653
-#endif
-
 #ifndef SQR
 #define SQR(x)	((x) * (x))
 #endif
 
 namespace utils {
 
+	const double M_PI = 3.1415926535897932384626433832795;
 	const float FLOAT_TOL = 1e-6f;
 
 	bool isNumber(const std::string& str) {
@@ -103,6 +100,10 @@ namespace utils {
 	double genNormal(double mu, double sigma) {
 		double z = sqrt(-2.0 * log(genRand())) * sin(2.0 * M_PI * genRand());
 		return mu + sigma * z;
+	}
+
+	double gause(double u, double sigma) {
+		return 1.0 / 2.0 / M_PI / sigma / sigma * exp(-u * u / 2.0 / sigma / sigma);
 	}
 
 	/**
@@ -434,6 +435,18 @@ namespace utils {
 		}
 
 		edges = contour;
+	}
+
+	void grayScale(const cv::Mat& img, cv::Mat& grayImg) {
+		if (img.channels() == 1) {
+			grayImg = img.clone();
+		}
+		else if (img.channels() == 3) {
+			cv::cvtColor(img, grayImg, cv::COLOR_BGR2GRAY);
+		}
+		else if (img.channels() == 4) {
+			cv::cvtColor(img, grayImg, cv::COLOR_BGRA2GRAY);
+		}
 	}
 
 	void output_vector(const std::vector<float>& values) {

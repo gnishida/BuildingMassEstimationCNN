@@ -244,6 +244,9 @@
     <ClCompile Include="HoughTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FacadeSegmentation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Generated Files">
@@ -538,6 +541,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HoughTransform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FacadeSegmentation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

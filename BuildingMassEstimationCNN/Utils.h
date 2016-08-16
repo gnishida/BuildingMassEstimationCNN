@@ -20,6 +20,7 @@ namespace utils {
 	int genIntRand(int v);
 	int genIntRand(int a, int b);
 	double genNormal(double mu, double sigma);
+	double gause(double u, double sigma);
 	bool segmentSegmentIntersect(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, const glm::vec2& d, float *tab, float *tcd, bool segmentOnly, glm::vec2& intPoint);
 
 	glm::vec2 projectPoint(int screen_width, int screen_height, const glm::vec3& p, const glm::mat4& mvpMatrix);
@@ -27,6 +28,7 @@ namespace utils {
 	void extractEdges(const cv::Mat& img, std::vector<std::pair<glm::vec2, glm::vec2>>& edges);
 	void cleanEdges(std::vector<std::pair<glm::vec2, glm::vec2>>& edges, float maxLineGap, float theta);
 	void cleanContours(std::vector<std::pair<glm::vec2, glm::vec2>>& edges, float maxLineGap, float theta);
+	void grayScale(const cv::Mat& img, cv::Mat& grayImg);
 
 	void output_vector(const std::vector<float>& values);
 }

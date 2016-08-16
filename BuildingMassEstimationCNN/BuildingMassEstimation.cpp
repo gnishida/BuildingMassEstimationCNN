@@ -7,6 +7,7 @@
 #include "CVUtils.h"
 #include <QDir>
 #include "FacadeEstimation.h"
+#include "HoughTransform.h"
 
 namespace bme {
 
@@ -177,7 +178,7 @@ namespace bme {
 			// if variance is not computed, set a default value
 			if (params_var.size() == 0) {
 				for (int i = 0; i < params.size(); ++i) {
-					params_var.push_back(0.1);
+					params_var.push_back(0.1f);
 					params_mean.push_back(best_params[i]);
 				}
 			}
@@ -295,24 +296,79 @@ namespace bme {
 			if (glm::dot(glm::vec3(normalInCameraCoordinates), glm::vec3(0, 0, 1)) <= 0) continue;
 
 			if (pts.size() == 4) {
+				// compute the center of points
+				glm::vec3 center;
+				for (auto pt : pts3d) {
+					center += pt;
+				}
+				center /= pts3d.size();
+
+				// compute the inflated points
+				std::vector<cv::Point2f> pts_inflated;
+				std::vector<glm::vec3> pts3d_inflated;
+				for (auto pt : pts3d) {
+					pts3d_inflated.push_back(pt + (pt - center) * 0.2f);
+					glm::vec4 result = camera.mvpMatrix * glm::vec4(pts3d_inflated.back(), 1);
+					glm::vec2 pp((result.x / result.w + 1) * 0.5 * screen_width, (1 - result.y / result.w) * 0.5 * screen_height);
+					pts_inflated.push_back(cv::Point2f(pp.x, pp.y));
+				}
+
+				// scale the point for the original size of facade image
 				std::vector<cv::Point2f> pts_scaled;
+				std::vector<cv::Point2f> pts_inflated_scaled;
 				for (auto pt : pts) {
 					pts_scaled.push_back(cv::Point2f(pt.x / bgImageScale, pt.y / bgImageScale));
 				}
-
-				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts_scaled);
-				rectifiedImage = cvutils::adjust_contrast(rectifiedImage);
-
-				time_t now = clock();
-
-				{
-					QString name = QString("textures/rectified_%1_%2_original.png").arg(now).arg(i);
-					cv::imwrite(name.toUtf8().constData(), rectifiedImage);
+				for (auto pt : pts_inflated) {
+					pts_inflated_scaled.push_back(cv::Point2f(pt.x / bgImageScale, pt.y / bgImageScale));
 				}
 
-				// adjust the rectified image based on the dominant orientations
-				fe::adjustFacadeImage(rectifiedImage);
+				// rectify the facade image
+				cv::Mat transformMat;
+				cv::Mat rectifiedImage = cvutils::rectify_image(bgImageMat, pts_scaled, transformMat);
+				rectifiedImage = cvutils::adjust_contrast(rectifiedImage);
 
+				cv::Mat rectifiedImageInflated = cvutils::rectify_image(bgImageMat, pts_inflated_scaled, transformMat);
+				
+				time_t now = clock();
+
+				// if the face is facade, adjust it
+				if (fabs(glm::dot(glm::vec3(0, 1, 0), glm::normalize(normal))) < 0.1) {
+
+					QString name = QString("textures/rectified_%1_%2_original.png").arg(now).arg(i);
+					cv::imwrite(name.toUtf8().constData(), rectifiedImage);
+
+					// adjust the rectified image based on the dominant orientations
+					double hori, vert;
+					ht::getDominantOrientation(rectifiedImage, cv::Size(5, 5), 15, 0.6, hori, vert);
+					fe::adjustFacadeImage(rectifiedImageInflated, hori, vert);
+
+					// compute the bottom left and top right corner of for the actural facade image
+					cv::Mat srcMat(3, 1, CV_64F);
+					srcMat.at<double>(0, 0) = pts_scaled[0].x;
+					srcMat.at<double>(1, 0) = pts_scaled[0].y;
+					srcMat.at<double>(2, 0) = 1.0f;
+					cv::Mat dstMat = transformMat * srcMat;
+					int x1 = dstMat.at<double>(0, 0) / dstMat.at<double>(2, 0);
+					int y1 = dstMat.at<double>(1, 0) / dstMat.at<double>(2, 0);
+
+					srcMat.at<double>(0, 0) = pts_scaled[2].x;
+					srcMat.at<double>(1, 0) = pts_scaled[2].y;
+					srcMat.at<double>(2, 0) = 1.0f;
+					dstMat = transformMat * srcMat;
+					int x2 = dstMat.at<double>(0, 0) / dstMat.at<double>(2, 0);
+					int y2 = dstMat.at<double>(1, 0) / dstMat.at<double>(2, 0);
+					
+					// extract the actural facade image from the inflated one
+					rectifiedImage = cv::Mat(rectifiedImageInflated, cv::Rect(x1, y2, x2 - x1 + 1, y1 - y2 + 1));
+					rectifiedImage = cvutils::adjust_contrast(rectifiedImage);
+
+					// use image-based facade reconstruction
+					QString name2 = QString("textures/rectified_ibfr_%1_%2").arg(now).arg(i);
+					fe::subdivideFacade(rectifiedImage, name2.toUtf8().constData());
+				}
+
+				// save the texture image
 				QString name = QString("textures/rectified_%1_%2.png").arg(now).arg(i);
 				cv::imwrite(name.toUtf8().constData(), rectifiedImage);
 
