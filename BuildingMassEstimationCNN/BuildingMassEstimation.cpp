@@ -8,6 +8,8 @@
 #include <QDir>
 #include "FacadeEstimation.h"
 #include "HoughTransform.h"
+#include <random>
+#include <algorithm>
 
 namespace bme {
 
@@ -91,7 +93,7 @@ namespace bme {
 					stroke.end.x += round(utils::genRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f));
 					stroke.end.y += round(utils::genRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f));
 				}
-				cv::line(input, cv::Point(stroke.start.x, stroke.start.y), cv::Point(stroke.end.x, stroke.end.y), cv::Scalar(0), 1, cv::LINE_AA);
+				cv::line(input, cv::Point(stroke.start.x + 0.5, stroke.start.y + 0.5), cv::Point(stroke.end.x + 0.5, stroke.end.y + 0.5), cv::Scalar(0), 1, cv::LINE_AA);
 			}
 
 			if (meanSubtraction) {
@@ -162,6 +164,8 @@ namespace bme {
 		// display the score
 		std::cout << "Best initial dist: " << best_dist << std::endl;
 
+		double dist_threshold = best_dist;
+
 		if (refinement) {
 			QFile file("refinement.txt");
 			file.open(QIODevice::WriteOnly);
@@ -191,10 +195,16 @@ namespace bme {
 				}
 				double next_dist = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, next_params);
 				
+				// execute the coordinate descent
+				if (next_dist < dist_threshold) {
+					// coordinate descent
+					coordinateDescent(next_params, next_dist, params_var, screen_width, screen_height, silhouette, regression, grammar, centering3D, meanSubtraction, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax);
+				}
+
 				// update the best
 				if (next_dist < best_dist) {
 					// coordinate descent
-					coordinateDescent(next_params, next_dist, params_var, screen_width, screen_height, silhouette, regression, grammar, centering3D, meanSubtraction, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax);
+					//coordinateDescent(next_params, next_dist, params_var, screen_width, screen_height, silhouette, regression, grammar, centering3D, meanSubtraction, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax);
 
 					best_dist = next_dist;
 					best_params = next_params;
@@ -228,36 +238,47 @@ namespace bme {
 	 * パラメータ値を、coordinate descentにより改善する。
 	 */
 	void coordinateDescent(std::vector<float>& params, double& dist, std::vector<float>& params_var, int screen_width, int screen_height, std::vector<Stroke>& silhouette, boost::shared_ptr<Regression> regression, cga::Grammar& grammar, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax) {
-		double delta = 0.01;
+		double delta = 0.02;
 
-		for (int iter2 = 0; iter2 < 1000; ++iter2) {
-			bool updated = false;
+		std::vector<int> indices(params.size());
+		for (int i = 0; i < params.size(); ++i) {
+			indices[i] = i;
+		}
 
-			for (int k = 0; k < params.size(); ++k) {
-				// option 1
-				std::vector<float> params1 = params;
-				params1[k] += sqrt(params_var[k]) * delta;
-				double dist1 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params1);
+		for (int iter = 0; iter < 8; ++iter) {
+			for (int iter2 = 0; iter2 < 10000; ++iter2) {
+				bool updated = false;
 
-				// option 2
-				std::vector<float> params2 = params;
-				params2[k] -= sqrt(params_var[k]) * delta;
-				double dist2 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params2);
+				std::shuffle(indices.begin(), indices.end(), std::default_random_engine(0));
+				
+				for (int k = 0; k < params.size(); ++k) {
+					// option 1
+					std::vector<float> params1 = params;
+					params1[indices[k]] += sqrt(params_var[indices[k]]) * delta;
+					double dist1 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params1);
 
-				if (dist1 < dist && dist1 < dist2) {
-					dist = dist1;
-					params = params1;
-					updated = true;
+					// option 2
+					std::vector<float> params2 = params;
+					params2[indices[k]] -= sqrt(params_var[indices[k]]) * delta;
+					double dist2 = distance(screen_width, screen_height, silhouette, grammar, centering3D, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, params2);
+
+					if (dist1 < dist && dist1 < dist2) {
+						dist = dist1;
+						params = params1;
+						updated = true;
+					}
+					else if (dist2 < dist && dist2 < dist1) {
+						dist = dist2;
+						params = params2;
+						updated = true;
+					}
 				}
-				else if (dist2 < dist && dist2 < dist1) {
-					dist = dist2;
-					params = params2;
-					updated = true;
-				}
+
+				// stop when converged
+				if (!updated) break;
 			}
 
-			// stop when converged
-			if (!updated) break;
+			delta *= 0.5;
 		}
 	}
 
@@ -399,7 +420,7 @@ namespace bme {
 		// create an image of the target silhouette
 		cv::Mat targetImg(screen_width, screen_height, CV_8U, cv::Scalar(255));
 		for (auto line : silhouette) {
-			cv::line(targetImg, cv::Point(line.start.x + offset.x, line.start.y + offset.y), cv::Point(line.end.x + offset.x, line.end.y + offset.y), cv::Scalar(0), 1);
+			cv::line(targetImg, cv::Point(line.start.x + offset.x + 0.5, line.start.y + offset.y + 0.5), cv::Point(line.end.x + offset.x + 0.5, line.end.y + offset.y + 0.5), cv::Scalar(0), 1);
 		}
 
 		cv::Mat targetDistMap;
