@@ -15,7 +15,7 @@ namespace bme {
 
 	const double M_PI = 3.1415926535897932384626433832795;
 
-	std::vector<float> estimate(int screen_width, int screen_height, std::vector<Stroke> silhouette, boost::shared_ptr<Classifier> classifier, std::vector<boost::shared_ptr<Regression>> regressions, std::vector<cga::Grammar>& grammars, bool automaticRecognition, int& grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
+	std::vector<float> estimate(int screen_width, int screen_height, std::vector<Stroke> silhouette, boost::shared_ptr<Classifier> classifier, std::vector<boost::shared_ptr<Regression>> regressions, std::vector<cga::Grammar>& grammars, bool automaticRecognition, int& grammarSnippetId, int image_size, bool grayscale, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
 
 		////////////////////////////////////////////////////////////////////////////////
 		// shift everything such that their center is aligned
@@ -28,12 +28,17 @@ namespace bme {
 		shiftImage(-offset.x / bgImageScale, -offset.y / bgImageScale, bgImageOrig);
 #endif
 		shiftSilhouette(-offset.x, -offset.y, silhouette);
-
+		
 		if (automaticRecognition) {
 			grammarSnippetId = classify(screen_width, screen_height, silhouette, classifier);
 		}
 
-		return regress(screen_width, screen_height, silhouette, regressions[grammarSnippetId], grammars[grammarSnippetId], centering3D, meanSubtraction, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
+		// set the mean file, eg., ../models/mean_01.png.
+		std::stringstream ss;
+		ss << std::setw(2) << std::setfill('0') << (grammarSnippetId + 1);
+		std::string mean_file = "../models/mean_" + ss.str() + ".png";
+
+		return regress(screen_width, screen_height, silhouette, regressions[grammarSnippetId], grammars[grammarSnippetId], image_size, grayscale, centering3D, meanSubtraction, mean_file, cameraType, cameraDistanceBase, cameraHeight, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
 	}
 
 	/**
@@ -68,9 +73,9 @@ namespace bme {
 		return prediction[0].first;
 	}
 
-	std::vector<float> regress(int screen_width, int screen_height, std::vector<Stroke>& silhouette, boost::shared_ptr<Regression> regression, cga::Grammar& grammar, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {	
+	std::vector<float> regress(int screen_width, int screen_height, std::vector<Stroke>& silhouette, boost::shared_ptr<Regression> regression, cga::Grammar& grammar, int image_size, bool grayscale, bool centering3D, bool meanSubtraction, const std::string& mean_file, int cameraType, float cameraDistanceBase, float cameraHeight, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
 		// scale the contour to 128x128 size
-		glm::vec2 scale(128.0 / screen_width, 128.0 / screen_height);
+		glm::vec2 scale((float)image_size / screen_width, (float)image_size / screen_height);
 
 		std::vector<Stroke> scaledSilhouette;
 		for (auto stroke : silhouette) {
@@ -85,7 +90,13 @@ namespace bme {
 		double best_dist = std::numeric_limits<double>::max();
 		for (int multipleTryIter = 0; multipleTryIter < (tryMultiples ? numMultipleTries : 1); ++multipleTryIter) {
 			// create input image
-			cv::Mat input(128, 128, CV_8U, cv::Scalar(255));
+			cv::Mat input;
+			if (grayscale) {
+				input = cv::Mat(image_size, image_size, CV_8U, cv::Scalar(255));
+			}
+			else {
+				input = cv::Mat(image_size, image_size, CV_8UC3, cv::Scalar(255, 255, 255));
+			}
 			for (auto stroke : scaledSilhouette) {
 				if (multipleTryIter > 0) {
 					stroke.start.x += round(utils::genRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f));
@@ -93,15 +104,22 @@ namespace bme {
 					stroke.end.x += round(utils::genRand(-input.cols * maxNoise * 0.01f, input.cols * maxNoise * 0.01f));
 					stroke.end.y += round(utils::genRand(-input.rows * maxNoise * 0.01f, input.rows * maxNoise * 0.01f));
 				}
-				cv::line(input, cv::Point(stroke.start.x + 0.5, stroke.start.y + 0.5), cv::Point(stroke.end.x + 0.5, stroke.end.y + 0.5), cv::Scalar(0), 1, cv::LINE_AA);
+				if (grayscale) {
+					cv::line(input, cv::Point(stroke.start.x + 0.5, stroke.start.y + 0.5), cv::Point(stroke.end.x + 0.5, stroke.end.y + 0.5), cv::Scalar(0), 1, cv::LINE_AA);
+				}
+				else {
+					cv::line(input, cv::Point(stroke.start.x + 0.5, stroke.start.y + 0.5), cv::Point(stroke.end.x + 0.5, stroke.end.y + 0.5), cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+				}
 			}
+
+			input.convertTo(input, CV_32F);
 
 			if (meanSubtraction) {
-				cv::Mat meanImg = cv::imread("../models/mean.png");
-				cv::cvtColor(meanImg, meanImg, cv::COLOR_BGR2GRAY);
-				input -= meanImg;
+				cv::Mat mean_img = cv::imread(mean_file);
+				mean_img.convertTo(mean_img, CV_32F);
+				input -= mean_img;
 			}
-
+			
 			// estimate parameters
 			std::vector<float> params = regression->Predict(input);
 

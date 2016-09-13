@@ -51,10 +51,10 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	// caffe modelを読み込む
 	{
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_01.prototxt", "..\\models\\train_01_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_02.prototxt", "..\\models\\train_02_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_03.prototxt", "..\\models\\train_03_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_04.prototxt", "..\\models\\train_04_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_01.prototxt", "..\\models\\train_01_iter_80000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_02.prototxt", "..\\models\\train_02_iter_80000.caffemodel")));
+		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_03.prototxt", "..\\models\\train_03_iter_240000.caffemodel")));
+		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_04.prototxt", "..\\models\\train_04_iter_240000.caffemodel")));
 		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_05.prototxt", "..\\models\\train_05_iter_240000.caffemodel")));
 	}
 
@@ -63,8 +63,8 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		grammars.resize(4);
 		cga::parseGrammar("..\\cga\\contour_01.xml", grammars[0]);
 		cga::parseGrammar("..\\cga\\contour_02.xml", grammars[1]);
-		cga::parseGrammar("..\\cga\\contour_03.xml", grammars[2]);
-		cga::parseGrammar("..\\cga\\contour_04.xml", grammars[3]);
+		//cga::parseGrammar("..\\cga\\contour_03.xml", grammars[2]);
+		//cga::parseGrammar("..\\cga\\contour_04.xml", grammars[3]);
 		//cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
 	}
 }
@@ -176,7 +176,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, bool grayscale, bool centering3D, bool meanSubtraction, int cameraType, float cameraDistanceBase, float cameraHeight, bool rotateContour, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
 	std::cout << "-----------------------------------------------------" << std::endl;
 
 	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
@@ -199,7 +199,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 	// estimate the building envelope
 	grammar_id = grammarSnippetId;
-	std::vector<float> best_params = bme::estimate(width(), height(), silhouette, classifier, regressions, grammars, automaticRecognition, grammar_id, centering3D, meanSubtraction, cameraType, cameraDistanceBase, cameraHeight, rotateContour, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
+	std::vector<float> best_params = bme::estimate(width(), height(), silhouette, classifier, regressions, grammars, automaticRecognition, grammar_id, image_size, grayscale, centering3D, meanSubtraction, cameraType, cameraDistanceBase, cameraHeight, rotateContour, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
 
 	// set the camera parameters
 	setupCameraFromParams(xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, cameraType, cameraDistanceBase, cameraHeight, best_params);

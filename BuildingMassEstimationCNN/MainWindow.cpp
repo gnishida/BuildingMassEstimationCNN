@@ -86,6 +86,8 @@ void MainWindow::onParameterEstimation() {
 	if (dlg.exec()) {
 		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
 		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
+		int image_size = dlg.ui.lineEditImageSize->text().toInt();
+		bool grayscale = dlg.ui.checkBoxGrayscale->isChecked();
 		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
 		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
 		int cameraType = 0;
@@ -110,7 +112,7 @@ void MainWindow::onParameterEstimation() {
 		int maxIters = dlg.ui.lineEditIterations->text().toInt();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, rotateContour, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
+		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, image_size, grayscale, centering3D, meanSubtraction, cameraType, cameraDistanceBase, 0.0f, rotateContour, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
 	}
 }
 
