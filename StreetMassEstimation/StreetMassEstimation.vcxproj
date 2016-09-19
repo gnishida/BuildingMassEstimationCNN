@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>BuildingMassEstimationCNN</ProjectName>
-    <ProjectGuid>{8ACB5182-758A-4DB3-B75D-CDC0AC925608}</ProjectGuid>
+    <ProjectName>StreetMassEstimation</ProjectName>
+    <ProjectGuid>{B12702AD-ABFB-343A-A199-8E24837244A3}</ProjectGuid>
     <RootNamespace>MainCaller</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <Keyword>Qt4VSv1.0</Keyword>

@@ -4,14 +4,6 @@
 ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
-	QButtonGroup* group1 = new QButtonGroup();
-	group1->addButton(ui.radioButtonCameraTypeStreetView);
-	group1->addButton(ui.radioButtonCameraTypeAerialView);
-
-/*	QButtonGroup* group2 = new QButtonGroup();
-	group2->addButton(ui.radioButtonRefineFromBest);
-	group2->addButton(ui.radioButtonRefineFromAll);*/
-
 	ui.checkBoxAutomaticRecognition->setChecked(false);
 	ui.lineEditGrammarSnippet->setText("1");
 	ui.lineEditGrammarSnippet->setEnabled(!ui.checkBoxAutomaticRecognition->isChecked());
@@ -19,29 +11,26 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.checkBoxGrayscale->setChecked(false);
 	ui.checkBoxCentering3D->setChecked(true);
 	ui.checkBoxMeanSubtraction->setChecked(false);
-	ui.radioButtonCameraTypeStreetView->setChecked(true);
-	ui.radioButtonCameraTypeAerialView->setChecked(false);
 	ui.lineEditCameraDistance->setText("25");
-	ui.checkBoxRotateContour->setChecked(true);
-	ui.lineEditXrotMin->setText("-14");
+	ui.lineEditXrotMin->setText("-40");
 	ui.lineEditXrotMax->setText("0");
 	ui.lineEditYrotMin->setText("20");
 	ui.lineEditYrotMax->setText("70");
-	ui.lineEditZrotMin->setText("0");
-	ui.lineEditZrotMax->setText("0");
-	ui.lineEditFovMin->setText("30");
-	ui.lineEditFovMax->setText("80");
+	ui.lineEditZrotMin->setText("-10");
+	ui.lineEditZrotMax->setText("10");
+	ui.lineEditFovMin->setText("20");
+	ui.lineEditFovMax->setText("90");
+	ui.lineEditXMin->setText("-15");
+	ui.lineEditXMax->setText("15");
+	ui.lineEditYMin->setText("-15");
+	ui.lineEditYMax->setText("15");
 	ui.checkBoxTryMultiples->setChecked(false);
 	ui.lineEditNumMultipleTries->setText("100");
 	ui.lineEditNumMultipleTries->setEnabled(ui.checkBoxTryMultiples->isChecked());
 	ui.lineEditMaxNoise->setText("1");
 	ui.lineEditMaxNoise->setEnabled(ui.checkBoxTryMultiples->isChecked());
 	ui.checkBoxRefinement->setChecked(false);
-	//ui.radioButtonRefineFromBest->setChecked(true);
-	//ui.radioButtonRefineFromBest->setEnabled(ui.checkBoxRefinement->isChecked());
-	//ui.radioButtonRefineFromAll->setChecked(false);
-	//ui.radioButtonRefineFromAll->setEnabled(ui.checkBoxRefinement->isChecked());
-	ui.lineEditIterations->setText("1000000");
+	ui.lineEditIterations->setText("1000");
 	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.checkBoxApplyTexture->setChecked(false);
 
