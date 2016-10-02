@@ -24,23 +24,17 @@
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Debug">
-      <UniqueIdentifier>{6c88094a-fc22-4785-8759-ed5451ec2a52}</UniqueIdentifier>
+      <UniqueIdentifier>{0098ebf9-f658-4ad8-b1cd-4d9849dccdc0}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Release">
-      <UniqueIdentifier>{bf57b511-5da8-440b-a745-33cf0a833f49}</UniqueIdentifier>
+      <UniqueIdentifier>{cc433d41-bb68-460d-97df-b0b7fb9f3312}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="Source Files\shape">
-      <UniqueIdentifier>{a23b55cc-89a7-477d-8182-93ae8a36ec34}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\shaders">
-      <UniqueIdentifier>{bc753ab6-d838-4761-bb0b-c7c0e48ffeaf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\rule">
-      <UniqueIdentifier>{c54bc906-8fae-4548-8de8-85e38284b90c}</UniqueIdentifier>
+    <Filter Include="Source Files\cga">
+      <UniqueIdentifier>{d1e50c65-3269-4bcf-a36f-b6437f883b38}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -68,40 +62,190 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ParameterEstimationDialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="BuildingMassEstimation.cpp">
+    <ClCompile Include="OptionDialog.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_OptionDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_OptionDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="CenterOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CGA.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Circle.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CompOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CornerCutGableRoof.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CornerCutOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CornerCutPrism.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CornerCutRectangle.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CornerCutTaper.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Cuboid.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CVUtils.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Cylinder.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="CylinderSide.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtrudeOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="GableRoof.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneralObject.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="GLUtils.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Grammar.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="GrammarParser.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Hemisphere.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="HemisphereOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="HipRoof.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="InnerCircleOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="InnerSemiCircleOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="InsertOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="LShape.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="LShapePrism.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="LShapeTaper.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="NumberEval.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="OBJLoader.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="OBJWriter.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="OffsetOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Polygon.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Prism.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Pyramid.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="PyramidOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Rectangle.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="RectangleTaper.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="RoofGableOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="RoofHipOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="RotateOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="SemiCircle.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="SetupProjectionOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Shape.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeLOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeUOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="SizeOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="SplitOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="TaperOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="TranslateOperator.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="UShape.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="UShapePrism.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="UShapeTaper.cpp">
+      <Filter>Source Files\cga</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files\cga</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CameraCalibration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Classifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CVUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FacadeEstimation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FacadeSegmentation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GLUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GLWidget3D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HoughTransform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Regression.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
@@ -110,194 +254,14 @@
     <ClCompile Include="ShadowMapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Utils.cpp">
+    <ClCompile Include="VanishingPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Asset.cpp">
-      <Filter>Source Files\shape</Filter>
+      <Filter>Source Files\cga</Filter>
     </ClCompile>
-    <ClCompile Include="BoundingBox.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="CenterOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="CGA.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Circle.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="ColorOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="CompOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="CopyOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="CornerCutGableRoof.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="CornerCutOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="CornerCutPrism.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="CornerCutRectangle.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="CornerCutTaper.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Cuboid.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Cylinder.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="CylinderSide.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtrudeOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="GableRoof.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneralObject.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Hemisphere.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Grammar.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="GrammarParser.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="HemisphereOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="InnerCircleOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="InnerSemiCircleOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="InsertOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="HipRoof.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="LShape.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="LShapePrism.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="LShapeTaper.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="OffsetPolygon.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="OffsetRectangle.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="OffsetSemiCircle.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="NumberEval.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="OBJLoader.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="OBJWriter.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="Shape.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="ShapeLOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="ShapeUOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="SizeOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="SplitOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="TaperOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="TranslateOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="OffsetOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="SetupProjectionOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="RoofGableOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="RoofHipOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="RotateOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="PyramidOperator.cpp">
-      <Filter>Source Files\rule</Filter>
-    </ClCompile>
-    <ClCompile Include="UShape.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="UShapePrism.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="UShapeTaper.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Polygon.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Prism.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Pyramid.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Rectangle.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="RectangleTaper.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="SemiCircle.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="ParameterDialog.cpp">
+    <ClCompile Include="RenderManager.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_ParameterDialog.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_ParameterDialog.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -316,10 +280,10 @@
     <CustomBuild Include="ParameterEstimationDialog.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="ParameterDialog.h">
+    <CustomBuild Include="OptionDialog.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="ParameterDialog.ui">
+    <CustomBuild Include="OptionDialog.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -330,236 +294,206 @@
     <ClInclude Include="GeneratedFiles\ui_ParameterEstimationDialog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="BuildingMassEstimation.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="GeneratedFiles\ui_OptionDialog.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="BoundingBox.h">
+      <Filter>Source Files\cga</Filter>
     </ClInclude>
-    <ClInclude Include="CameraCalibration.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="CenterOperator.h">
+      <Filter>Source Files\cga</Filter>
     </ClInclude>
-    <ClInclude Include="Classifier.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="CGA.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Circle.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="CompOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="CornerCutGableRoof.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="CornerCutOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="CornerCutPrism.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="CornerCutRectangle.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="CornerCutTaper.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Cuboid.h">
+      <Filter>Source Files\cga</Filter>
     </ClInclude>
     <ClInclude Include="CVUtils.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\cga</Filter>
     </ClInclude>
-    <ClInclude Include="FacadeEstimation.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="Cylinder.h">
+      <Filter>Source Files\cga</Filter>
     </ClInclude>
-    <ClInclude Include="FacadeSegmentation.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="CylinderSide.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtrudeOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="GableRoof.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneralObject.h">
+      <Filter>Source Files\cga</Filter>
     </ClInclude>
     <ClInclude Include="GLUtils.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Grammar.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="GrammarParser.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Hemisphere.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="HemisphereOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="HipRoof.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="InnerCircleOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="InnerSemiCircleOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="InsertOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="LShape.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="LShapePrism.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="LShapeTaper.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="NumberEval.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="OBJLoader.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="OBJWriter.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="OffsetOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Polygon.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Prism.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Pyramid.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="PyramidOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Rectangle.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="RectangleTaper.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="RoofGableOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="RoofHipOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="RotateOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="SemiCircle.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="SetupProjectionOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Shape.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeLOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeUOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="SizeOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="SplitOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="TaperOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="TranslateOperator.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="UShape.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="UShapePrism.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="UShapeTaper.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GLWidget3D.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HoughTransform.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Regression.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="ShadowMapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VanishingPoint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Asset.h">
+      <Filter>Source Files\cga</Filter>
     </ClInclude>
     <ClInclude Include="RenderManager.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShadowMapping.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Stroke.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Asset.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="BoundingBox.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="CenterOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="CGA.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Circle.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="ColorOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="CompOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="CopyOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="CornerCutGableRoof.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="CornerCutOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="CornerCutPrism.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="CornerCutRectangle.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="CornerCutTaper.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Cuboid.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Cylinder.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="CylinderSide.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="ExtrudeOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="GableRoof.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneralObject.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Hemisphere.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Grammar.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="GrammarParser.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="HemisphereOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="InnerCircleOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="InnerSemiCircleOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="InsertOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="HipRoof.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="LShape.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="LShapePrism.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="LShapeTaper.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="OffsetPolygon.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="OffsetRectangle.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="OffsetSemiCircle.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="NumberEval.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="OBJLoader.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="OBJWriter.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="Shape.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="ShapeLOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="ShapeUOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="SizeOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="SplitOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="TaperOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="TranslateOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="OffsetOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="SetupProjectionOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="RoofGableOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="RoofHipOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="RotateOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="PyramidOperator.h">
-      <Filter>Source Files\rule</Filter>
-    </ClInclude>
-    <ClInclude Include="UShape.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="UShapePrism.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="UShapeTaper.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Polygon.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Prism.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Pyramid.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="Rectangle.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="RectangleTaper.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="SemiCircle.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_ParameterDialog.h">
-      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

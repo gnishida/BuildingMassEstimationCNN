@@ -6,34 +6,33 @@
 #include <QFileInfoList>
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include "GrammarParser.h"
 #include "Rectangle.h"
 #include "GLUtils.h"
 #include <opencv2/calib3d.hpp>
-#include "CameraCalibration.h"
 #include <map>
 #include "CVUtils.h"
 #include "Utils.h"
 #include <QFile>
 #include <QTextStream>
-#include "BuildingMassEstimation.h"
-
-#ifndef M_PI
-#define	M_PI	3.141592653
-#endif
-
-#ifndef SQR
-#define SQR(x)		((x) * (x))
-#endif
+//#include "BuildingMassEstimation.h"
+#include <time.h>
 
 GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent) {
 	mainWin = (MainWindow*)parent;
-	dragging = false;
 	ctrlPressed = false;
 	shiftPressed = false;
+	altPressed = false;
 
 	opacityOfBackground = 0.5f;
-	estimation_error = 0;
+	pen_type = PEN_TYPE_VANISHING_LINE;
+	lineWidth = 3;
+	horizontalLeftColor = QColor(0, 0, 192);
+	horizontalRightColor = QColor(64, 64, 255);
+	verticalColor = QColor(140, 140, 255);
+	silhouetteWidth = 3;
+	silhouetteColor = QColor(255, 0, 0);
 
 	// This is necessary to prevent the screen overdrawn by OpenGL
 	setAutoFillBackground(false);
@@ -47,455 +46,23 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	glm::mat4 light_mvMatrix = glm::lookAt(-light_dir * 50.0f, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	light_mvpMatrix = light_pMatrix * light_mvMatrix;
 
-	//classifier = boost::shared_ptr<Classifier>(new Classifier("../models/deploy.prototxt", "../models/contour_iter_20000.caffemodel", "../models/contour_mean.binaryproto"));
-
-	// caffe modelを読み込む
-	{
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_01.prototxt", "models/train_01_iter_80000.caffemodel")));
-		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_02.prototxt", "models/train_02_iter_80000.caffemodel")));
-		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_03.prototxt", "..\\models\\train_03_iter_240000.caffemodel")));
-		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_04.prototxt", "..\\models\\train_04_iter_240000.caffemodel")));
-		//regressions.push_back(boost::shared_ptr<Regression>(new Regression("..\\models\\deploy_05.prototxt", "..\\models\\train_05_iter_240000.caffemodel")));
-	}
-
 	// Grammarを読み込む
 	{
-		grammars.resize(1);
+		grammars.resize(4);
 		cga::parseGrammar("cga/contour_01.xml", grammars[0]);
-		//cga::parseGrammar("cga/contour_02.xml", grammars[1]);
-		//cga::parseGrammar("..\\cga\\contour_03.xml", grammars[2]);
-		//cga::parseGrammar("..\\cga\\contour_04.xml", grammars[3]);
-		//cga::parseGrammar("..\\cga\\contour_05.xml", grammars[4]);
+		cga::parseGrammar("cga/contour_02.xml", grammars[1]);
+		cga::parseGrammar("cga/contour_03.xml", grammars[2]);
+		cga::parseGrammar("cga/contour_04.xml", grammars[3]);
 	}
+
+	// default grammar and pm values
+	grammar_id = 0;
+	pm_params.resize(grammars[0].attrs.size(), 0.5);
 }
 
 /**
- * Clear the canvas.
+ * Draw the scene.
  */
-void GLWidget3D::clearSilhouette() {
-	silhouette.clear();
-
-	update();
-}
-
-void GLWidget3D::clearBackground() {
-	bgImage = QImage(width(), height(), QImage::Format_RGB32);
-	bgImageOrig = bgImage;
-	mainWin->setWindowTitle("Photo to 3D");
-
-	update();
-}
-
-void GLWidget3D::clearGeometry() {
-	renderManager.removeObjects();
-	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
-	update();
-}
-
-void GLWidget3D::loadContour(const std::string& filename) {
-	silhouette.clear();
-
-	std::ifstream in(filename);
-	
-	while (!in.eof()) {
-		Stroke stroke;
-		if (!(in >> stroke.start.x >> stroke.start.y >> stroke.end.x >> stroke.end.y >> stroke.type)) break;
-		
-		silhouette.push_back(stroke);
-	}
-
-	update();
-}
-
-void GLWidget3D::saveContour(const std::string& filename) {
-	std::ofstream out(filename);
-	for (auto stroke : silhouette) {
-		out << stroke.start.x << "\t" << stroke.start.y << "\t" << stroke.end.x << "\t" << stroke.end.y << "\n";
-	}
-	out.close();
-}
-
-/**
-* Load an image from a file, and display options order by their probabilities.
-* This is for test usage.
-*/
-void GLWidget3D::loadImage(const std::string& filename) {
-	bgImageOrig.load(filename.c_str());
-
-	float scale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
-	QImage newImage = bgImageOrig.scaled(bgImageOrig.width() * scale, bgImageOrig.height() * scale);
-
-	bgImage = QImage(width(), height(), QImage::Format_RGB32);
-	QPainter painter(&bgImage);
-	painter.drawImage((width() - newImage.width()) / 2, (height() - newImage.height()) / 2, newImage);
-	
-	opacityOfBackground = 0.5f;
-
-	mainWin->setWindowTitle(QString("Photo to 3D - ") + filename.c_str());
-
-	update();
-}
-
-/**
- * Load a grammar from a file and generate a 3d geometry.
- * This is only for test usage.
- */
-void GLWidget3D::loadCGA(const std::string& filename) {
-	cga::Grammar grammar;
-	cga::parseGrammar(filename.c_str(), grammar);
-
-	cga::CGA cga;
-	cga.modelMat = glm::rotate(glm::mat4(), -3.1415926f * 0.5f, glm::vec3(1, 0, 0));
-
-	renderManager.removeObjects();
-
-	// set axiom
-	boost::shared_ptr<cga::Shape> start = boost::shared_ptr<cga::Shape>(new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -3.141592f * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1)));
-	cga.stack.push_back(start);
-
-	// generate 3d model
-	cga.derive(grammar, true);
-	std::vector<boost::shared_ptr<glutils::Face> > faces;
-	cga.generateGeometry(faces, true);
-	renderManager.addFaces(faces, true);
-
-	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
-
-	// render 2d image
-	render();
-}
-
-void GLWidget3D::undo() {
-	if (silhouette.size() > 0) {
-		silhouette.pop_back();
-		update();
-	}
-}
-
-/**
- * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
- * Then, display the options ordered by the probabilities.
- */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, bool grayscale, bool centering3D, bool meanSubtraction, float cameraDistanceBase, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, int xMin, int xMax, int yMin, int yMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
-	std::cout << "-----------------------------------------------------" << std::endl;
-
-	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
-	float bgImageScale = std::min((float)width() / bgImageOrig.width(), (float)height() / bgImageOrig.height());
-	resizeImageCanvasSize(bgImageOrig, width() / bgImageScale, height() / bgImageScale);
-
-	// estimate the building envelope
-	grammar_id = grammarSnippetId;
-	std::vector<float> best_params = bme::estimate(width(), height(), silhouette, classifier, regressions, grammars, automaticRecognition, grammar_id, image_size, grayscale, centering3D, meanSubtraction, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, xMin, xMax, yMin, yMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
-
-	// set the camera parameters
-	setupCameraFromParams(xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, xMin, xMax, yMin, yMax, cameraDistanceBase, best_params);
-
-	// set the PM parameters
-	estimated_pm_params.clear();
-	for (int i = 6; i < best_params.size(); ++i) {
-		estimated_pm_params.push_back(best_params[i]);
-	}
-	updateStatusBar();
-
-	// render the image
-	cv::Mat renderedImage;
-	std::vector<boost::shared_ptr<glutils::Face>> faces;
-	renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
-	render(grammarSnippetId, centering3D, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, xMin, xMax, yMin, yMax, best_params, faces, renderedImage);
-	render(grammarSnippetId, centering3D, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, xMin, xMax, yMin, yMax, best_params, estimated_faces, renderedImage);
-	
-#if 0
-	// compute the offset of the rendered image
-	glm::vec2 rendered_offset = bme::getOffset(renderedImage);
-
-	// compute the offset of the silhouette
-	glm::vec2 offset = rendered_offset - bme::getOffset(silhouette, width(), height());
-
-	// translate the background image and contour lines
-	bme::shiftSilhouette(offset.x, offset.y, silhouette);
-	bme::shiftImage(offset.x, offset.y, bgImage);
-	bme::shiftImage(offset.x / bgImageScale, offset.y / bgImageScale, bgImageOrig);
-#endif
-
-	std::cout << "Final dist: " << bme::distance(silhouette, renderedImage, width(), height()) << std::endl;
-
-	// line modeで描画
-	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
-
-	if (applyTexture) {
-		bme::generateTextures(camera, bgImageOrig, width(), height(), faces);
-
-		renderManager.removeObjects();
-		renderManager.addFaces(faces, true);
-		renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
-
-		opacityOfBackground = 0.1f;
-
-		// remove the texture folder
-		//if (QDir("textures").exists()) QDir("textures").removeRecursively();
-	}
-
-	updateStatusBar();
-	update();
-}
-
-void GLWidget3D::render(int grammarSnippetId, bool centering3D, float cameraDistanceBase, int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, int xMin, int xMax, int yMin, int yMax, const std::vector<float>& params, std::vector<boost::shared_ptr<glutils::Face>>& faces, cv::Mat& renderedImage) {
-	// setup the camera
-	setupCameraFromParams(xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, xMin, xMax, yMin, yMax, cameraDistanceBase, params);
-
-	// generate geometry
-	std::vector<float> pm_params;
-	for (int i = 6; i < params.size(); ++i) {
-		pm_params.push_back(params[i]);
-	}
-	bme::setupGeometry(grammars[grammarSnippetId], centering3D, pm_params, faces);
-	
-	renderManager.removeObjects();
-	renderManager.addFaces(faces, true);
-	
-	// obtain the rendered image
-	render();
-	QImage img = grabFrameBuffer();
-	renderedImage = cv::Mat(img.height(), img.width(), CV_8UC4, img.bits(), img.bytesPerLine()).clone();
-}
-
-void GLWidget3D::setupCameraFromParams(int xrotMin, int xrotMax, int yrotMin, int yrotMax, int zrotMin, int zrotMax, int fovMin, int fovMax, int xMin, int xMax, int yMin, int yMax, float cameraDistanceBase, const std::vector<float>& params) {
-	camera.xrot = (xrotMax - xrotMin) * params[0] + xrotMin;
-	camera.yrot = (yrotMax - yrotMin) * params[1] + yrotMin;
-	camera.zrot = (zrotMax - zrotMin) * params[2] + zrotMin;
-	camera.fovy = (fovMax - fovMin) * params[3] + fovMin;
-	float camera_distance = cameraDistanceBase / tanf(camera.fovy * 0.5 / 180.0f * M_PI);
-	camera.pos.x = (xMax - xMin) * params[4] + xMin;
-	camera.pos.y = (yMax - yMin) * params[5] + yMin;
-	camera.pos.z = camera_distance;
-	camera.updatePMatrix(width(), height());
-}
-
-void GLWidget3D::keyPressEvent(QKeyEvent *e) {
-	ctrlPressed = false;
-
-	if (e->modifiers() == Qt::ControlModifier) {
-		ctrlPressed = true;
-	}
-
-	switch (e->key()) {
-	case Qt::Key_Shift:
-		shiftPressed = true;
-		break;
-	case Qt::Key_Delete:
-		clearGeometry();
-		break;
-	default:
-		break;
-	}
-}
-
-void GLWidget3D::keyReleaseEvent(QKeyEvent* e) {
-	switch (e->key()) {
-	case Qt::Key_Shift:
-		shiftPressed = false;
-		break;
-	case Qt::Key_Control:
-		ctrlPressed = false;
-		break;
-	default:
-		break;
-	}
-}
-
-/**
- * This event handler is called when the mouse press events occur.
- */
-void GLWidget3D::mousePressEvent(QMouseEvent *e) {
-	if (e->buttons() & Qt::RightButton) {
-		camera.mousePress(e->x(), e->y());
-	}
-	else if (e->button() & Qt::LeftButton) {
-		currentStroke = Stroke(glm::vec2(e->x(), e->y()), glm::vec2(e->x(), e->y()));
-		dragging = true;
-	}
-}
-
-/**
- * This event handler is called when the mouse release events occur.
- */
-void GLWidget3D::mouseReleaseEvent(QMouseEvent *e) {
-	if (e->button() == Qt::LeftButton) {
-		silhouette.push_back(currentStroke);
-		currentStroke = Stroke();
-
-		dragging = false;
-	}
-	else if (e->button() == Qt::RightButton) {
-		// compute the distance
-		/*
-		if (estimated_pm_params.size() > 0) {
-			std::vector<float> params;
-			std::vector<boost::shared_ptr<glutils::Face>> faces;
-
-			setupGeometry(grammar_id, true, estimated_pm_params, faces);
-
-			glm::vec2 offset = getOffset(silhouette);
-			
-			renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
-			render();
-			QImage img = grabFrameBuffer();
-			cv::Mat renderedImg = cv::Mat(img.height(), img.width(), CV_8UC4, img.bits(), img.bytesPerLine()).clone();
-			glm::vec2 rendered_offset = getOffset(renderedImg);
-			std::cout << "rendered offset: " << rendered_offset.x << "," << rendered_offset.y << std::endl;
-			std::cout << "silhouette offset: " << offset.x << "," << offset.y << std::endl;
-			shiftImageAndSilhouette(rendered_offset.x - offset.x, rendered_offset.y - offset.y, bgImage, silhouette);
-			double estimation_error = distance(silhouette, renderedImg);
-			std::cout << "estimation_error: " << estimation_error << std::endl;
-			renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
-			render();
-		}
-		*/
-	}
-
-	updateStatusBar();
-	update();
-}
-
-/**
- * This event handler is called when the mouse move events occur.
- */
-void GLWidget3D::mouseMoveEvent(QMouseEvent *e) {
-	if (e->buttons() & Qt::RightButton) { // Rotate
-		if (shiftPressed) { // Move
-			camera.move(e->x(), e->y());
-		}
-		else {
-			camera.rotate(e->x(), e->y(), (ctrlPressed ? 0.1 : 1));
-		}
-	}
-	else if (e->buttons() & Qt::MidButton) { // Rotate around Z axis
-		camera.rotateAroundZ(e->x(), e->y(), (ctrlPressed ? 0.1 : 1));
-	}
-	else if (e->buttons() & Qt::LeftButton) {
-		currentStroke.end = glm::vec2(e->x(), e->y());
-		//curPos = glm::vec2(e->x(), e->y());
-	}
-	
-	updateStatusBar();
-	update();
-}
-
-void GLWidget3D::wheelEvent(QWheelEvent* e) {
-	camera.changeFov(e->delta() * 0.05, (ctrlPressed ? 0.1 : 1), width(), height());
-	updateStatusBar();
-	update();
-}
-
-/**
- * This function is called once before the first call to paintGL() or resizeGL().
- */
-void GLWidget3D::initializeGL() {
-	// init glew
-	GLenum err = glewInit();
-	if (err != GLEW_OK) {
-		std::cout << "Error: " << glewGetErrorString(err) << std::endl;
-	}
-
-	if (glewIsSupported("GL_VERSION_4_2"))
-		printf("Ready for OpenGL 4.2\n");
-	else {
-		printf("OpenGL 4.2 not supported\n");
-		exit(1);
-	}
-	const GLubyte* text = glGetString(GL_VERSION);
-	printf("VERSION: %s\n", text);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-
-	glEnable(GL_TEXTURE_2D);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-	glTexGenf(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-	glTexGenf(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-	glDisable(GL_TEXTURE_2D);
-
-	glEnable(GL_TEXTURE_3D);
-	glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glDisable(GL_TEXTURE_3D);
-
-	glEnable(GL_TEXTURE_2D_ARRAY);
-	glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glDisable(GL_TEXTURE_2D_ARRAY);
-
-	////////////////////////////////
-	renderManager.init("", "", "", true, 8192);
-	renderManager.resize(this->width(), this->height());
-	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
-
-	glUniform1i(glGetUniformLocation(renderManager.programs["ssao"], "tex0"), 0);//tex0: 0
-
-	//fixCamera();
-
-	std::vector<Vertex> vertices;
-	glutils::drawQuad(0, 0, glm::vec4(1, 1, 1, 1), glm::mat4(), vertices);
-	renderManager.addObject("dummy", "", vertices, true);
-}
-
-/**
- * This function is called whenever the widget has been resized.
- */
-void GLWidget3D::resizeGL(int width, int height) {
-	height = height ? height : 1;
-	glViewport(0, 0, width, height);
-	camera.updatePMatrix(width, height);
-
-	renderManager.resize(width, height);
-}
-
-void GLWidget3D::paintEvent(QPaintEvent *event) {
-	// OpenGLで描画
-	makeCurrent();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-
-	render();
-
-	// REMOVE
-	glActiveTexture(GL_TEXTURE0);
-
-	// OpenGLの設定を元に戻す
-	glShadeModel(GL_FLAT);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	// draw background image
-	QPainter painter(this);
-	painter.setOpacity(opacityOfBackground);
-	painter.drawImage(0, 0, bgImage);
-
-	// draw silhouette
-	painter.setOpacity(1.0f);
-	painter.setPen(QPen(QColor(0, 0, 255), 3));
-	for (auto stroke : silhouette) {
-		painter.drawLine(stroke.start.x, stroke.start.y, stroke.end.x, stroke.end.y);
-	}
-	if (dragging) {
-		painter.drawLine(currentStroke.start.x, currentStroke.start.y, currentStroke.end.x, currentStroke.end.y);
-	}
-	painter.end();
-
-	glEnable(GL_DEPTH_TEST);
-
-}
-
-/**
-* Draw the scene.
-*/
 void GLWidget3D::drawScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -751,27 +318,479 @@ void GLWidget3D::render() {
 	glActiveTexture(GL_TEXTURE0);
 }
 
-void GLWidget3D::updateStatusBar() {
-	QString msg = QString("xrot: %1, yrot: %2, zrot: %3, pos: (%4, %5, %6), FOV: %7, Error: %8").arg(camera.xrot).arg(camera.yrot).arg(camera.zrot).arg(camera.pos.x).arg(camera.pos.y).arg(camera.pos.z).arg(camera.fovy).arg(estimation_error);
-	mainWin->statusBar()->showMessage(msg);
+void GLWidget3D::clearBackground() {
+	image_loaded = false;
+	image = QImage(width(), height(), QImage::Format_RGB32);
+	imageOrig = image;
+	mainWin->setWindowTitle("Photo to 3D");
 
-	mainWin->parameterDialog->manual = true;
-	mainWin->parameterDialog->ui.doubleSpinBoxXrot->setValue(camera.xrot);
-	mainWin->parameterDialog->ui.doubleSpinBoxYrot->setValue(camera.yrot);
-	mainWin->parameterDialog->ui.doubleSpinBoxZrot->setValue(camera.zrot);
-	mainWin->parameterDialog->ui.doubleSpinBoxFOV->setValue(camera.fovy);
-	if (estimated_pm_params.size() > 0) {
-		mainWin->parameterDialog->ui.doubleSpinBoxDepth1->setValue(estimated_pm_params[0]);
-		mainWin->parameterDialog->ui.doubleSpinBoxDepth2->setValue(estimated_pm_params[1]);
-		mainWin->parameterDialog->ui.doubleSpinBoxHeight->setValue(estimated_pm_params[2]);
-		mainWin->parameterDialog->ui.doubleSpinBoxWidth1->setValue(estimated_pm_params[3]);
-		mainWin->parameterDialog->ui.doubleSpinBoxWidth2->setValue(estimated_pm_params[4]);
+	update();
+}
+
+void GLWidget3D::loadImage(const QString& filename) {
+	imageOrig.load(filename);
+	image_loaded = true;
+
+	float scale = std::min((float)width() / imageOrig.width(), (float)height() / imageOrig.height());
+	QImage newImage = imageOrig.scaled(imageOrig.width() * scale, imageOrig.height() * scale);
+
+	image = QImage(width(), height(), QImage::Format_RGB32);
+	QPainter painter(&image);
+	painter.drawImage((width() - newImage.width()) / 2, (height() - newImage.height()) / 2, newImage);
+
+	opacityOfBackground = 0.5f;
+
+	mainWin->setWindowTitle(QString("Photo to 3D - ") + filename);
+
+	update();
+}
+
+void GLWidget3D::clearLines() {
+	lines.clear();
+	update();
+}
+
+void GLWidget3D::loadLines(const QString& filename) {
+	lines.clear();
+
+	QFile file(filename);
+	if (file.open(QIODevice::ReadOnly)) {
+		QTextStream in(&file);
+
+		while (true) {
+			QString line = in.readLine();
+			if (line.isNull()) break;
+			QStringList list = line.split(QRegExp("(\t| )"));
+
+			if (list.size() == 2) {
+				origin = glm::dvec2(list[0].toFloat(), list[1].toFloat());
+			}
+			else {
+				glm::dvec2 start(list[0].toFloat(), list[1].toFloat());
+				glm::dvec2 end(list[2].toFloat(), list[3].toFloat());
+				if (start != end) {
+					lines.push_back(vp::VanishingLine(start.x, start.y, end.x, end.y, list[4].toInt()));
+				}
+			}
+		}
+
+		file.close();
 	}
-	mainWin->parameterDialog->manual = false;
+
+	update();
+}
+
+void GLWidget3D::saveLines(const QString& filename) {
+	QFile file(filename);
+	if (file.open(QIODevice::WriteOnly)) {
+		QTextStream out(&file);
+
+		out << origin.x << " " << origin.y << "\n";
+		for (auto line : lines) {
+			out << line.start.x << " " << line.start.y << " " << line.end.x << " " << line.end.y << " " << line.type << "\n";
+		}
+	}
+	file.close();
+}
+
+void GLWidget3D::clearSilhouette() {
+	silhouette.clear();
+	update();
+}
+
+void GLWidget3D::loadSilhouette(const QString& filename) {
+	silhouette.clear();
+
+	QFile file(filename);
+	if (file.open(QIODevice::ReadOnly)) {
+		QTextStream in(&file);
+
+		while (true) {
+			QString line = in.readLine();
+			if (line.isNull()) break;
+			QStringList list = line.split(QRegExp("(\t| )"));
+
+			glm::dvec2 start(list[0].toFloat(), list[1].toFloat());
+			glm::dvec2 end(list[2].toFloat(), list[3].toFloat());
+			if (start != end) {
+				silhouette.push_back(vp::VanishingLine(start.x, start.y, end.x, end.y, list[4].toInt()));
+			}
+		}
+
+		file.close();
+	}
+	update();
+}
+
+void GLWidget3D::saveSilhouette(const QString& filename) {
+	QFile file(filename);
+	if (file.open(QIODevice::WriteOnly)) {
+		QTextStream out(&file);
+
+		for (auto line : silhouette) {
+			out << line.start.x << " " << line.start.y << " " << line.end.x << " " << line.end.y << " " << line.type << "\n";
+		}
+	}
+	file.close();
+}
+
+void GLWidget3D::clearGeometry() {
+	renderManager.removeObjects();
+	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
+	update();
 }
 
 /**
- * Resize the canvas size while keeping the image size. 
+ * Load a grammar from a file and generate a 3d geometry.
+ * This is only for test usage.
+ */
+void GLWidget3D::loadCGA(const std::string& filename) {
+	cga::Grammar grammar;
+	cga::parseGrammar(filename.c_str(), grammar);
+
+	cga::CGA cga;
+	cga.modelMat = glm::rotate(glm::mat4(), -3.1415926f * 0.5f, glm::vec3(1, 0, 0));
+
+	renderManager.removeObjects();
+
+	// set axiom
+	boost::shared_ptr<cga::Shape> start = boost::shared_ptr<cga::Shape>(new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -3.141592f * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1)));
+	cga.stack.push_back(start);
+
+	// generate 3d model
+	cga.derive(grammar, true);
+	std::vector<boost::shared_ptr<glutils::Face> > faces;
+	cga.generateGeometry(faces, true);
+	renderManager.addFaces(faces, true);
+
+	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
+
+	// render 2d image
+	render();
+}
+
+void GLWidget3D::undo() {
+	if (pen_type == PEN_TYPE_VANISHING_LINE) {
+		if (lines.size() > 0) {
+			lines.pop_back();
+			update();
+		}
+	}
+	else if (pen_type == PEN_TYPE_SILHOUETTE) {
+		if (silhouette.size() > 0) {
+			silhouette.pop_back();
+			update();
+		}
+	}
+}
+
+/**
+ * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
+ * Then, display the options ordered by the probabilities.
+ */
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, bool grayscale, bool centering3D, bool meanSubtraction, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float xMin, float xMax, float yMin, float yMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
+	time_t start = clock();
+
+	std::cout << "-----------------------------------------------------" << std::endl;
+
+	camera.distanceBase = cameraDistanceBase;
+
+	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
+	float imageScale = std::min((float)width() / imageOrig.width(), (float)height() / imageOrig.height());
+	resizeImageCanvasSize(imageOrig, width() / imageScale, height() / imageScale);
+
+	// grammar id
+	grammar_id = grammarSnippetId;
+
+
+
+
+	// create image of silhouette
+	cv::Mat silhouette_image(height(), width(), CV_8UC1, cv::Scalar(255));
+	for (auto line : silhouette) {
+		cv::line(silhouette_image, cv::Point(line.start.x, line.start.y), cv::Point(line.end.x, line.end.y), cv::Scalar(0), 1);
+	}
+
+	// create distance map of silhouette
+	cv::Mat silhouette_dist_map;
+	cv::threshold(silhouette_image, silhouette_image, 254, 255, CV_THRESH_BINARY);
+	cv::distanceTransform(silhouette_image, silhouette_dist_map, CV_DIST_L2, 3);
+	silhouette_dist_map.convertTo(silhouette_dist_map, CV_64F);
+
+
+
+
+
+
+
+
+
+
+
+
+	/////////////////////////////////////////////////////////////////////////
+	// compute camera parameters
+	if (lines.size() > 0) { // use the vanishing points to estimate camera parameters
+		std::vector<glm::dvec2> vps;
+		vp::computeVanishingPoints(lines, vps);
+
+		// convert the coordinates of vp to [-1, 1]
+		for (int i = 0; i < vps.size(); ++i) {
+			vps[i].x = vps[i].x / width() * 2.0 - 1;
+			vps[i].y = 1 - vps[i].y / height() * 2.0;
+		}
+
+		double f, xrot, yrot, zrot;
+		vp::extractCameraParameters(vps, f, xrot, yrot, zrot, camera.center);
+		camera.fovy = vp::rad2deg(atan2(1.0, f) * 2);
+		camera.xrot = vp::rad2deg(xrot);
+		camera.yrot = vp::rad2deg(yrot);
+		camera.zrot = vp::rad2deg(zrot);
+
+		// update camera
+		camera.updatePMatrix(width(), height());
+	}
+	else { // use the CNN to estimate camera parameters
+	}
+
+
+
+
+
+
+
+
+	std::vector<float> init_params(grammars[grammar_id].attrs.size() + 2);
+	for (int k = 0; k < init_params.size(); ++k) {
+		init_params[k] = 0.5;
+	}
+	std::vector<float> best_params(init_params.size());
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// refine the parameter estimation
+	if (refinement) {
+		renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
+
+		double diff_min = std::numeric_limits<double>::max();
+		printf("find good values by random sampling: ");
+		for (int iter = 0; iter < maxIters; ++iter) {
+			printf("\rfind good initial values by random sampling: %d", iter + 1);
+
+			// randomly pick the initial values
+			std::vector<float> cur_params(best_params.size());
+			for (int k = 0; k < cur_params.size(); ++k) {
+				//cur_params[k] = utils::genRand(0.0, 1.0);
+				cur_params[k] = utils::genRand(init_params[k] - 0.5, init_params[k] + 0.5);
+			}
+
+			// compute the camera pos
+			glm::dvec3 T;
+			double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
+			vp::extractCameraMatrixT(camera.f(), glm::vec2(cur_params[0] * 2 - 1, cur_params[1] * 2 - 1) - camera.center, camera_distance, T);
+			camera.pos = glm::vec3(-T.x, -T.y, -T.z);
+
+			// update camera
+			camera.updatePMatrix(width(), height());
+
+			cv::Mat rendered_image;
+			renderImage(grammars[grammar_id], std::vector<float>(cur_params.begin() + 2, cur_params.end()), rendered_image);
+
+			// compute the difference
+			double diff = distanceMap(rendered_image, silhouette_dist_map);
+
+			// coordinate descent
+			float delta = 0.1;
+			for (int iter2 = 0; iter2 < 20; ++iter2) {
+				for (int k = 0; k < cur_params.size(); ++k) {
+					// option 1
+					std::vector<float> next_params1 = cur_params;
+					next_params1[k] -= delta;
+					if (k < 2) {
+						glm::dvec3 T;
+						double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
+						vp::extractCameraMatrixT(camera.f(), glm::vec2(next_params1[0] * 2 - 1, next_params1[1] * 2 - 1) - camera.center, camera_distance, T);
+						camera.pos = glm::vec3(-T.x, -T.y, -T.z);
+
+						// update camera
+						camera.updatePMatrix(width(), height());
+					}
+					cv::Mat rendered_image1;
+					renderImage(grammars[grammar_id], std::vector<float>(next_params1.begin() + 2, next_params1.end()), rendered_image1);
+					double diff1 = distanceMap(rendered_image1, silhouette_dist_map);
+
+					// option 2
+					std::vector<float> next_params2 = cur_params;
+					next_params2[k] += delta;
+					if (k < 2) {
+						glm::dvec3 T;
+						double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
+						vp::extractCameraMatrixT(camera.f(), glm::vec2(next_params2[0] * 2 - 1, next_params2[1] * 2 - 1) - camera.center, camera_distance, T);
+						camera.pos = glm::vec3(-T.x, -T.y, -T.z);
+
+						// update camera
+						camera.updatePMatrix(width(), height());
+					}
+					cv::Mat rendered_image2;
+					renderImage(grammars[grammar_id], std::vector<float>(next_params2.begin() + 2, next_params2.end()), rendered_image2);
+					double diff2 = distanceMap(rendered_image2, silhouette_dist_map);
+
+					if (diff1 < diff2 && diff1 < diff) {
+						diff = diff1;
+						cur_params = next_params1;
+					}
+					else if (diff2 < diff1 && diff2 < diff) {
+						diff = diff2;
+						cur_params = next_params2;
+					}
+				}
+
+				delta *= 0.8;
+			}
+
+			if (diff < diff_min) {
+				diff_min = diff;
+				best_params = cur_params;
+			}
+		}
+		printf("\n");
+
+
+		renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
+	}
+
+	// set the camera pos
+	glm::dvec3 T;
+	double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
+	vp::extractCameraMatrixT(camera.f(), glm::vec2(best_params[0] * 2 - 1, best_params[1] * 2 - 1) - camera.center, camera_distance, T);
+	camera.pos = glm::vec3(-T.x, -T.y, -T.z);
+	camera.updatePMatrix(width(), height());
+
+	// set PM parameter values
+	pm_params.clear();
+	for (int k = 2; k < best_params.size(); ++k) {
+		pm_params.push_back(best_params[k]);
+	}
+
+	updateGeometry(grammars[grammar_id], pm_params);
+
+	updateStatusBar();
+	update();
+
+	time_t end = clock();
+	std::cout << (double)(end - start) / CLOCKS_PER_SEC << "sec." << std::endl;
+
+#if 0	
+
+	std::cout << "Final dist: " << bme::distance(silhouette, renderedImage, width(), height()) << std::endl;
+
+	// line modeで描画
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
+
+	if (applyTexture) {
+		bme::generateTextures(camera, bgImageOrig, width(), height(), faces);
+
+		renderManager.removeObjects();
+		renderManager.addFaces(faces, true);
+		renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
+
+		opacityOfBackground = 0.1f;
+
+		// remove the texture folder
+		//if (QDir("textures").exists()) QDir("textures").removeRecursively();
+	}
+
+	updateStatusBar();
+	update();
+#endif
+
+}
+
+/**
+ * Generate an image using the selected grammar and the PM parameter values.
+ *
+ * @param grammar			grammar
+ * @param pm_params			PM parameter values
+ * @param rendered_image	rendered image [OUT]
+ */
+void GLWidget3D::renderImage(cga::Grammar& grammar, const std::vector<float>& pm_params, cv::Mat& rendered_image) {
+	updateGeometry(grammar, pm_params);
+
+	render();
+	QImage img = grabFrameBuffer();
+	rendered_image = cv::Mat(img.height(), img.width(), CV_8UC4, img.bits(), img.bytesPerLine()).clone();
+	cv::cvtColor(rendered_image, rendered_image, cv::COLOR_BGRA2BGR);
+}
+
+/**
+ * Compute the distance between the rendered image and the target.
+ *
+ * @param rendered_image		rendered image
+ * @param reference_dist_map	distance map of the target
+ * @return						distance
+ */
+double GLWidget3D::distanceMap(cv::Mat rendered_image, const cv::Mat& reference_dist_map) {
+	cv::cvtColor(rendered_image, rendered_image, CV_BGR2GRAY);
+
+	// compute the distance map
+	cv::Mat rendered_dist_map;
+	cv::threshold(rendered_image, rendered_image, 254, 255, CV_THRESH_BINARY);
+	cv::distanceTransform(rendered_image, rendered_dist_map, CV_DIST_L2, 3);
+	rendered_dist_map.convertTo(rendered_dist_map, CV_64F);
+
+	// compute the squared difference
+	cv::Mat diff_mat;
+	cv::reduce((reference_dist_map - rendered_dist_map).mul(reference_dist_map - rendered_dist_map), diff_mat, 0, CV_REDUCE_SUM);
+	cv::reduce(diff_mat, diff_mat, 1, CV_REDUCE_SUM);
+
+	return diff_mat.at<double>(0, 0);
+}
+
+/**
+ * Update the geometry on GPU using the selected grammar and the PM parameter values.
+ *
+ * @param grammar		grammar
+ * @param pm_params		PM parameter values
+ */
+void GLWidget3D::updateGeometry(cga::Grammar& grammar, const std::vector<float>& pm_params) {
+	std::vector<boost::shared_ptr<glutils::Face>> faces;
+
+	// setup CGA
+	cga::CGA cga;
+	cga.modelMat = glm::rotate(glm::mat4(), -(float)vp::M_PI * 0.5f, glm::vec3(1, 0, 0));
+	cga.setParamValues(grammar, pm_params);
+
+	// set axiom
+	boost::shared_ptr<cga::Shape> start = boost::shared_ptr<cga::Shape>(new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -(float)vp::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1)));
+	cga.stack.push_back(start);
+
+	// generate 3d model
+	cga.derive(grammar, true);
+	cga.generateGeometry(faces, true);
+	renderManager.removeObjects();
+	renderManager.addFaces(faces, true);
+}
+
+void GLWidget3D::updateStatusBar() {
+	QString format("rot=(%1, %2, %3), pos=(%4, %5, %6), fov=%7, O=(%8, %9), PM=(");
+	for (int i = 0; i < pm_params.size(); ++i) {
+		if (i > 0) format += ", ";
+		format += "%" + QString::number(10 + i);
+	}
+	format += ")";
+
+	QString msg = format.arg(camera.xrot).arg(camera.yrot).arg(camera.zrot).arg(camera.pos.x).arg(camera.pos.y).arg(camera.pos.z).arg(camera.fovy).arg(camera.center.x).arg(camera.center.y);
+
+	// add PM parameter values (instead of normalized ones!)
+	int k = 0;
+	for (auto it = grammars[grammar_id].attrs.begin(); it != grammars[grammar_id].attrs.end(); ++it, ++k) {
+		msg = msg.arg(pm_params[k] * (it->second.range_end - it->second.range_start) + it->second.range_start);
+	}
+
+	mainWin->statusBar()->showMessage(msg);
+}
+
+/**
+ * Resize the canvas size while keeping the image size.
  */
 void GLWidget3D::resizeImageCanvasSize(QImage& image, int width, int height) {
 	QImage tmp = image;
@@ -779,3 +798,321 @@ void GLWidget3D::resizeImageCanvasSize(QImage& image, int width, int height) {
 	QPainter painter(&image);
 	painter.drawImage((image.width() - tmp.width()) / 2, (image.height() - tmp.height()) / 2, tmp);
 }
+
+void GLWidget3D::keyPressEvent(QKeyEvent *e) {
+	ctrlPressed = false;
+
+	if (e->modifiers() == Qt::ControlModifier) {
+		ctrlPressed = true;
+	}
+
+	switch (e->key()) {
+	case Qt::Key_Shift:
+		shiftPressed = true;
+		break;
+	case Qt::Key_Alt:
+		altPressed = true;
+		break;
+	case Qt::Key_Delete:
+		clearGeometry();
+		break;
+	case Qt::Key_1:
+		if (pm_params.size() > 0) {
+			pm_params[0] += 0.5 * (ctrlPressed ? 0.01 : 0.1) * (altPressed ? -1 : 1);
+			updateGeometry(grammars[grammar_id], pm_params);
+			updateStatusBar();
+			update();
+		}
+		break;
+	case Qt::Key_2:
+		if (pm_params.size() > 1) {
+			pm_params[1] += 0.5 * (ctrlPressed ? 0.01 : 0.1) * (altPressed ? -1 : 1);
+			updateGeometry(grammars[grammar_id], pm_params);
+			updateStatusBar();
+			update();
+		}
+		break;
+	case Qt::Key_3:
+		if (pm_params.size() > 2) {
+			pm_params[2] += 0.5 * (ctrlPressed ? 0.01 : 0.1) * (altPressed ? -1 : 1);
+			updateGeometry(grammars[grammar_id], pm_params);
+			updateStatusBar();
+			update();
+		}
+		break;
+	case Qt::Key_4:
+		if (pm_params.size() > 3) {
+			pm_params[3] += 0.5 * (ctrlPressed ? 0.01 : 0.1) * (altPressed ? -1 : 1);
+			updateGeometry(grammars[grammar_id], pm_params);
+			updateStatusBar();
+		}
+		update();
+		break;
+	case Qt::Key_Left:
+		camera.pos.x += (ctrlPressed ? 0.1 : 1);
+		camera.updateMVPMatrix();
+		updateStatusBar();
+		update();
+		break;
+	case Qt::Key_Right:
+		camera.pos.x -= (ctrlPressed ? 0.1 : 1);
+		camera.updateMVPMatrix();
+		updateStatusBar();
+		update();
+		break;
+	case Qt::Key_Up:
+		camera.pos.y -= (ctrlPressed ? 0.1 : 1);
+		camera.updateMVPMatrix();
+		updateStatusBar();
+		update();
+		break;
+	case Qt::Key_Down:
+		camera.pos.y += (ctrlPressed ? 0.1 : 1);
+		camera.updateMVPMatrix();
+		updateStatusBar();
+		update();
+		break;
+	default:
+		break;
+	}
+}
+
+void GLWidget3D::keyReleaseEvent(QKeyEvent* e) {
+	switch (e->key()) {
+	case Qt::Key_Shift:
+		shiftPressed = false;
+		break;
+	case Qt::Key_Control:
+		ctrlPressed = false;
+		break;
+	case Qt::Key_Alt:
+		altPressed = false;
+		break;
+	default:
+		break;
+	}
+}
+
+/**
+ * This function is called once before the first call to paintGL() or resizeGL().
+ */
+void GLWidget3D::initializeGL() {
+	// init glew
+	GLenum err = glewInit();
+	if (err != GLEW_OK) {
+		std::cout << "Error: " << glewGetErrorString(err) << std::endl;
+	}
+
+	if (glewIsSupported("GL_VERSION_4_2"))
+		printf("Ready for OpenGL 4.2\n");
+	else {
+		printf("OpenGL 4.2 not supported\n");
+		exit(1);
+	}
+	const GLubyte* text = glGetString(GL_VERSION);
+	printf("VERSION: %s\n", text);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	glEnable(GL_TEXTURE_2D);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	glTexGenf(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glTexGenf(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glDisable(GL_TEXTURE_2D);
+
+	glEnable(GL_TEXTURE_3D);
+	glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glDisable(GL_TEXTURE_3D);
+
+	glEnable(GL_TEXTURE_2D_ARRAY);
+	glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glDisable(GL_TEXTURE_2D_ARRAY);
+
+	////////////////////////////////
+	renderManager.init("", "", "", true, 8192);
+	renderManager.resize(this->width(), this->height());
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
+
+	glUniform1i(glGetUniformLocation(renderManager.programs["ssao"], "tex0"), 0);//tex0: 0
+
+	//fixCamera();
+
+	std::vector<Vertex> vertices;
+	glutils::drawQuad(0, 0, glm::vec4(1, 1, 1, 1), glm::mat4(), vertices);
+	renderManager.addObject("dummy", "", vertices, true);
+}
+
+/**
+ * This function is called whenever the widget has been resized.
+ */
+void GLWidget3D::resizeGL(int width, int height) {
+	height = height ? height : 1;
+	glViewport(0, 0, width, height);
+	camera.updatePMatrix(width, height);
+
+	renderManager.resize(width, height);
+}
+
+void GLWidget3D::paintEvent(QPaintEvent *event) {
+	// OpenGLで描画
+	makeCurrent();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+	render();
+
+	// REMOVE
+	glActiveTexture(GL_TEXTURE0);
+
+	// OpenGLの設定を元に戻す
+	glShadeModel(GL_FLAT);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	QPainter painter(this);
+
+	// draw background image
+	if (image_loaded) {
+		painter.setOpacity(opacityOfBackground);
+		painter.drawImage(0, 0, image);
+	}
+
+	// draw lines
+	painter.setOpacity(1.0f);
+	for (auto line : lines) {
+		if (line.type == vp::VanishingLine::TYPE_HORIZONTAL_LEFT) {
+			painter.setPen(QPen(horizontalLeftColor, lineWidth));
+		}
+		else if (line.type == vp::VanishingLine::TYPE_HORIZONTAL_RIGHT) {
+			painter.setPen(QPen(horizontalRightColor, lineWidth));
+		}
+		else {
+			painter.setPen(QPen(verticalColor, lineWidth));
+		}
+		painter.drawLine(line.start.x, line.start.y, line.end.x, line.end.y);
+	}
+
+	// draw silhouette
+	painter.setPen(QPen(silhouetteColor, silhouetteWidth));
+	for (auto line : silhouette) {
+		painter.drawLine(line.start.x, line.start.y, line.end.x, line.end.y);
+	}
+
+	// draw origin
+	painter.setPen(QPen(QColor(255, 255, 0), 1, Qt::SolidLine));
+	painter.setBrush(QBrush(QColor(255, 255, 0)));
+	painter.drawEllipse(origin.x - 3, origin.y - 3, 7, 7);
+
+	// draw the center of the building
+	glm::vec2 pp = vp::projectPoint(camera.mvpMatrix, glm::dvec3(0, 0, 0));
+	painter.setPen(QPen(QColor(255, 0, 0), 1, Qt::SolidLine));
+	painter.setBrush(QBrush(QColor(255, 0, 0)));
+	painter.drawEllipse((pp.x + 1) * 0.5 * width() - 3, (1 - pp.y) * 0.5 * height() - 3, 7, 7);
+
+	painter.end();
+
+	glEnable(GL_DEPTH_TEST);
+
+}
+
+/**
+ * This event handler is called when the mouse press events occur.
+ */
+void GLWidget3D::mousePressEvent(QMouseEvent *e) {
+	if (e->buttons() & Qt::RightButton) {
+		camera.mousePress(e->x(), e->y());
+	}
+	else if (e->button() & Qt::LeftButton) {
+		if (shiftPressed) {
+			if (pen_type == PEN_TYPE_VANISHING_LINE) {
+				lines.push_back(vp::VanishingLine(e->x(), e->y(), e->x(), e->y(), vp::VanishingLine::TYPE_HORIZONTAL_RIGHT));
+			}
+			else if (pen_type == PEN_TYPE_SILHOUETTE) {
+				silhouette.push_back(vp::VanishingLine(e->x(), e->y(), e->x(), e->y(), vp::VanishingLine::TYPE_HORIZONTAL_RIGHT));
+			}
+		}
+		else if (altPressed) {
+			if (pen_type == PEN_TYPE_VANISHING_LINE) {
+				lines.push_back(vp::VanishingLine(e->x(), e->y(), e->x(), e->y(), vp::VanishingLine::TYPE_VERTICAL));
+			}
+			else if (pen_type == PEN_TYPE_SILHOUETTE) {
+				silhouette.push_back(vp::VanishingLine(e->x(), e->y(), e->x(), e->y(), vp::VanishingLine::TYPE_VERTICAL));
+			}
+		}
+		else {
+			if (pen_type == PEN_TYPE_VANISHING_LINE) {
+				lines.push_back(vp::VanishingLine(e->x(), e->y(), e->x(), e->y(), vp::VanishingLine::TYPE_HORIZONTAL_LEFT));
+			}
+			else if (pen_type == PEN_TYPE_SILHOUETTE) {
+				silhouette.push_back(vp::VanishingLine(e->x(), e->y(), e->x(), e->y(), vp::VanishingLine::TYPE_HORIZONTAL_LEFT));
+			}
+		}
+	}
+}
+
+/**
+ * This event handler is called when the mouse move events occur.
+ */
+void GLWidget3D::mouseMoveEvent(QMouseEvent *e) {
+	if (e->buttons() & Qt::RightButton) { // Rotate
+		if (shiftPressed) { // Move
+			camera.move(e->x(), e->y());
+		}
+		else {
+			camera.rotate(e->x(), e->y(), (ctrlPressed ? 0.1 : 1));
+		}
+	}
+	else if (e->buttons() & Qt::MidButton) { // Rotate around Z axis
+		camera.rotateAroundZ(e->x(), e->y(), (ctrlPressed ? 0.1 : 1));
+	}
+	else if (e->buttons() & Qt::LeftButton) {
+		if (pen_type == PEN_TYPE_VANISHING_LINE) {
+			if (lines.size() > 0) {
+				lines.back().end = glm::vec2(e->x(), e->y());
+			}
+		}
+		else if (pen_type == PEN_TYPE_SILHOUETTE) {
+			if (silhouette.size() > 0) {
+				silhouette.back().end = glm::vec2(e->x(), e->y());
+			}
+		}
+	}
+	
+	updateStatusBar();
+	update();
+}
+
+/**
+ * This event handler is called when the mouse release events occur.
+ */
+void GLWidget3D::mouseReleaseEvent(QMouseEvent *e) {
+	if (e->button() == Qt::LeftButton) {
+		if (pen_type == PEN_TYPE_VANISHING_LINE) {
+			if (lines.size() > 0 && lines.back().start == lines.back().end) {
+				lines.pop_back();
+			}
+		}
+		else if (pen_type == PEN_TYPE_SILHOUETTE) {
+			if (silhouette.size() > 0 && silhouette.back().start == silhouette.back().end) {
+				silhouette.pop_back();
+			}
+		}
+	}
+}
+
+void GLWidget3D::wheelEvent(QWheelEvent* e) {
+	camera.changeFov(e->delta() * 0.05, (ctrlPressed ? 0.1 : 1), width(), height());
+	updateStatusBar();
+	update();
+}
+

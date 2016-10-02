@@ -632,6 +632,8 @@
  <tabstops>
   <tabstop>checkBoxAutomaticRecognition</tabstop>
   <tabstop>lineEditGrammarSnippet</tabstop>
+  <tabstop>lineEditImageSize</tabstop>
+  <tabstop>checkBoxGrayscale</tabstop>
   <tabstop>checkBoxCentering3D</tabstop>
   <tabstop>checkBoxMeanSubtraction</tabstop>
   <tabstop>lineEditCameraDistance</tabstop>
@@ -643,6 +645,10 @@
   <tabstop>lineEditZrotMax</tabstop>
   <tabstop>lineEditFovMin</tabstop>
   <tabstop>lineEditFovMax</tabstop>
+  <tabstop>lineEditXMin</tabstop>
+  <tabstop>lineEditXMax</tabstop>
+  <tabstop>lineEditYMin</tabstop>
+  <tabstop>lineEditYMax</tabstop>
   <tabstop>checkBoxTryMultiples</tabstop>
   <tabstop>lineEditNumMultipleTries</tabstop>
   <tabstop>lineEditMaxNoise</tabstop>

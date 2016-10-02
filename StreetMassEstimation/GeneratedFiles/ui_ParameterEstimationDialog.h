@@ -239,7 +239,9 @@ public:
         label_25->setGeometry(QRect(172, 260, 16, 20));
         label_25->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
-        QWidget::setTabOrder(lineEditGrammarSnippet, checkBoxCentering3D);
+        QWidget::setTabOrder(lineEditGrammarSnippet, lineEditImageSize);
+        QWidget::setTabOrder(lineEditImageSize, checkBoxGrayscale);
+        QWidget::setTabOrder(checkBoxGrayscale, checkBoxCentering3D);
         QWidget::setTabOrder(checkBoxCentering3D, checkBoxMeanSubtraction);
         QWidget::setTabOrder(checkBoxMeanSubtraction, lineEditCameraDistance);
         QWidget::setTabOrder(lineEditCameraDistance, lineEditXrotMin);
@@ -250,7 +252,11 @@ public:
         QWidget::setTabOrder(lineEditZrotMin, lineEditZrotMax);
         QWidget::setTabOrder(lineEditZrotMax, lineEditFovMin);
         QWidget::setTabOrder(lineEditFovMin, lineEditFovMax);
-        QWidget::setTabOrder(lineEditFovMax, checkBoxTryMultiples);
+        QWidget::setTabOrder(lineEditFovMax, lineEditXMin);
+        QWidget::setTabOrder(lineEditXMin, lineEditXMax);
+        QWidget::setTabOrder(lineEditXMax, lineEditYMin);
+        QWidget::setTabOrder(lineEditYMin, lineEditYMax);
+        QWidget::setTabOrder(lineEditYMax, checkBoxTryMultiples);
         QWidget::setTabOrder(checkBoxTryMultiples, lineEditNumMultipleTries);
         QWidget::setTabOrder(lineEditNumMultipleTries, lineEditMaxNoise);
         QWidget::setTabOrder(lineEditMaxNoise, checkBoxRefinement);

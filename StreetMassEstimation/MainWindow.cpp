@@ -1,25 +1,35 @@
 #include "MainWindow.h"
 #include <QFileDialog>
 #include "ParameterEstimationDialog.h"
+#include "OptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
 
-	connect(ui.actionNew, SIGNAL(triggered()), this, SLOT(onNew()));
-	connect(ui.actionOpenContour, SIGNAL(triggered()), this, SLOT(onOpenContour()));
-	connect(ui.actionSaveContour, SIGNAL(triggered()), this, SLOT(onSaveContour()));
+	QActionGroup* group = new QActionGroup(this);
+	group->addAction(ui.actionPenVanishingLine);
+	group->addAction(ui.actionPenSilhouette);
+
+	ui.actionPenVanishingLine->setChecked(true);
+
+	connect(ui.actionClearBackground, SIGNAL(triggered()), this, SLOT(onClearBackground()));
 	connect(ui.actionOpenImage, SIGNAL(triggered()), this, SLOT(onOpenImage()));
-	connect(ui.actionSaveScreen, SIGNAL(triggered()), this, SLOT(onSaveScreen()));
+	connect(ui.actionClearLines, SIGNAL(triggered()), this, SLOT(onClearLines()));
+	connect(ui.actionLoadLines, SIGNAL(triggered()), this, SLOT(onLoadLines()));
+	connect(ui.actionSaveLines, SIGNAL(triggered()), this, SLOT(onSaveLines()));
+	connect(ui.actionClearSilhouette, SIGNAL(triggered()), this, SLOT(onClearSilhouette()));
+	connect(ui.actionLoadSilhouette, SIGNAL(triggered()), this, SLOT(onLoadSilhouette()));
+	connect(ui.actionSaveSilhouette, SIGNAL(triggered()), this, SLOT(onSaveSilhouette()));
 	connect(ui.actionOpenCGA, SIGNAL(triggered()), this, SLOT(onOpenCGA()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionParameterEstimation, SIGNAL(triggered()), this, SLOT(onParameterEstimation()));
-	connect(ui.actionParameterDialog, SIGNAL(triggered()), this, SLOT(onParameterDialog()));
+	connect(ui.actionPenVanishingLine, SIGNAL(triggered()), this, SLOT(onPenChanged()));
+	connect(ui.actionPenSilhouette, SIGNAL(triggered()), this, SLOT(onPenChanged()));
+	connect(ui.actionOption, SIGNAL(triggered()), this, SLOT(onOption()));
 
 	glWidget = new GLWidget3D(this);
 	this->setCentralWidget(glWidget);
-
-	parameterDialog = new ParameterDialog(this);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e) {
@@ -30,47 +40,55 @@ void MainWindow::keyReleaseEvent(QKeyEvent* e) {
 	glWidget->keyReleaseEvent(e);
 }
 
-/**
- * This is called when the user clicks [File] -> [New].
- */
-void MainWindow::onNew() {
-	glWidget->clearSilhouette();
+void MainWindow::onClearBackground() {
 	glWidget->clearBackground();
 }
 
-void MainWindow::onOpenContour() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Open contour file..."), "", tr("Contour Files (*.ctr)"));
-	if (filename.isEmpty()) return;
-
-	glWidget->loadContour(filename.toUtf8().constData());
-}
-
-void MainWindow::onSaveContour() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Save contour file..."), "", tr("Contour Files (*.ctr)"));
-	if (filename.isEmpty()) return;
-
-	glWidget->saveContour(filename.toUtf8().constData());
-}
-
-/**
-* This is called when the user clickes [File] -> [Open]
-*/
 void MainWindow::onOpenImage() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open Image file..."), "", tr("Image Files (*.jpg *.png *.bmp)"));
 	if (filename.isEmpty()) return;
 
-	glWidget->clearSilhouette();
+	glWidget->clearLines();
 	glWidget->clearGeometry();
 	glWidget->loadImage(filename.toUtf8().constData());
 }
 
-void MainWindow::onSaveScreen() {
-	glWidget->grab().save("test.png");
+void MainWindow::onClearLines() {
+	glWidget->clearLines();
 }
 
-/**
-* This is called when the user clickes [File] -> [Open CGA]
-*/
+void MainWindow::onLoadLines() {
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open lines..."), "", tr("Line Files (*.txt)"));
+	if (filename.isEmpty()) return;
+
+	glWidget->loadLines(filename);
+}
+
+void MainWindow::onSaveLines() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save lines..."), "", tr("Line Files (*.txt)"));
+	if (filename.isEmpty()) return;
+
+	glWidget->saveLines(filename);
+}
+
+void MainWindow::onClearSilhouette() {
+	glWidget->clearSilhouette();
+}
+
+void MainWindow::onLoadSilhouette() {
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open contour file..."), "", tr("Contour Files (*.ctr)"));
+	if (filename.isEmpty()) return;
+
+	glWidget->loadSilhouette(filename.toUtf8().constData());
+}
+
+void MainWindow::onSaveSilhouette() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save contour file..."), "", tr("Contour Files (*.ctr)"));
+	if (filename.isEmpty()) return;
+
+	glWidget->saveSilhouette(filename.toUtf8().constData());
+}
+
 void MainWindow::onOpenCGA() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open CGA file..."), "", tr("CGA Files (*.xml)"));
 	if (filename.isEmpty()) return;
@@ -95,18 +113,18 @@ void MainWindow::onParameterEstimation() {
 		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
 		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
 		float cameraDistanceBase = dlg.ui.lineEditCameraDistance->text().toFloat();
-		int xrotMin = dlg.ui.lineEditXrotMin->text().toInt();
-		int xrotMax = dlg.ui.lineEditXrotMax->text().toInt();
-		int yrotMin = dlg.ui.lineEditYrotMin->text().toInt();
-		int yrotMax = dlg.ui.lineEditYrotMax->text().toInt();
-		int zrotMin = dlg.ui.lineEditZrotMin->text().toInt();
-		int zrotMax = dlg.ui.lineEditZrotMax->text().toInt();
-		int fovMin = dlg.ui.lineEditFovMin->text().toInt();
-		int fovMax = dlg.ui.lineEditFovMax->text().toInt();
-		int xMin = dlg.ui.lineEditXMin->text().toInt();
-		int xMax = dlg.ui.lineEditXMax->text().toInt();
-		int yMin = dlg.ui.lineEditYMin->text().toInt();
-		int yMax = dlg.ui.lineEditYMax->text().toInt();
+		float xrotMin = dlg.ui.lineEditXrotMin->text().toFloat();
+		float xrotMax = dlg.ui.lineEditXrotMax->text().toFloat();
+		float yrotMin = dlg.ui.lineEditYrotMin->text().toFloat();
+		float yrotMax = dlg.ui.lineEditYrotMax->text().toFloat();
+		float zrotMin = dlg.ui.lineEditZrotMin->text().toFloat();
+		float zrotMax = dlg.ui.lineEditZrotMax->text().toFloat();
+		float fovMin = dlg.ui.lineEditFovMin->text().toFloat();
+		float fovMax = dlg.ui.lineEditFovMax->text().toFloat();
+		float xMin = dlg.ui.lineEditXMin->text().toFloat();
+		float xMax = dlg.ui.lineEditXMax->text().toFloat();
+		float yMin = dlg.ui.lineEditYMin->text().toFloat();
+		float yMax = dlg.ui.lineEditYMax->text().toFloat();
 		bool tryMultiples = dlg.ui.checkBoxTryMultiples->isChecked();
 		int numMultipleTries = dlg.ui.lineEditNumMultipleTries->text().toInt();
 		float maxNoise = dlg.ui.lineEditMaxNoise->text().toFloat();
@@ -118,6 +136,30 @@ void MainWindow::onParameterEstimation() {
 	}
 }
 
-void MainWindow::onParameterDialog() {
-	parameterDialog->show();
+void MainWindow::onPenChanged() {
+	if (ui.actionPenVanishingLine->isChecked()) {
+		glWidget->pen_type = GLWidget3D::PEN_TYPE_VANISHING_LINE;
+	}
+	else if (ui.actionPenSilhouette->isChecked())  {
+		glWidget->pen_type = GLWidget3D::PEN_TYPE_SILHOUETTE;
+	}
+}
+
+void MainWindow::onOption() {
+	OptionDialog dlg;
+	dlg.setContourLineWidth(glWidget->lineWidth);
+	dlg.setHorizontalLeftColor(glWidget->horizontalLeftColor);
+	dlg.setHorizontalRightColor(glWidget->horizontalRightColor);
+	dlg.setVerticalColor(glWidget->verticalColor);
+	dlg.setSilhouetteWidth(glWidget->silhouetteWidth);
+	dlg.setSilhouetteColor(glWidget->silhouetteColor);
+
+	if (dlg.exec()) {
+		glWidget->lineWidth = dlg.getContourLineWidth();
+		glWidget->horizontalLeftColor = dlg.getHorizontalLeftColor();
+		glWidget->horizontalRightColor = dlg.getHorizontalRightColor();
+		glWidget->verticalColor = dlg.getVerticalColor();
+		glWidget->silhouetteWidth = dlg.getSilhouetteWidth();
+		glWidget->silhouetteColor = dlg.getSilhouetteColor();
+	}
 }
