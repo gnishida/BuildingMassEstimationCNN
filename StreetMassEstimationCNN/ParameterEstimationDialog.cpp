@@ -12,6 +12,25 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.checkBoxCentering3D->setChecked(true);
 	ui.checkBoxMeanSubtraction->setChecked(false);
 	ui.lineEditCameraDistance->setText("25");
+	// all
+	ui.lineEditXrotMin->setText("-40");
+	ui.lineEditXrotMax->setText("0");
+	ui.lineEditYrotMin->setText("-70");
+	ui.lineEditYrotMax->setText("-20");
+	ui.lineEditZrotMin->setText("-10");
+	ui.lineEditZrotMax->setText("10");
+	ui.lineEditFovMin->setText("20");
+	ui.lineEditFovMax->setText("90");
+	ui.lineEditOXMin->setText("-0.8");
+	ui.lineEditOXMax->setText("0.8");
+	ui.lineEditOYMin->setText("-0.8");
+	ui.lineEditOYMax->setText("0.8");
+	ui.lineEditXMin->setText("-15");
+	ui.lineEditXMax->setText("15");
+	ui.lineEditYMin->setText("-15");
+	ui.lineEditYMax->setText("15");
+	// #3
+	/*
 	ui.lineEditXrotMin->setText("-24.6008");
 	ui.lineEditXrotMax->setText("-24.6008");
 	ui.lineEditYrotMin->setText("-39.9673");
@@ -28,6 +47,26 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditXMax->setText("-1.94318");
 	ui.lineEditYMin->setText("0.531049");
 	ui.lineEditYMax->setText("0.531049");
+	*/
+	// #11 
+	/*
+	ui.lineEditXrotMin->setText("-11.7039");
+	ui.lineEditXrotMax->setText("-11.7039");
+	ui.lineEditYrotMin->setText("-44.5257");
+	ui.lineEditYrotMax->setText("-44.5257");
+	ui.lineEditZrotMin->setText("-1.6928");
+	ui.lineEditZrotMax->setText("-1.6928");
+	ui.lineEditFovMin->setText("81.7128");
+	ui.lineEditFovMax->setText("81.7128");
+	ui.lineEditOXMin->setText("-0.0603159");
+	ui.lineEditOXMax->setText("-0.0603159");
+	ui.lineEditOYMin->setText("-0.313111");
+	ui.lineEditOYMax->setText("-0.313111");
+	ui.lineEditXMin->setText("4.51085");
+	ui.lineEditXMax->setText("4.51085");
+	ui.lineEditYMin->setText("-1.22776");
+	ui.lineEditYMax->setText("-1.22776");
+	*/
 	ui.checkBoxTryMultiples->setChecked(false);
 	ui.lineEditNumMultipleTries->setText("100");
 	ui.lineEditNumMultipleTries->setEnabled(ui.checkBoxTryMultiples->isChecked());

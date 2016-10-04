@@ -50,7 +50,7 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	// caffe modelを読み込む
 	{
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_01.prototxt", "models/train_01_iter_40000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_01.prototxt", "models/train_01_iter_80000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_02.prototxt", "models/train_02_iter_80000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_03.prototxt", "models/train_03_iter_80000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_04.prototxt", "models/train_04_iter_80000.caffemodel")));
