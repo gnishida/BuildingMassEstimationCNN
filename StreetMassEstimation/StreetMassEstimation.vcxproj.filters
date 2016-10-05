@@ -261,7 +261,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GLUtils.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\cga</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -483,13 +483,13 @@
     <ClInclude Include="RenderManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="CVUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GLUtils.h">
+      <Filter>Source Files\cga</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

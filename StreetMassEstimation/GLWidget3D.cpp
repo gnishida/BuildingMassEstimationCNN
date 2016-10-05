@@ -16,7 +16,6 @@
 #include "Utils.h"
 #include <QFile>
 #include <QTextStream>
-//#include "BuildingMassEstimation.h"
 #include <time.h>
 
 GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent) {

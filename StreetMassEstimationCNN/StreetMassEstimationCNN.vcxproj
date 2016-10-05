@@ -207,7 +207,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Asset.cpp" />
-    <ClCompile Include="BuildingMassEstimation.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CenterOperator.cpp" />
     <ClCompile Include="CGA.cpp" />
@@ -387,7 +386,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Asset.h" />
-    <ClInclude Include="BuildingMassEstimation.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CenterOperator.h" />
     <ClInclude Include="CGA.h" />
