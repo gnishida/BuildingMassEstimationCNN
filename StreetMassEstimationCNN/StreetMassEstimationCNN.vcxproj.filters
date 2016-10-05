@@ -74,9 +74,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CameraCalibration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Classifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -114,9 +111,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Asset.cpp">
-      <Filter>Source Files\shape</Filter>
-    </ClCompile>
-    <ClCompile Include="BoundingBox.cpp">
       <Filter>Source Files\shape</Filter>
     </ClCompile>
     <ClCompile Include="CenterOperator.cpp">
@@ -324,9 +318,6 @@
     <ClInclude Include="Asset.h">
       <Filter>Source Files\shape</Filter>
     </ClInclude>
-    <ClInclude Include="BoundingBox.h">
-      <Filter>Source Files\shape</Filter>
-    </ClInclude>
     <ClInclude Include="CenterOperator.h">
       <Filter>Source Files\rule</Filter>
     </ClInclude>
@@ -529,9 +520,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraCalibration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Classifier.h">

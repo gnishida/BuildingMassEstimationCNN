@@ -11,7 +11,6 @@
 #include "Rectangle.h"
 #include "GLUtils.h"
 #include <opencv2/calib3d.hpp>
-#include "CameraCalibration.h"
 #include <map>
 #include "CVUtils.h"
 #include "Utils.h"
