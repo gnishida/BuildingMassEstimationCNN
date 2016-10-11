@@ -109,9 +109,6 @@ void MainWindow::onParameterEstimation() {
 		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
 		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
 		int image_size = dlg.ui.lineEditImageSize->text().toInt();
-		bool grayscale = dlg.ui.checkBoxGrayscale->isChecked();
-		bool centering3D = dlg.ui.checkBoxCentering3D->isChecked();
-		bool meanSubtraction = dlg.ui.checkBoxMeanSubtraction->isChecked();
 		float cameraDistanceBase = dlg.ui.lineEditCameraDistance->text().toFloat();
 		float xrotMin = dlg.ui.lineEditXrotMin->text().toFloat();
 		float xrotMax = dlg.ui.lineEditXrotMax->text().toFloat();
@@ -136,7 +133,7 @@ void MainWindow::onParameterEstimation() {
 		int maxIters = dlg.ui.lineEditIterations->text().toInt();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, image_size, grayscale, centering3D, meanSubtraction, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
+		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
 	}
 }
 

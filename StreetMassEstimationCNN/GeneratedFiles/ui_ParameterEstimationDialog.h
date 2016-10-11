@@ -41,8 +41,6 @@ public:
     QLineEdit *lineEditFovMin;
     QPushButton *pushButtonCancel;
     QPushButton *pushButtonOK;
-    QCheckBox *checkBoxCentering3D;
-    QCheckBox *checkBoxMeanSubtraction;
     QLabel *label_15;
     QLineEdit *lineEditGrammarSnippet;
     QLabel *label_16;
@@ -63,7 +61,6 @@ public:
     QLabel *label;
     QLabel *label_21;
     QLineEdit *lineEditImageSize;
-    QCheckBox *checkBoxGrayscale;
     QLabel *label_22;
     QLineEdit *lineEditXMax;
     QLineEdit *lineEditXMin;
@@ -141,12 +138,6 @@ public:
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
         pushButtonOK->setGeometry(QRect(370, 450, 91, 31));
-        checkBoxCentering3D = new QCheckBox(ParameterEstimationDialog);
-        checkBoxCentering3D->setObjectName(QStringLiteral("checkBoxCentering3D"));
-        checkBoxCentering3D->setGeometry(QRect(300, 50, 91, 17));
-        checkBoxMeanSubtraction = new QCheckBox(ParameterEstimationDialog);
-        checkBoxMeanSubtraction->setObjectName(QStringLiteral("checkBoxMeanSubtraction"));
-        checkBoxMeanSubtraction->setGeometry(QRect(410, 50, 121, 17));
         label_15 = new QLabel(ParameterEstimationDialog);
         label_15->setObjectName(QStringLiteral("label_15"));
         label_15->setGeometry(QRect(10, 10, 91, 20));
@@ -215,9 +206,6 @@ public:
         lineEditImageSize = new QLineEdit(ParameterEstimationDialog);
         lineEditImageSize->setObjectName(QStringLiteral("lineEditImageSize"));
         lineEditImageSize->setGeometry(QRect(110, 50, 61, 20));
-        checkBoxGrayscale = new QCheckBox(ParameterEstimationDialog);
-        checkBoxGrayscale->setObjectName(QStringLiteral("checkBoxGrayscale"));
-        checkBoxGrayscale->setGeometry(QRect(200, 50, 101, 17));
         label_22 = new QLabel(ParameterEstimationDialog);
         label_22->setObjectName(QStringLiteral("label_22"));
         label_22->setGeometry(QRect(28, 290, 71, 16));
@@ -276,10 +264,7 @@ public:
         label_29->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
         QWidget::setTabOrder(lineEditGrammarSnippet, lineEditImageSize);
-        QWidget::setTabOrder(lineEditImageSize, checkBoxGrayscale);
-        QWidget::setTabOrder(checkBoxGrayscale, checkBoxCentering3D);
-        QWidget::setTabOrder(checkBoxCentering3D, checkBoxMeanSubtraction);
-        QWidget::setTabOrder(checkBoxMeanSubtraction, lineEditCameraDistance);
+        QWidget::setTabOrder(lineEditImageSize, lineEditCameraDistance);
         QWidget::setTabOrder(lineEditCameraDistance, lineEditXrotMin);
         QWidget::setTabOrder(lineEditXrotMin, lineEditXrotMax);
         QWidget::setTabOrder(lineEditXrotMax, lineEditYrotMin);
@@ -322,8 +307,6 @@ public:
         label_8->setText(QApplication::translate("ParameterEstimationDialog", "Yrot:", 0));
         pushButtonCancel->setText(QApplication::translate("ParameterEstimationDialog", "Cancel", 0));
         pushButtonOK->setText(QApplication::translate("ParameterEstimationDialog", "OK", 0));
-        checkBoxCentering3D->setText(QApplication::translate("ParameterEstimationDialog", "3D Centering", 0));
-        checkBoxMeanSubtraction->setText(QApplication::translate("ParameterEstimationDialog", "Mean subtraction", 0));
         label_15->setText(QApplication::translate("ParameterEstimationDialog", "Grammar snippet:", 0));
         label_16->setText(QApplication::translate("ParameterEstimationDialog", "(1 - 14)", 0));
         checkBoxApplyTexture->setText(QApplication::translate("ParameterEstimationDialog", "Apply Texture", 0));
@@ -337,7 +320,6 @@ public:
         label_20->setText(QApplication::translate("ParameterEstimationDialog", "~", 0));
         label->setText(QApplication::translate("ParameterEstimationDialog", "#Iterations:", 0));
         label_21->setText(QApplication::translate("ParameterEstimationDialog", "Image size:", 0));
-        checkBoxGrayscale->setText(QApplication::translate("ParameterEstimationDialog", "Grayscale", 0));
         label_22->setText(QApplication::translate("ParameterEstimationDialog", "X pos:", 0));
         label_23->setText(QApplication::translate("ParameterEstimationDialog", "Y pos:", 0));
         label_24->setText(QApplication::translate("ParameterEstimationDialog", "~", 0));

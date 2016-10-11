@@ -496,7 +496,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, bool grayscale, bool centering3D, bool meanSubtraction, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
 	time_t start = clock();
 
 	std::cout << "-----------------------------------------------------" << std::endl;
@@ -533,106 +533,72 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// parameter estimation by CNN
+	std::vector<float> best_params;
+	double diff_min = std::numeric_limits<double>::max();
+	for (int iter = 0; iter < (tryMultiples ? numMultipleTries : 1); ++iter) {
+		// create input image to CNN
+		glm::vec2 scale((float)image_size / width(), (float)image_size / height());
+		cv::Mat input = cv::Mat(image_size, image_size, CV_8UC3, cv::Scalar(255, 255, 255));
+		std::vector<vp::VanishingLine> scaledSilhouette;
+		for (auto stroke : silhouette) {
+			cv::Point p1(stroke.start.x * scale.x, stroke.start.y * scale.y);
+			cv::Point p2(stroke.end.x * scale.x, stroke.end.y * scale.y);
 
-	// create input image to CNN
-	glm::vec2 scale((float)image_size / width(), (float)image_size / height());
-	cv::Mat input = cv::Mat(image_size, image_size, CV_8UC3, cv::Scalar(255, 255, 255));
-	std::vector<vp::VanishingLine> scaledSilhouette;
-	for (auto stroke : silhouette) {
-		cv::line(input, cv::Point(stroke.start.x * scale.x, stroke.start.y * scale.y), cv::Point(stroke.end.x * scale.x, stroke.end.y * scale.y), cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
-	}
-	cv::imwrite("input.png", input);
+			if (tryMultiples && iter > 0) {
+				p1.x += utils::genRand(-image_size * 0.01 * maxNoise, image_size * 0.01 * maxNoise);
+				p1.y += utils::genRand(-image_size * 0.01 * maxNoise, image_size * 0.01 * maxNoise);
+				p2.x += utils::genRand(-image_size * 0.01 * maxNoise, image_size * 0.01 * maxNoise);
+				p2.y += utils::genRand(-image_size * 0.01 * maxNoise, image_size * 0.01 * maxNoise);
+			}
 
-	// estimate paramter values by CNN
-	std::vector<float> params = regressions[grammar_id]->Predict(input);
-	utils::output_vector(params);
+			cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+		}
+		//cv::imwrite("input.png", input);
 
+		// estimate paramter values by CNN
+		std::vector<float> params = regressions[grammar_id]->Predict(input);
+		//utils::output_vector(params);
 
-	// 固定の場合には、ダミーでパラメータを入れちゃう
-	if (xrotMin == xrotMax) {
-		params.insert(params.begin() + 0, 0.5);
-	}
-	if (yrotMin == yrotMax) {
-		params.insert(params.begin() + 1, 0.5);
-	}
-	if (zrotMin == zrotMax) {
-		params.insert(params.begin() + 2, 0.5);
-	}
-	if (fovMin == fovMax) {
-		params.insert(params.begin() + 3, 0.5);
-	}
-	if (oxMin == oxMax) {
-		params.insert(params.begin() + 4, 0.5);
-	}
-	if (oyMin == oyMax) {
-		params.insert(params.begin() + 5, 0.5);
-	}
-	if (xMin == xMax) {
-		params.insert(params.begin() + 6, 0.5);
-	}
-	if (yMin == yMax) {
-		params.insert(params.begin() + 7, 0.5);
-	}
-
-
-
-
-	/////////////////////////////////////////////////////////////////////////
-	// compute camera parameters
-	if (lines.size() > 0) { // use the vanishing points to estimate camera parameters
-		std::vector<glm::dvec2> vps;
-		vp::computeVanishingPoints(lines, vps);
-
-		// convert the coordinates of vp to [-1, 1]
-		for (int i = 0; i < vps.size(); ++i) {
-			vps[i].x = vps[i].x / width() * 2.0 - 1;
-			vps[i].y = 1 - vps[i].y / height() * 2.0;
+		// 固定の場合には、ダミーでパラメータを入れちゃう
+		if (xrotMin == xrotMax) {
+			params.insert(params.begin() + 0, 0.5);
+		}
+		if (yrotMin == yrotMax) {
+			params.insert(params.begin() + 1, 0.5);
+		}
+		if (zrotMin == zrotMax) {
+			params.insert(params.begin() + 2, 0.5);
+		}
+		if (fovMin == fovMax) {
+			params.insert(params.begin() + 3, 0.5);
+		}
+		if (oxMin == oxMax) {
+			params.insert(params.begin() + 4, 0.5);
+		}
+		if (oyMin == oyMax) {
+			params.insert(params.begin() + 5, 0.5);
+		}
+		if (xMin == xMax) {
+			params.insert(params.begin() + 6, 0.5);
+		}
+		if (yMin == yMax) {
+			params.insert(params.begin() + 7, 0.5);
 		}
 
-		double f, xrot, yrot, zrot;
-		vp::extractCameraParameters(vps, f, xrot, yrot, zrot, camera.center);
-		camera.fovy = vp::rad2deg(atan2(1.0, f) * 2);
-		camera.xrot = vp::rad2deg(xrot);
-		camera.yrot = vp::rad2deg(yrot);
-		camera.zrot = vp::rad2deg(zrot);
+		// setup the camera
+		setupCamera(params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 
-		// update camera
-		camera.updatePMatrix(width(), height());
-	}
-	else { // use the CNN to estimate camera parameters
-		camera.xrot = (xrotMax - xrotMin) * params[0] + xrotMin;
-		camera.yrot = (yrotMax - yrotMin) * params[1] + yrotMin;
-		camera.zrot = (zrotMax - zrotMin) * params[2] + zrotMin;
-		camera.fovy = (fovMax - fovMin) * params[3] + fovMin;
-		camera.center.x = (oxMax - oxMin) * params[4] + oxMin;
-		camera.center.y = (oyMax - oyMin) * params[5] + oyMin;
+		cv::Mat rendered_image;
+		renderImage(grammars[grammar_id], std::vector<float>(params.begin() + 8, params.end()), rendered_image);
+
+		double diff = distanceMap(rendered_image, silhouette_dist_map);
+		if (diff < diff_min) {
+			diff_min = diff;
+			best_params = params;
+		}
 	}
 
-
-
-	/*
-	// Since the x/y pos are the relative to the z pos, recover the actual coordinates.
-	double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
-	params[4] = (params[4] * (xMax - xMin) + xMin) * camera_distance;
-	params[5] = (params[5] * (yMax - yMin) + yMin) * camera_distance;
-	//std::cout << params[4] << ", " << params[5] << std::endl;
-
-	// Convert the x/y pos to the origin position on the image plane [0, 1]
-	// where 0 means the left or bottom and 1 means the right or top edge.
-	params[4] = (-params[4] / camera_distance * camera.f() + camera.center.x + 1) * 0.5;
-	params[5] = (-params[5] / camera_distance * camera.f() + camera.center.y + 1) * 0.5;
-	//std::cout << params[4] << ", " << params[5] << std::endl;
-	*/
-
-
-	// Put the param values to init params but discard the first 6 parameters.
-	// We refine only the camera pos and PM parameters
-	std::vector<float> init_params;
-	for (int k = 6; k < params.size(); ++k) {
-		init_params.push_back(params[k]);
-	}
-
-	std::vector<float> best_params = init_params;
+	std::vector<float> init_params = best_params;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// refine the parameter estimation
@@ -644,60 +610,41 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		for (int iter = 0; iter < maxIters; ++iter) {
 			printf("\rfind good initial values by random sampling: %d", iter + 1);
 
-			// randomly pick the initial values
-			std::vector<float> cur_params(init_params.size());
-			for (int k = 0; k < cur_params.size(); ++k) {
-				//cur_params[k] = utils::genRand(0.0, 1.0);
-				cur_params[k] = utils::genRand(init_params[k] - 0.2, init_params[k] + 0.2);
+			// randomly pick the initial values around the initial estimate by CNN
+			std::vector<float> cur_params = init_params;
+			if (iter > 0) {
+				for (int k = 0; k < cur_params.size(); ++k) {
+					cur_params[k] += utils::genRand(-0.05, +0.05);
+				}
 			}
 
-			// compute the camera pos
-			camera.pos.x = cur_params[0] * (xMax - xMin) + xMin;
-			camera.pos.y = cur_params[1] * (xMax - xMin) + xMin;
-
-			// update camera
-			camera.updatePMatrix(width(), height());
+			// setup the camera
+			setupCamera(cur_params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 
 			cv::Mat rendered_image;
-			renderImage(grammars[grammar_id], std::vector<float>(cur_params.begin() + 2, cur_params.end()), rendered_image);
+			renderImage(grammars[grammar_id], std::vector<float>(cur_params.begin() + 8, cur_params.end()), rendered_image);
 
 			// compute the difference
 			double diff = distanceMap(rendered_image, silhouette_dist_map);
 
 			// coordinate descent
-			float delta = 0.1;
-			for (int iter2 = 0; iter2 < 20; ++iter2) {
-				for (int k = 0; k < cur_params.size(); ++k) {
+			float delta = 0.005;
+			for (int iter2 = 0; iter2 < 5; ++iter2) {
+				for (int k = 8; k < cur_params.size(); ++k) {
 					// option 1
 					std::vector<float> next_params1 = cur_params;
 					next_params1[k] -= delta;
-					if (k < 2) {
-						glm::dvec3 T;
-						double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
-						vp::extractCameraMatrixT(camera.f(), glm::vec2(next_params1[0] * 2 - 1, next_params1[1] * 2 - 1) - camera.center, camera_distance, T);
-						camera.pos = glm::vec3(-T.x, -T.y, -T.z);
-
-						// update camera
-						camera.updatePMatrix(width(), height());
-					}
+					setupCamera(next_params1, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 					cv::Mat rendered_image1;
-					renderImage(grammars[grammar_id], std::vector<float>(next_params1.begin() + 2, next_params1.end()), rendered_image1);
+					renderImage(grammars[grammar_id], std::vector<float>(next_params1.begin() + 8, next_params1.end()), rendered_image1);
 					double diff1 = distanceMap(rendered_image1, silhouette_dist_map);
 
 					// option 2
 					std::vector<float> next_params2 = cur_params;
 					next_params2[k] += delta;
-					if (k < 2) {
-						glm::dvec3 T;
-						double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
-						vp::extractCameraMatrixT(camera.f(), glm::vec2(next_params2[0] * 2 - 1, next_params2[1] * 2 - 1) - camera.center, camera_distance, T);
-						camera.pos = glm::vec3(-T.x, -T.y, -T.z);
-
-						// update camera
-						camera.updatePMatrix(width(), height());
-					}
+					setupCamera(next_params2, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 					cv::Mat rendered_image2;
-					renderImage(grammars[grammar_id], std::vector<float>(next_params2.begin() + 2, next_params2.end()), rendered_image2);
+					renderImage(grammars[grammar_id], std::vector<float>(next_params2.begin() + 8, next_params2.end()), rendered_image2);
 					double diff2 = distanceMap(rendered_image2, silhouette_dist_map);
 
 					if (diff1 < diff2 && diff1 < diff) {
@@ -724,35 +671,14 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
 	}
 
-
-	// Since the x/y pos are the relative to the z pos, recover the actual coordinates.
-	double camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
-	camera.pos.x = best_params[0] * (xMax - xMin) + xMin;
-	camera.pos.y = best_params[1] * (yMax - yMin) + yMin;
-	camera.pos.z = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
-	//std::cout << best_params[0] << ", " << best_params[1] << std::endl;
-
-	// set the camera pos
-	/*
-	glm::dvec3 T;
-	camera_distance = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
-	vp::extractCameraMatrixT(camera.f(), glm::vec2(best_params[0] * 2 - 1, best_params[1] * 2 - 1) - camera.center, camera_distance, T);
-	camera.pos = glm::vec3(-T.x, -T.y, -T.z);
-	*/
-
-
-	/*
-	camera.pos.x = best_params[0] * (xMax - xMin) + xMin;
-	camera.pos.y = best_params[1] * (yMax - yMin) + yMin;
-	camera.pos.z = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
-	*/
-	camera.updatePMatrix(width(), height());
+	// set the camera
+	setupCamera(best_params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 
 	// set PM parameter values
 	pm_params.clear();
-	for (int k = 2; k < best_params.size(); ++k) {
-		pm_params.push_back(best_params[k]);
-	}
+	pm_params.insert(pm_params.begin(), best_params.begin() + 8, best_params.end());
+
+	utils::output_vector(best_params);
 
 	updateGeometry(grammars[grammar_id], pm_params);
 
@@ -760,7 +686,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	update();
 
 	time_t end = clock();
-	std::cout << (double)(end - start) / CLOCKS_PER_SEC << "sec." << std::endl;
+	std::cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << "sec." << std::endl;
 
 #if 0	
 
@@ -851,6 +777,20 @@ void GLWidget3D::updateGeometry(cga::Grammar& grammar, const std::vector<float>&
 	cga.generateGeometry(faces, true);
 	renderManager.removeObjects();
 	renderManager.addFaces(faces, true);
+}
+
+void GLWidget3D::setupCamera(const std::vector<float>& params, float xrotMax, float xrotMin, float yrotMax, float yrotMin, float zrotMax, float zrotMin, float fovMax, float fovMin, float oxMax, float oxMin, float oyMax, float oyMin, float xMax, float xMin, float yMax, float yMin) {
+	camera.xrot = params[0] * (xrotMax - xrotMin) + xrotMin;
+	camera.yrot = params[1] * (yrotMax - yrotMin) + yrotMin;
+	camera.zrot = params[2] * (zrotMax - zrotMin) + zrotMin;
+	camera.fovy = params[3] * (fovMax - fovMin) + fovMin;
+	camera.center.x = params[4] * (oxMax - oxMin) + oxMin;
+	camera.center.y = params[5] * (oyMax - oyMin) + oyMin;
+	camera.pos.x = params[6] * (xMax - xMin) + xMin;
+	camera.pos.y = params[7] * (xMax - xMin) + xMin;
+	camera.pos.z = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
+
+	camera.updatePMatrix(width(), height());
 }
 
 void GLWidget3D::updateStatusBar() {

@@ -221,32 +221,6 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBoxCentering3D">
-   <property name="geometry">
-    <rect>
-     <x>300</x>
-     <y>50</y>
-     <width>91</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>3D Centering</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBoxMeanSubtraction">
-   <property name="geometry">
-    <rect>
-     <x>410</x>
-     <y>50</y>
-     <width>121</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Mean subtraction</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_15">
    <property name="geometry">
     <rect>
@@ -510,19 +484,6 @@
     </rect>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBoxGrayscale">
-   <property name="geometry">
-    <rect>
-     <x>200</x>
-     <y>50</y>
-     <width>101</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Grayscale</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_22">
    <property name="geometry">
     <rect>
@@ -737,9 +698,6 @@
   <tabstop>checkBoxAutomaticRecognition</tabstop>
   <tabstop>lineEditGrammarSnippet</tabstop>
   <tabstop>lineEditImageSize</tabstop>
-  <tabstop>checkBoxGrayscale</tabstop>
-  <tabstop>checkBoxCentering3D</tabstop>
-  <tabstop>checkBoxMeanSubtraction</tabstop>
   <tabstop>lineEditCameraDistance</tabstop>
   <tabstop>lineEditXrotMin</tabstop>
   <tabstop>lineEditXrotMax</tabstop>

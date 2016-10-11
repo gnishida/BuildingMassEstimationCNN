@@ -8,9 +8,6 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditGrammarSnippet->setText("1");
 	ui.lineEditGrammarSnippet->setEnabled(!ui.checkBoxAutomaticRecognition->isChecked());
 	ui.lineEditImageSize->setText("227");
-	ui.checkBoxGrayscale->setChecked(false);
-	ui.checkBoxCentering3D->setChecked(true);
-	ui.checkBoxMeanSubtraction->setChecked(false);
 	ui.lineEditCameraDistance->setText("25");
 	// all
 	ui.lineEditXrotMin->setText("-40");
@@ -70,10 +67,10 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.checkBoxTryMultiples->setChecked(false);
 	ui.lineEditNumMultipleTries->setText("100");
 	ui.lineEditNumMultipleTries->setEnabled(ui.checkBoxTryMultiples->isChecked());
-	ui.lineEditMaxNoise->setText("1");
+	ui.lineEditMaxNoise->setText("0.5");
 	ui.lineEditMaxNoise->setEnabled(ui.checkBoxTryMultiples->isChecked());
 	ui.checkBoxRefinement->setChecked(false);
-	ui.lineEditIterations->setText("50");
+	ui.lineEditIterations->setText("30");
 	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.checkBoxApplyTexture->setChecked(false);
 
