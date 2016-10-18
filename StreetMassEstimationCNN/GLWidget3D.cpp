@@ -48,9 +48,9 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	// caffe modelを読み込む
 	{
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_01.prototxt", "models/train_01_iter_80000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_01.prototxt", "models/train_01_iter_240000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_02.prototxt", "models/train_02_iter_80000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_03.prototxt", "models/train_03_iter_80000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_03.prototxt", "models/train_03_iter_240000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_04.prototxt", "models/train_04_iter_80000.caffemodel")));
 	}
 
@@ -512,7 +512,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 
 
-
 	// create image of silhouette
 	cv::Mat silhouette_image(height(), width(), CV_8UC1, cv::Scalar(255));
 	for (auto line : silhouette) {
@@ -525,12 +524,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 	cv::distanceTransform(silhouette_image, silhouette_dist_map, CV_DIST_L2, 3);
 	silhouette_dist_map.convertTo(silhouette_dist_map, CV_64F);
 
-
-
-
-
-
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// parameter estimation by CNN
 	std::vector<float> best_params;
@@ -539,7 +532,6 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 		// create input image to CNN
 		glm::vec2 scale((float)image_size / width(), (float)image_size / height());
 		cv::Mat input = cv::Mat(image_size, image_size, CV_8UC3, cv::Scalar(255, 255, 255));
-		std::vector<vp::VanishingLine> scaledSilhouette;
 		for (auto stroke : silhouette) {
 			cv::Point p1(stroke.start.x * scale.x, stroke.start.y * scale.y);
 			cv::Point p2(stroke.end.x * scale.x, stroke.end.y * scale.y);
@@ -614,7 +606,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			std::vector<float> cur_params = init_params;
 			if (iter > 0) {
 				for (int k = 0; k < cur_params.size(); ++k) {
-					cur_params[k] += utils::genRand(-0.05, +0.05);
+					cur_params[k] += utils::genRand(-0.02, +0.02);
 				}
 			}
 
@@ -628,24 +620,28 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 			double diff = distanceMap(rendered_image, silhouette_dist_map);
 
 			// coordinate descent
-			float delta = 0.005;
-			for (int iter2 = 0; iter2 < 5; ++iter2) {
-				for (int k = 8; k < cur_params.size(); ++k) {
+			float delta = 0.002;
+			for (int iter2 = 0; iter2 < 10; ++iter2) {
+				for (int k = 0; k < cur_params.size(); ++k) {
 					// option 1
 					std::vector<float> next_params1 = cur_params;
 					next_params1[k] -= delta;
 					setupCamera(next_params1, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 					cv::Mat rendered_image1;
-					renderImage(grammars[grammar_id], std::vector<float>(next_params1.begin() + 8, next_params1.end()), rendered_image1);
-					double diff1 = distanceMap(rendered_image1, silhouette_dist_map);
+					double diff1 = std::numeric_limits<double>::max();
+					if (renderImage(grammars[grammar_id], std::vector<float>(next_params1.begin() + 8, next_params1.end()), rendered_image1, true, true)) {
+						diff1 = distanceMap(rendered_image1, silhouette_dist_map);
+					}
 
 					// option 2
 					std::vector<float> next_params2 = cur_params;
 					next_params2[k] += delta;
 					setupCamera(next_params2, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 					cv::Mat rendered_image2;
-					renderImage(grammars[grammar_id], std::vector<float>(next_params2.begin() + 8, next_params2.end()), rendered_image2);
-					double diff2 = distanceMap(rendered_image2, silhouette_dist_map);
+					double diff2 = std::numeric_limits<double>::max();
+					if (renderImage(grammars[grammar_id], std::vector<float>(next_params2.begin() + 8, next_params2.end()), rendered_image2, true, true)) {
+						diff2 = distanceMap(rendered_image2, silhouette_dist_map);
+					}
 
 					if (diff1 < diff2 && diff1 < diff) {
 						diff = diff1;
@@ -714,6 +710,136 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 }
 
+void GLWidget3D::autoTest(int grammar_id, int image_size, const QString& param_filename, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, bool refinement) {
+	QFile param_file(param_filename);
+	param_file.open(QIODevice::ReadOnly);
+	QTextStream param_in(&param_file);
+	
+	while (!param_in.atEnd()) {
+		QString line = param_in.readLine();
+		QStringList list = line.split(",");
+		int id = list[0].toInt();
+
+		std::vector<float> param_values;
+		for (int k = 1; k < list.size(); ++k) {
+			param_values.push_back(list[k].toFloat());
+		}
+
+		// normalize the camera parameter values
+		param_values[0] = (param_values[0] - xrotMin) / (xrotMax - xrotMin);
+		param_values[1] = (param_values[1] - yrotMin) / (yrotMax - yrotMin);
+		param_values[2] = (param_values[2] - zrotMin) / (zrotMax - zrotMin);
+		param_values[3] = (param_values[3] - fovMin) / (fovMax - fovMin);
+		param_values[4] = (param_values[4] - oxMin) / (oxMax - oxMin);
+		param_values[5] = (param_values[5] - oyMin) / (oyMax - oyMin);
+		param_values[6] = (param_values[6] - xMin) / (xMax - xMin);
+		param_values[7] = (param_values[7] - yMin) / (yMax - yMin);
+
+		// normalize the PM parameter values
+		int k = 8;
+		for (auto it = grammars[grammar_id].attrs.begin(); it != grammars[grammar_id].attrs.end(); ++it, ++k) {
+			param_values[k] = (param_values[k] - it->second.range_start) / (it->second.range_end - it->second.range_start);
+		}
+
+		// read silhouette
+		QString filename = QString("data/%1.ctr").arg(id, 2, 10, QChar('0'));
+		loadSilhouette(filename);
+
+		// create image of silhouette
+		cv::Mat silhouette_image(height(), width(), CV_8UC1, cv::Scalar(255));
+		for (auto line : silhouette) {
+			cv::line(silhouette_image, cv::Point(line.start.x, line.start.y), cv::Point(line.end.x, line.end.y), cv::Scalar(0), 1);
+		}
+
+		// create distance map of silhouette
+		cv::Mat silhouette_dist_map;
+		cv::threshold(silhouette_image, silhouette_image, 254, 255, CV_THRESH_BINARY);
+		cv::distanceTransform(silhouette_image, silhouette_dist_map, CV_DIST_L2, 3);
+		silhouette_dist_map.convertTo(silhouette_dist_map, CV_64F);
+
+		// create input image to CNN
+		glm::vec2 scale((float)image_size / width(), (float)image_size / height());
+		cv::Mat input = cv::Mat(image_size, image_size, CV_8UC3, cv::Scalar(255, 255, 255));
+		for (auto stroke : silhouette) {
+			cv::Point p1(stroke.start.x * scale.x, stroke.start.y * scale.y);
+			cv::Point p2(stroke.end.x * scale.x, stroke.end.y * scale.y);
+
+			cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+		}
+
+		// estimate paramter values by CNN
+		std::vector<float> cur_params = regressions[grammar_id]->Predict(input);
+
+		if (refinement) {
+			renderManager.renderingMode = RenderManager::RENDERING_MODE_CONTOUR;
+
+			double diff_min = std::numeric_limits<double>::max();
+
+			// setup the camera
+			setupCamera(cur_params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
+
+			cv::Mat rendered_image;
+			renderImage(grammars[grammar_id], std::vector<float>(cur_params.begin() + 8, cur_params.end()), rendered_image);
+
+			// compute the difference
+			double diff = distanceMap(rendered_image, silhouette_dist_map);
+
+			// coordinate descent
+			float delta = 0.002;
+			for (int iter2 = 0; iter2 < 10; ++iter2) {
+				for (int k = 0; k < cur_params.size(); ++k) {
+					// option 1
+					std::vector<float> next_params1 = cur_params;
+					next_params1[k] -= delta;
+					setupCamera(next_params1, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
+					cv::Mat rendered_image1;
+					double diff1 = std::numeric_limits<double>::max();
+					if (renderImage(grammars[grammar_id], std::vector<float>(next_params1.begin() + 8, next_params1.end()), rendered_image1, true, true)) {
+						diff1 = distanceMap(rendered_image1, silhouette_dist_map);
+					}
+
+					// option 2
+					std::vector<float> next_params2 = cur_params;
+					next_params2[k] += delta;
+					setupCamera(next_params2, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
+					cv::Mat rendered_image2;
+					double diff2 = std::numeric_limits<double>::max();
+					if (renderImage(grammars[grammar_id], std::vector<float>(next_params2.begin() + 8, next_params2.end()), rendered_image2, true, true)) {
+						diff2 = distanceMap(rendered_image2, silhouette_dist_map);
+					}
+
+					if (diff1 < diff2 && diff1 < diff) {
+						diff = diff1;
+						cur_params = next_params1;
+					}
+					else if (diff2 < diff1 && diff2 < diff) {
+						diff = diff2;
+						cur_params = next_params2;
+					}
+				}
+
+				delta *= 0.8;
+			}
+
+			renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
+		}
+
+		// show the absolute error
+		printf("------------------------------------------------\n");
+		printf("Blg: %d\n", id);
+		printf("Error:\n");
+		float total_error = 0.0f;
+		for (int k = 0; k < param_values.size(); ++k) {
+			if (k > 0) printf(", ");
+			float error = fabs(param_values[k] - cur_params[k]);
+			printf("%.3f", error);
+			total_error += error;
+		}
+		printf("\n");
+		printf("Avg abs error: %.3f\n", total_error / param_values.size());
+	}
+}
+
 /**
  * Generate an image using the selected grammar and the PM parameter values.
  *
@@ -721,13 +847,31 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
  * @param pm_params			PM parameter values
  * @param rendered_image	rendered image [OUT]
  */
-void GLWidget3D::renderImage(cga::Grammar& grammar, const std::vector<float>& pm_params, cv::Mat& rendered_image) {
-	updateGeometry(grammar, pm_params);
+bool GLWidget3D::renderImage(cga::Grammar& grammar, const std::vector<float>& pm_params, cv::Mat& rendered_image, bool discardIfTopFaceIsVisible, bool discardIfBottomFaceIsVisible) {
+	std::vector<boost::shared_ptr<glutils::Face>> faces = updateGeometry(grammar, pm_params);
+	
+	// if the top face is visible, discard this
+	// Hack: assuming that faces[0] is the top face.
+	if (discardIfTopFaceIsVisible) {
+		glm::vec3 top_view_dir = glm::vec3(camera.mvMatrix * glm::vec4(faces[0]->vertices[0].position, 1));
+		glm::vec3 top_normal = glm::vec3(camera.mvMatrix * glm::vec4(faces[0]->vertices[0].normal, 0));
+		if (glm::dot(top_normal, top_view_dir) < 0) return false;
+	}
+
+	// if the bottom face is visible, discard this
+	// Hack: assuming that faces[1] is the bottom face.
+	if (discardIfBottomFaceIsVisible) {
+		glm::vec3 bottom_view_dir = glm::vec3(camera.mvMatrix * glm::vec4(faces[1]->vertices[0].position, 1));
+		glm::vec3 bottom_normal = glm::vec3(camera.mvMatrix * glm::vec4(faces[1]->vertices[0].normal, 0));
+		if (glm::dot(bottom_normal, bottom_view_dir) < 0) return false;
+	}
 
 	render();
 	QImage img = grabFrameBuffer();
 	rendered_image = cv::Mat(img.height(), img.width(), CV_8UC4, img.bits(), img.bytesPerLine()).clone();
 	cv::cvtColor(rendered_image, rendered_image, cv::COLOR_BGRA2BGR);
+
+	return true;
 }
 
 /**
@@ -746,12 +890,31 @@ double GLWidget3D::distanceMap(cv::Mat rendered_image, const cv::Mat& reference_
 	cv::distanceTransform(rendered_image, rendered_dist_map, CV_DIST_L2, 3);
 	rendered_dist_map.convertTo(rendered_dist_map, CV_64F);
 
+	/*
 	// compute the squared difference
 	cv::Mat diff_mat;
 	cv::reduce((reference_dist_map - rendered_dist_map).mul(reference_dist_map - rendered_dist_map), diff_mat, 0, CV_REDUCE_SUM);
 	cv::reduce(diff_mat, diff_mat, 1, CV_REDUCE_SUM);
 
 	return diff_mat.at<double>(0, 0);
+	*/
+
+	double diff = 0.0f;
+	int count = 0;
+	for (int r = 0; r < rendered_dist_map.rows; ++r) {
+		for (int c = 0; c < rendered_dist_map.cols; ++c) {
+			if (rendered_dist_map.at<double>(r, c) == 0) {
+				diff += reference_dist_map.at<double>(r, c) * reference_dist_map.at<double>(r, c);
+				count++;
+			}
+			if (reference_dist_map.at<double>(r, c) == 0) {
+				diff += rendered_dist_map.at<double>(r, c) * rendered_dist_map.at<double>(r, c);
+				count++;
+			}
+		}
+	}
+
+	return diff / count * 0.5;
 }
 
 /**
@@ -760,7 +923,7 @@ double GLWidget3D::distanceMap(cv::Mat rendered_image, const cv::Mat& reference_
  * @param grammar		grammar
  * @param pm_params		PM parameter values
  */
-void GLWidget3D::updateGeometry(cga::Grammar& grammar, const std::vector<float>& pm_params) {
+std::vector<boost::shared_ptr<glutils::Face>> GLWidget3D::updateGeometry(cga::Grammar& grammar, const std::vector<float>& pm_params) {
 	std::vector<boost::shared_ptr<glutils::Face>> faces;
 
 	// setup CGA
@@ -777,6 +940,8 @@ void GLWidget3D::updateGeometry(cga::Grammar& grammar, const std::vector<float>&
 	cga.generateGeometry(faces, true);
 	renderManager.removeObjects();
 	renderManager.addFaces(faces, true);
+
+	return faces;
 }
 
 void GLWidget3D::setupCamera(const std::vector<float>& params, float xrotMax, float xrotMin, float yrotMax, float yrotMin, float zrotMax, float zrotMin, float fovMax, float fovMin, float oxMax, float oxMin, float oyMax, float oyMin, float xMax, float xMin, float yMax, float yMin) {
