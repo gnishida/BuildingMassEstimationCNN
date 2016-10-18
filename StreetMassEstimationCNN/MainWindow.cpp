@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionParameterEstimation, SIGNAL(triggered()), this, SLOT(onParameterEstimation()));
+	connect(ui.actionAutoTest, SIGNAL(triggered()), this, SLOT(onAutoTest()));
 	connect(ui.actionPenVanishingLine, SIGNAL(triggered()), this, SLOT(onPenChanged()));
 	connect(ui.actionPenSilhouette, SIGNAL(triggered()), this, SLOT(onPenChanged()));
 	connect(ui.actionOption, SIGNAL(triggered()), this, SLOT(onOption()));
@@ -135,6 +136,10 @@ void MainWindow::onParameterEstimation() {
 
 		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
 	}
+}
+
+void MainWindow::onAutoTest() {
+	glWidget->autoTest(0, 227, "params_multi10.txt", -40, 0, -70, -20, -10, 10, 20, 90, -0.8, 0.8, -0.8, 0.8, -15, 15, -15, 15, true);
 }
 
 void MainWindow::onPenChanged() {

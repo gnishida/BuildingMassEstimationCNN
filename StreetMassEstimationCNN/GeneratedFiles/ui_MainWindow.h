@@ -46,6 +46,7 @@ public:
     QAction *actionLoadLines;
     QAction *actionClearSilhouette;
     QAction *actionClearBackground;
+    QAction *actionAutoTest;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -102,6 +103,8 @@ public:
         actionClearSilhouette->setObjectName(QStringLiteral("actionClearSilhouette"));
         actionClearBackground = new QAction(MainWindowClass);
         actionClearBackground->setObjectName(QStringLiteral("actionClearBackground"));
+        actionAutoTest = new QAction(MainWindowClass);
+        actionAutoTest->setObjectName(QStringLiteral("actionAutoTest"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -142,6 +145,7 @@ public:
         menuFile->addSeparator();
         menuFile->addAction(actionExit);
         menuOption->addAction(actionParameterEstimation);
+        menuOption->addAction(actionAutoTest);
         menuOption->addSeparator();
         menuOption->addAction(menuPen->menuAction());
         menuOption->addAction(actionOption);
@@ -182,6 +186,7 @@ public:
         actionLoadLines->setText(QApplication::translate("MainWindowClass", "Load Lines", 0));
         actionClearSilhouette->setText(QApplication::translate("MainWindowClass", "Clear Silhouette", 0));
         actionClearBackground->setText(QApplication::translate("MainWindowClass", "Clear Background", 0));
+        actionAutoTest->setText(QApplication::translate("MainWindowClass", "Auto Test", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuOption->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
         menuPen->setTitle(QApplication::translate("MainWindowClass", "Pen", 0));

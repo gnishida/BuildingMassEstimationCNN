@@ -54,6 +54,7 @@
      <addaction name="actionPenSilhouette"/>
     </widget>
     <addaction name="actionParameterEstimation"/>
+    <addaction name="actionAutoTest"/>
     <addaction name="separator"/>
     <addaction name="menuPen"/>
     <addaction name="actionOption"/>
@@ -196,6 +197,11 @@
   <action name="actionClearBackground">
    <property name="text">
     <string>Clear Background</string>
+   </property>
+  </action>
+  <action name="actionAutoTest">
+   <property name="text">
+    <string>Auto Test</string>
    </property>
   </action>
  </widget>

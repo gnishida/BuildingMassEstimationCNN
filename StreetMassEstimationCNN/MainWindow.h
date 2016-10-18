@@ -31,6 +31,7 @@ public slots:
 	void onOpenCGA();
 	void onUndo();
 	void onParameterEstimation();
+	void onAutoTest();
 	void onPenChanged();
 	void onOption();
 };
