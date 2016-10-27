@@ -4,6 +4,10 @@
 ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
+	groupSilhouetteLine = new QButtonGroup(this);
+	groupSilhouetteLine->addButton(ui.radioButtonSilhouetteLine8);
+	groupSilhouetteLine->addButton(ui.radioButtonSilhouetteLineAA);
+
 	ui.checkBoxAutomaticRecognition->setChecked(false);
 	ui.lineEditGrammarSnippet->setText("1");
 	ui.lineEditGrammarSnippet->setEnabled(!ui.checkBoxAutomaticRecognition->isChecked());
@@ -64,6 +68,11 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.lineEditYMin->setText("-1.22776");
 	ui.lineEditYMax->setText("-1.22776");
 	*/
+	ui.radioButtonSilhouetteLine8->setChecked(false);
+	ui.radioButtonSilhouetteLineAA->setChecked(true);
+	ui.checkBoxImageBlur->setChecked(false);
+	ui.lineEditImageBlurSize->setEnabled(false);
+	ui.lineEditImageBlurSize->setText("5");
 	ui.checkBoxTryMultiples->setChecked(false);
 	ui.lineEditNumMultipleTries->setText("100");
 	ui.lineEditNumMultipleTries->setEnabled(ui.checkBoxTryMultiples->isChecked());
@@ -75,6 +84,7 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.checkBoxApplyTexture->setChecked(false);
 
 	connect(ui.checkBoxAutomaticRecognition, SIGNAL(clicked()), this, SLOT(onAutomaticRecognition()));
+	connect(ui.checkBoxImageBlur, SIGNAL(clicked()), this, SLOT(onImageBlur()));
 	connect(ui.checkBoxTryMultiples, SIGNAL(clicked()), this, SLOT(onTryMultiples()));
 	connect(ui.checkBoxRefinement, SIGNAL(clicked()), this, SLOT(onRefinement()));
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
@@ -86,6 +96,10 @@ ParameterEstimationDialog::~ParameterEstimationDialog() {
 
 void ParameterEstimationDialog::onAutomaticRecognition() {
 	ui.lineEditGrammarSnippet->setEnabled(ui.checkBoxAutomaticRecognition->isChecked());
+}
+
+void ParameterEstimationDialog::onImageBlur() {
+	ui.lineEditImageBlurSize->setEnabled(ui.checkBoxImageBlur->isChecked());
 }
 
 void ParameterEstimationDialog::onTryMultiples() {

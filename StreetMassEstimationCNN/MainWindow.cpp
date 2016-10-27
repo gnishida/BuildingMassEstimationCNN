@@ -127,6 +127,9 @@ void MainWindow::onParameterEstimation() {
 		float xMax = dlg.ui.lineEditXMax->text().toFloat();
 		float yMin = dlg.ui.lineEditYMin->text().toFloat();
 		float yMax = dlg.ui.lineEditYMax->text().toFloat();
+		int silhouette_line_type = dlg.ui.radioButtonSilhouetteLine8->isChecked() ? 0 : 1;
+		bool imageBlur = dlg.ui.checkBoxImageBlur->isChecked();
+		int imageBlurSize = dlg.ui.lineEditImageBlurSize->text().toInt();
 		bool tryMultiples = dlg.ui.checkBoxTryMultiples->isChecked();
 		int numMultipleTries = dlg.ui.lineEditNumMultipleTries->text().toInt();
 		float maxNoise = dlg.ui.lineEditMaxNoise->text().toFloat();
@@ -134,12 +137,45 @@ void MainWindow::onParameterEstimation() {
 		int maxIters = dlg.ui.lineEditIterations->text().toInt();
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
+		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, applyTexture);
 	}
 }
 
 void MainWindow::onAutoTest() {
-	glWidget->autoTest(0, 227, "params_multi10.txt", -40, 0, -70, -20, -10, 10, 20, 90, -0.8, 0.8, -0.8, 0.8, -15, 15, -15, 15, true);
+	ParameterEstimationDialog dlg;
+	if (dlg.exec()) {
+		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
+		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
+		int image_size = dlg.ui.lineEditImageSize->text().toInt();
+		float cameraDistanceBase = dlg.ui.lineEditCameraDistance->text().toFloat();
+		float xrotMin = dlg.ui.lineEditXrotMin->text().toFloat();
+		float xrotMax = dlg.ui.lineEditXrotMax->text().toFloat();
+		float yrotMin = dlg.ui.lineEditYrotMin->text().toFloat();
+		float yrotMax = dlg.ui.lineEditYrotMax->text().toFloat();
+		float zrotMin = dlg.ui.lineEditZrotMin->text().toFloat();
+		float zrotMax = dlg.ui.lineEditZrotMax->text().toFloat();
+		float fovMin = dlg.ui.lineEditFovMin->text().toFloat();
+		float fovMax = dlg.ui.lineEditFovMax->text().toFloat();
+		float oxMin = dlg.ui.lineEditOXMin->text().toFloat();
+		float oxMax = dlg.ui.lineEditOXMax->text().toFloat();
+		float oyMin = dlg.ui.lineEditOYMin->text().toFloat();
+		float oyMax = dlg.ui.lineEditOYMax->text().toFloat();
+		float xMin = dlg.ui.lineEditXMin->text().toFloat();
+		float xMax = dlg.ui.lineEditXMax->text().toFloat();
+		float yMin = dlg.ui.lineEditYMin->text().toFloat();
+		float yMax = dlg.ui.lineEditYMax->text().toFloat();
+		int silhouette_line_type = dlg.ui.radioButtonSilhouetteLine8->isChecked() ? 0 : 1;
+		bool imageBlur = dlg.ui.checkBoxImageBlur->isChecked();
+		int imageBlurSize = dlg.ui.lineEditImageBlurSize->text().toInt();
+		bool tryMultiples = dlg.ui.checkBoxTryMultiples->isChecked();
+		int numMultipleTries = dlg.ui.lineEditNumMultipleTries->text().toInt();
+		float maxNoise = dlg.ui.lineEditMaxNoise->text().toFloat();
+		bool refinement = dlg.ui.checkBoxRefinement->isChecked();
+		int maxIters = dlg.ui.lineEditIterations->text().toInt();
+		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
+
+		glWidget->autoTest(grammarSnippetId, image_size, "params_multi10.txt", xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, refinement);
+	}
 }
 
 void MainWindow::onPenChanged() {

@@ -19,6 +19,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,12 +78,18 @@ public:
     QLineEdit *lineEditOYMax;
     QLineEdit *lineEditOYMin;
     QLabel *label_29;
+    QLabel *label_30;
+    QCheckBox *checkBoxImageBlur;
+    QLineEdit *lineEditImageBlurSize;
+    QLabel *label_31;
+    QRadioButton *radioButtonSilhouetteLine8;
+    QRadioButton *radioButtonSilhouetteLineAA;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(585, 500);
+        ParameterEstimationDialog->resize(585, 552);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 200, 16, 20));
@@ -134,10 +141,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 200, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(470, 450, 91, 31));
+        pushButtonCancel->setGeometry(QRect(470, 510, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(370, 450, 91, 31));
+        pushButtonOK->setGeometry(QRect(370, 510, 91, 31));
         label_15 = new QLabel(ParameterEstimationDialog);
         label_15->setObjectName(QStringLiteral("label_15"));
         label_15->setGeometry(QRect(10, 10, 91, 20));
@@ -151,30 +158,30 @@ public:
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(110, 420, 91, 17));
+        checkBoxApplyTexture->setGeometry(QRect(110, 480, 91, 17));
         checkBoxRefinement = new QCheckBox(ParameterEstimationDialog);
         checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
-        checkBoxRefinement->setGeometry(QRect(110, 390, 91, 17));
+        checkBoxRefinement->setGeometry(QRect(110, 450, 91, 17));
         checkBoxTryMultiples = new QCheckBox(ParameterEstimationDialog);
         checkBoxTryMultiples->setObjectName(QStringLiteral("checkBoxTryMultiples"));
-        checkBoxTryMultiples->setGeometry(QRect(110, 360, 91, 17));
+        checkBoxTryMultiples->setGeometry(QRect(110, 420, 91, 17));
         label_17 = new QLabel(ParameterEstimationDialog);
         label_17->setObjectName(QStringLiteral("label_17"));
-        label_17->setGeometry(QRect(210, 360, 31, 16));
+        label_17->setGeometry(QRect(210, 420, 31, 16));
         label_17->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditNumMultipleTries = new QLineEdit(ParameterEstimationDialog);
         lineEditNumMultipleTries->setObjectName(QStringLiteral("lineEditNumMultipleTries"));
-        lineEditNumMultipleTries->setGeometry(QRect(250, 360, 61, 20));
+        lineEditNumMultipleTries->setGeometry(QRect(250, 420, 61, 20));
         label_18 = new QLabel(ParameterEstimationDialog);
         label_18->setObjectName(QStringLiteral("label_18"));
-        label_18->setGeometry(QRect(330, 360, 61, 16));
+        label_18->setGeometry(QRect(330, 420, 61, 16));
         label_18->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditMaxNoise = new QLineEdit(ParameterEstimationDialog);
         lineEditMaxNoise->setObjectName(QStringLiteral("lineEditMaxNoise"));
-        lineEditMaxNoise->setGeometry(QRect(400, 360, 41, 20));
+        lineEditMaxNoise->setGeometry(QRect(400, 420, 41, 20));
         label_19 = new QLabel(ParameterEstimationDialog);
         label_19->setObjectName(QStringLiteral("label_19"));
-        label_19->setGeometry(QRect(446, 360, 21, 20));
+        label_19->setGeometry(QRect(446, 420, 21, 20));
         label_19->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxAutomaticRecognition = new QCheckBox(ParameterEstimationDialog);
         checkBoxAutomaticRecognition->setObjectName(QStringLiteral("checkBoxAutomaticRecognition"));
@@ -195,10 +202,10 @@ public:
         label_20->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditIterations = new QLineEdit(ParameterEstimationDialog);
         lineEditIterations->setObjectName(QStringLiteral("lineEditIterations"));
-        lineEditIterations->setGeometry(QRect(300, 390, 91, 20));
+        lineEditIterations->setGeometry(QRect(300, 450, 91, 20));
         label = new QLabel(ParameterEstimationDialog);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(230, 390, 71, 20));
+        label->setGeometry(QRect(230, 450, 71, 20));
         label_21 = new QLabel(ParameterEstimationDialog);
         label_21->setObjectName(QStringLiteral("label_21"));
         label_21->setGeometry(QRect(20, 50, 81, 16));
@@ -262,6 +269,26 @@ public:
         label_29->setObjectName(QStringLiteral("label_29"));
         label_29->setGeometry(QRect(170, 260, 16, 20));
         label_29->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        label_30 = new QLabel(ParameterEstimationDialog);
+        label_30->setObjectName(QStringLiteral("label_30"));
+        label_30->setGeometry(QRect(30, 390, 71, 16));
+        label_30->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        checkBoxImageBlur = new QCheckBox(ParameterEstimationDialog);
+        checkBoxImageBlur->setObjectName(QStringLiteral("checkBoxImageBlur"));
+        checkBoxImageBlur->setGeometry(QRect(110, 390, 70, 17));
+        lineEditImageBlurSize = new QLineEdit(ParameterEstimationDialog);
+        lineEditImageBlurSize->setObjectName(QStringLiteral("lineEditImageBlurSize"));
+        lineEditImageBlurSize->setGeometry(QRect(200, 390, 61, 20));
+        label_31 = new QLabel(ParameterEstimationDialog);
+        label_31->setObjectName(QStringLiteral("label_31"));
+        label_31->setGeometry(QRect(30, 360, 71, 16));
+        label_31->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        radioButtonSilhouetteLine8 = new QRadioButton(ParameterEstimationDialog);
+        radioButtonSilhouetteLine8->setObjectName(QStringLiteral("radioButtonSilhouetteLine8"));
+        radioButtonSilhouetteLine8->setGeometry(QRect(110, 360, 82, 17));
+        radioButtonSilhouetteLineAA = new QRadioButton(ParameterEstimationDialog);
+        radioButtonSilhouetteLineAA->setObjectName(QStringLiteral("radioButtonSilhouetteLineAA"));
+        radioButtonSilhouetteLineAA->setGeometry(QRect(200, 360, 82, 17));
         QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
         QWidget::setTabOrder(lineEditGrammarSnippet, lineEditImageSize);
         QWidget::setTabOrder(lineEditImageSize, lineEditCameraDistance);
@@ -328,6 +355,11 @@ public:
         label_27->setText(QApplication::translate("ParameterEstimationDialog", "~", 0));
         label_28->setText(QApplication::translate("ParameterEstimationDialog", "O y:", 0));
         label_29->setText(QApplication::translate("ParameterEstimationDialog", "~", 0));
+        label_30->setText(QApplication::translate("ParameterEstimationDialog", "Modify Image:", 0));
+        checkBoxImageBlur->setText(QApplication::translate("ParameterEstimationDialog", "Blur", 0));
+        label_31->setText(QApplication::translate("ParameterEstimationDialog", "Silhouette:", 0));
+        radioButtonSilhouetteLine8->setText(QApplication::translate("ParameterEstimationDialog", "Line 8", 0));
+        radioButtonSilhouetteLineAA->setText(QApplication::translate("ParameterEstimationDialog", "Line AA", 0));
     } // retranslateUi
 
 };

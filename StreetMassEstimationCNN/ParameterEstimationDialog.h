@@ -8,12 +8,16 @@ class ParameterEstimationDialog : public QDialog
 {
 	Q_OBJECT
 
+private:
+	QButtonGroup* groupSilhouetteLine;
+
 public:
 	ParameterEstimationDialog(QWidget *parent = 0);
 	~ParameterEstimationDialog();
 
 public slots:
 	void onAutomaticRecognition();
+	void onImageBlur();
 	void onTryMultiples();
 	void onRefinement();
 	void onOK();

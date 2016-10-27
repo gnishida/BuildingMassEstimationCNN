@@ -496,7 +496,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
+void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture) {
 	time_t start = clock();
 
 	std::cout << "-----------------------------------------------------" << std::endl;
@@ -543,7 +543,16 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 				p2.y += utils::genRand(-image_size * 0.01 * maxNoise, image_size * 0.01 * maxNoise);
 			}
 
-			cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+			if (silhouette_line_type == 0) {
+				cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_8);
+			}
+			else {
+				cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+			}
+		}
+
+		if (imageBlur) {
+			cv::blur(input, input, cv::Size(imageBlurSize, imageBlurSize));
 		}
 		//cv::imwrite("input.png", input);
 
@@ -710,7 +719,7 @@ void GLWidget3D::parameterEstimation(bool automaticRecognition, int grammarSnipp
 
 }
 
-void GLWidget3D::autoTest(int grammar_id, int image_size, const QString& param_filename, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, bool refinement) {
+void GLWidget3D::autoTest(int grammar_id, int image_size, const QString& param_filename, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool refinement) {
 	QFile param_file(param_filename);
 	param_file.open(QIODevice::ReadOnly);
 	QTextStream param_in(&param_file);
@@ -764,7 +773,16 @@ void GLWidget3D::autoTest(int grammar_id, int image_size, const QString& param_f
 			cv::Point p1(stroke.start.x * scale.x, stroke.start.y * scale.y);
 			cv::Point p2(stroke.end.x * scale.x, stroke.end.y * scale.y);
 
-			cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+			if (silhouette_line_type == 0) {
+				cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_8);
+			}
+			else {
+				cv::line(input, p1, p2, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+			}
+		}
+
+		if (imageBlur) {
+			cv::blur(input, input, cv::Size(imageBlurSize, imageBlurSize));
 		}
 
 		// estimate paramter values by CNN
@@ -827,6 +845,18 @@ void GLWidget3D::autoTest(int grammar_id, int image_size, const QString& param_f
 		// show the absolute error
 		printf("------------------------------------------------\n");
 		printf("Blg: %d\n", id);
+		printf("Ground truth:\n");
+		for (int k = 0; k < param_values.size(); ++k) {
+			if (k > 0) printf(", ");
+			printf("%.4f", param_values[k]);
+		}
+		printf("\n");
+		printf("Estimated values:\n");
+		for (int k = 0; k < cur_params.size(); ++k) {
+			if (k > 0) printf(", ");
+			printf("%.4f", cur_params[k]);
+		}
+		printf("\n");
 		printf("Error:\n");
 		float total_error = 0.0f;
 		for (int k = 0; k < param_values.size(); ++k) {
