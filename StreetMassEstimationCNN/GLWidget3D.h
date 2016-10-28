@@ -17,6 +17,38 @@
 #include "Classifier.h"
 #include "Regression.h"
 #include "VanishingPoint.h"
+#include <dlib/optimization.h>
+
+typedef dlib::matrix<double, 0, 1> column_vector;
+
+class GLWidget3D;
+
+class obj_function {
+public:
+	obj_function(GLWidget3D* glWidget, cga::Grammar* grammar, cv::Mat silhouette_dist_map, float xrotMax, float xrotMin, float yrotMax, float yrotMin, float zrotMax, float zrotMin, float fovMax, float fovMin, float oxMax, float oxMin, float oyMax, float oyMin, float xMax, float xMin, float yMax, float yMin);
+	double operator() (const column_vector& arg) const;
+
+private:
+	GLWidget3D* glWidget;
+	cga::Grammar* grammar;
+	cv::Mat silhouette_dist_map;
+	float xrotMin;
+	float xrotMax;
+	float yrotMin;
+	float yrotMax;
+	float zrotMin;
+	float zrotMax;
+	float fovMin;
+	float fovMax;
+	float oxMin;
+	float oxMax;
+	float oyMin;
+	float oyMax;
+	float xMin;
+	float xMax;
+	float yMin;
+	float yMax;
+};
 
 class MainWindow;
 
@@ -78,11 +110,11 @@ public:
 	void clearGeometry();
 	void loadCGA(const std::string& filename);
 	void undo();
-	void parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, bool applyTexture);
+	void parameterEstimation(bool automaticRecognition, int grammarSnippetId, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, int refinement_method, bool applyTexture);
 	void autoTest(int grammar_id, int image_size, const QString& param_filename, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool refinement);
-	bool renderImage(cga::Grammar& grammar, const std::vector<float>& pm_params, cv::Mat& rendered_image, bool discardIfTopFaceIsVisible = false, bool discardIfBottomFaceIsVisible = false);
+	bool renderImage(cga::Grammar* grammar, const std::vector<float>& pm_params, cv::Mat& rendered_image, bool discardIfTopFaceIsVisible = false, bool discardIfBottomFaceIsVisible = false);
 	double distanceMap(cv::Mat rendered_image, const cv::Mat& reference_dist_map);
-	std::vector<boost::shared_ptr<glutils::Face>> updateGeometry(cga::Grammar& grammar, const std::vector<float>& pm_params);
+	std::vector<boost::shared_ptr<glutils::Face>> updateGeometry(cga::Grammar* grammar, const std::vector<float>& pm_params);
 	void setupCamera(const std::vector<float>& params, float xrotMax, float xrotMin, float yrotMax, float yrotMin, float zrotMax, float zrotMin, float fovMax, float fovMin, float oxMax, float oxMin, float oyMax, float oyMin, float xMax, float xMin, float yMax, float yMin);
 	void updateStatusBar();
 	void resizeImageCanvasSize(QImage& image, int width, int height);

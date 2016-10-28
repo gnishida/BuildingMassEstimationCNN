@@ -84,12 +84,14 @@ public:
     QLabel *label_31;
     QRadioButton *radioButtonSilhouetteLine8;
     QRadioButton *radioButtonSilhouetteLineAA;
+    QRadioButton *radioButtonRefinementBobyqa;
+    QRadioButton *radioButtonRefinementRandom;
 
     void setupUi(QDialog *ParameterEstimationDialog)
     {
         if (ParameterEstimationDialog->objectName().isEmpty())
             ParameterEstimationDialog->setObjectName(QStringLiteral("ParameterEstimationDialog"));
-        ParameterEstimationDialog->resize(585, 552);
+        ParameterEstimationDialog->resize(585, 580);
         label_11 = new QLabel(ParameterEstimationDialog);
         label_11->setObjectName(QStringLiteral("label_11"));
         label_11->setGeometry(QRect(173, 200, 16, 20));
@@ -141,10 +143,10 @@ public:
         lineEditFovMin->setGeometry(QRect(110, 200, 61, 20));
         pushButtonCancel = new QPushButton(ParameterEstimationDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(470, 510, 91, 31));
+        pushButtonCancel->setGeometry(QRect(470, 540, 91, 31));
         pushButtonOK = new QPushButton(ParameterEstimationDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(370, 510, 91, 31));
+        pushButtonOK->setGeometry(QRect(370, 540, 91, 31));
         label_15 = new QLabel(ParameterEstimationDialog);
         label_15->setObjectName(QStringLiteral("label_15"));
         label_15->setGeometry(QRect(10, 10, 91, 20));
@@ -158,7 +160,7 @@ public:
         label_16->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         checkBoxApplyTexture = new QCheckBox(ParameterEstimationDialog);
         checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(110, 480, 91, 17));
+        checkBoxApplyTexture->setGeometry(QRect(110, 510, 91, 17));
         checkBoxRefinement = new QCheckBox(ParameterEstimationDialog);
         checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
         checkBoxRefinement->setGeometry(QRect(110, 450, 91, 17));
@@ -289,6 +291,12 @@ public:
         radioButtonSilhouetteLineAA = new QRadioButton(ParameterEstimationDialog);
         radioButtonSilhouetteLineAA->setObjectName(QStringLiteral("radioButtonSilhouetteLineAA"));
         radioButtonSilhouetteLineAA->setGeometry(QRect(200, 360, 82, 17));
+        radioButtonRefinementBobyqa = new QRadioButton(ParameterEstimationDialog);
+        radioButtonRefinementBobyqa->setObjectName(QStringLiteral("radioButtonRefinementBobyqa"));
+        radioButtonRefinementBobyqa->setGeometry(QRect(130, 480, 82, 17));
+        radioButtonRefinementRandom = new QRadioButton(ParameterEstimationDialog);
+        radioButtonRefinementRandom->setObjectName(QStringLiteral("radioButtonRefinementRandom"));
+        radioButtonRefinementRandom->setGeometry(QRect(230, 480, 82, 17));
         QWidget::setTabOrder(checkBoxAutomaticRecognition, lineEditGrammarSnippet);
         QWidget::setTabOrder(lineEditGrammarSnippet, lineEditImageSize);
         QWidget::setTabOrder(lineEditImageSize, lineEditCameraDistance);
@@ -360,6 +368,8 @@ public:
         label_31->setText(QApplication::translate("ParameterEstimationDialog", "Silhouette:", 0));
         radioButtonSilhouetteLine8->setText(QApplication::translate("ParameterEstimationDialog", "Line 8", 0));
         radioButtonSilhouetteLineAA->setText(QApplication::translate("ParameterEstimationDialog", "Line AA", 0));
+        radioButtonRefinementBobyqa->setText(QApplication::translate("ParameterEstimationDialog", "Bobyqa", 0));
+        radioButtonRefinementRandom->setText(QApplication::translate("ParameterEstimationDialog", "Random walk", 0));
     } // retranslateUi
 
 };

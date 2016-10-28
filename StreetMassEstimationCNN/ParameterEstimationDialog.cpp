@@ -8,6 +8,10 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	groupSilhouetteLine->addButton(ui.radioButtonSilhouetteLine8);
 	groupSilhouetteLine->addButton(ui.radioButtonSilhouetteLineAA);
 
+	groupRefinement = new QButtonGroup(this);
+	groupRefinement->addButton(ui.radioButtonRefinementBobyqa);
+	groupRefinement->addButton(ui.radioButtonRefinementRandom);
+
 	ui.checkBoxAutomaticRecognition->setChecked(false);
 	ui.lineEditGrammarSnippet->setText("1");
 	ui.lineEditGrammarSnippet->setEnabled(!ui.checkBoxAutomaticRecognition->isChecked());
@@ -81,6 +85,10 @@ ParameterEstimationDialog::ParameterEstimationDialog(QWidget *parent) : QDialog(
 	ui.checkBoxRefinement->setChecked(false);
 	ui.lineEditIterations->setText("30");
 	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
+	ui.radioButtonRefinementBobyqa->setChecked(true);
+	ui.radioButtonRefinementBobyqa->setEnabled(ui.checkBoxRefinement->isChecked());
+	ui.radioButtonRefinementRandom->setChecked(false);
+	ui.radioButtonRefinementRandom->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.checkBoxApplyTexture->setChecked(false);
 
 	connect(ui.checkBoxAutomaticRecognition, SIGNAL(clicked()), this, SLOT(onAutomaticRecognition()));
@@ -109,6 +117,8 @@ void ParameterEstimationDialog::onTryMultiples() {
 
 void ParameterEstimationDialog::onRefinement() {
 	ui.lineEditIterations->setEnabled(ui.checkBoxRefinement->isChecked());
+	ui.radioButtonRefinementBobyqa->setEnabled(ui.checkBoxRefinement->isChecked());
+	ui.radioButtonRefinementRandom->setEnabled(ui.checkBoxRefinement->isChecked());
 }
 
 void ParameterEstimationDialog::onOK() {

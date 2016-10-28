@@ -10,6 +10,7 @@ class ParameterEstimationDialog : public QDialog
 
 private:
 	QButtonGroup* groupSilhouetteLine;
+	QButtonGroup* groupRefinement;
 
 public:
 	ParameterEstimationDialog(QWidget *parent = 0);
