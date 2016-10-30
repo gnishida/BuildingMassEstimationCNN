@@ -98,15 +98,21 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_02.prototxt", "models/train_02_iter_80000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_03.prototxt", "models/train_03_iter_240000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_04.prototxt", "models/train_04_iter_80000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_06.prototxt", "models/train_06_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_06.prototxt", "models/train_06_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_07.prototxt", "models/train_07_iter_240000.caffemodel")));
 	}
 
 	// Grammarを読み込む
 	{
-		grammars.resize(4);
+		grammars.resize(7);
 		cga::parseGrammar("cga/contour_01.xml", grammars[0]);
 		cga::parseGrammar("cga/contour_02.xml", grammars[1]);
 		cga::parseGrammar("cga/contour_03.xml", grammars[2]);
 		cga::parseGrammar("cga/contour_04.xml", grammars[3]);
+		cga::parseGrammar("cga/contour_05.xml", grammars[4]);
+		cga::parseGrammar("cga/contour_06.xml", grammars[5]);
+		cga::parseGrammar("cga/contour_07.xml", grammars[6]);
 	}
 
 	// default grammar and pm values
