@@ -1045,10 +1045,12 @@ double GLWidget3D::distanceMap(cv::Mat rendered_image, const cv::Mat& reference_
 std::vector<boost::shared_ptr<glutils::Face>> GLWidget3D::updateGeometry(cga::Grammar* grammar, const std::vector<float>& pm_params) {
 	std::vector<boost::shared_ptr<glutils::Face>> faces;
 
+	// set param values
+	cga::setParamValues(*grammar, pm_params);
+
 	// setup CGA
 	cga::CGA cga;
 	cga.modelMat = glm::rotate(glm::mat4(), -(float)vp::M_PI * 0.5f, glm::vec3(1, 0, 0));
-	cga.setParamValues(*grammar, pm_params);
 
 	// set axiom
 	boost::shared_ptr<cga::Shape> start = boost::shared_ptr<cga::Shape>(new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -(float)vp::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1)));
