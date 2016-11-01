@@ -22,6 +22,11 @@
 			<param name="zSize" type="absolute" value="0"/>
 		</size>
 		<extrude height="height"/>
+		<comp>
+			<param name="side" value="Facade"/>
+			<param name="top" value="Roof"/>
+			<param name="bottom" value="Base"/>
+		</comp>
 	</rule>
 	
 	<rule name="Start2">
@@ -36,6 +41,11 @@
 			<param name="zSize" type="absolute" value="0"/>
 		</size>
 		<extrude height="height"/>
+		<comp>
+			<param name="side" value="Facade"/>
+			<param name="top" value="Roof"/>
+			<param name="bottom" value="Base"/>
+		</comp>
 	</rule>
 	
 	<rule name="Start3">
@@ -50,6 +60,19 @@
 			<param name="zSize" type="absolute" value="0"/>
 		</size>
 		<extrude height="height"/>
+		<comp>
+			<param name="side" value="Facade"/>
+			<param name="top" value="Roof"/>
+			<param name="bottom" value="Base"/>
+		</comp>
 	</rule>
-
+	
+	<!-- material -->
+	<rule name="Roof">
+		<setupProjection axesSelector="scope.xy">
+			<param name="texWidth" type="relative" value="1"/>
+			<param name="texHeight" type="relative" value="1"/>
+		</setupProjection>
+		<texture texturePath="material/roof.tif"/>
+	</rule>
 </grammar>

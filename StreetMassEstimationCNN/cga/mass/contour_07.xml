@@ -23,7 +23,7 @@
 		<comp>
 			<param name="side" value="Facade"/>
 			<param name="top" value="Roof"/>
-			<param name="bottom" value="Base."/>
+			<param name="bottom" value="Base"/>
 		</comp>
 	</rule>
 	
@@ -49,4 +49,15 @@
 		</comp>
 	</rule>
 
+	<!-- material -->
+	<rule name="RoofTop">
+		<setupProjection axesSelector="scope.xy">
+			<param name="texWidth" type="relative" value="1"/>
+			<param name="texHeight" type="relative" value="1"/>
+		</setupProjection>
+		<texture texturePath="material/roof.tif"/>
+	</rule>
+	<rule name="RoofLedge">
+		<color s="#dfe0db"/>
+	</rule>
 </grammar>

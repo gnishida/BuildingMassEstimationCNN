@@ -23,7 +23,7 @@
 		<comp>
 			<param name="side" value="Facade"/>
 			<param name="top" value="Roof"/>
-			<param name="bottom" value="Base."/>
+			<param name="bottom" value="Base"/>
 		</comp>
 	</rule>
 	
