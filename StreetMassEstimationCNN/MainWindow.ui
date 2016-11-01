@@ -53,8 +53,10 @@
      <addaction name="actionPenVanishingLine"/>
      <addaction name="actionPenSilhouette"/>
     </widget>
-    <addaction name="actionParameterEstimation"/>
+    <addaction name="actionMassReconstruction"/>
     <addaction name="actionAutoTest"/>
+    <addaction name="separator"/>
+    <addaction name="actionFacadeReconstruction"/>
     <addaction name="separator"/>
     <addaction name="menuPen"/>
     <addaction name="actionOption"/>
@@ -88,9 +90,9 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionParameterEstimation">
+  <action name="actionMassReconstruction">
    <property name="text">
-    <string>Parameter Estimation</string>
+    <string>Mass Reconstruction</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -202,6 +204,11 @@
   <action name="actionAutoTest">
    <property name="text">
     <string>Auto Test</string>
+   </property>
+  </action>
+  <action name="actionFacadeReconstruction">
+   <property name="text">
+    <string>Facade Reconstruction</string>
    </property>
   </action>
  </widget>

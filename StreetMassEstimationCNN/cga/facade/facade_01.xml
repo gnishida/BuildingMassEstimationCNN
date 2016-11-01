@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<grammar version="1.0" author="Gen Nishida">
+	<!-- parameters -->
+	<attr name="ground_floor_height" value="3" range="1,5"/>
+	<attr name="top_wall_height" value="1" range="0.3,5"/>
+	<attr name="floor_height" value="2.5" range="1,5"/>
+	<attr name="tile_width" value="2.5" range="1,8"/>
+
+	<!-- facade -->
+	<rule name="Facade">
+		<split splitAxis="y">
+			<param type="absolute" value="ground_floor_height" name="GroundFloor"/>
+			<param type="floating" value="floor_height" name="Floor" repeat="true"/>
+			<param type="absolute" value="top_wall_height" name="Wall" />
+		</split>
+	</rule>
+	<rule name="GroundFloor">
+		<split splitAxis="x">
+			<param type="floating" value="tile_width" name="GroundTile" repeat="true"/>
+		</split>
+	</rule>
+	<rule name="GroundTile">
+		<split splitAxis="y">
+			<param type="floating" value="1" name="GroundTile2"/>
+			<param type="absolute" value="0.2" name="Wall"/>
+		</split>
+	</rule>
+	<rule name="GroundTile2">
+		<split splitAxis="x">
+			<param type="absolute" value="0.2" name="Wall"/>
+			<param type="floating" value="1" name="Door"/>
+			<param type="absolute" value="0.2" name="Wall" />
+		</split>
+	</rule>
+	<rule name="Floor">
+		<split splitAxis="x">
+			<param type="floating" value="tile_width" name="Tile" repeat="true"/>
+		</split>
+	</rule>
+	<rule name="Tile">
+		<split splitAxis="y">
+			<param type="absolute" value="0.2" name="Wall"/>
+			<param type="floating" value="1" name="Tile2"/>
+			<param type="absolute" value="0.2" name="Wall" />
+		</split>
+	</rule>
+	<rule name="Tile2">
+		<split splitAxis="x">
+			<param type="absolute" value="0.2" name="Wall"/>
+			<param type="floating" value="1" name="Window"/>
+			<param type="absolute" value="0.2" name="Wall" />
+		</split>
+	</rule>
+	
+	<!-- material -->
+	<rule name="Wall">
+		<setupProjection axesSelector="scope.xy">
+			<param name="texWidth" type="relative" value="1"/>
+			<param name="texHeight" type="relative" value="1"/>
+		</setupProjection>
+		<texture texturePath="material/wall_paris.png"/>
+	</rule>
+</grammar>

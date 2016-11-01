@@ -30,7 +30,7 @@ public slots:
 	void onSaveSilhouette();
 	void onOpenCGA();
 	void onUndo();
-	void onParameterEstimation();
+	void onMassReconstruction();
 	void onAutoTest();
 	void onPenChanged();
 	void onOption();

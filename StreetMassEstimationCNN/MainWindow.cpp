@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionOpenCGA, SIGNAL(triggered()), this, SLOT(onOpenCGA()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
-	connect(ui.actionParameterEstimation, SIGNAL(triggered()), this, SLOT(onParameterEstimation()));
+	connect(ui.actionMassReconstruction, SIGNAL(triggered()), this, SLOT(onMassReconstruction()));
 	connect(ui.actionAutoTest, SIGNAL(triggered()), this, SLOT(onAutoTest()));
 	connect(ui.actionPenVanishingLine, SIGNAL(triggered()), this, SLOT(onPenChanged()));
 	connect(ui.actionPenSilhouette, SIGNAL(triggered()), this, SLOT(onPenChanged()));
@@ -104,7 +104,7 @@ void MainWindow::onUndo() {
 /**
 * This is called when the user clickes [Tool] -> [Predict]
 */
-void MainWindow::onParameterEstimation() {
+void MainWindow::onMassReconstruction() {
 	ParameterEstimationDialog dlg;
 	if (dlg.exec()) {
 		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
@@ -138,7 +138,7 @@ void MainWindow::onParameterEstimation() {
 		int refinement_method = dlg.ui.radioButtonRefinementBobyqa->isChecked() ? 0 : 1;
 		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->parameterEstimation(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, refinement_method, applyTexture);
+		glWidget->massReconstruction(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, refinement_method, applyTexture);
 	}
 }
 

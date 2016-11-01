@@ -28,7 +28,7 @@ class Ui_MainWindowClass
 public:
     QAction *actionOpenImage;
     QAction *actionExit;
-    QAction *actionParameterEstimation;
+    QAction *actionMassReconstruction;
     QAction *actionNew;
     QAction *actionOpenCGA;
     QAction *actionLoadSilhouette;
@@ -47,6 +47,7 @@ public:
     QAction *actionClearSilhouette;
     QAction *actionClearBackground;
     QAction *actionAutoTest;
+    QAction *actionFacadeReconstruction;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -65,8 +66,8 @@ public:
         actionOpenImage->setObjectName(QStringLiteral("actionOpenImage"));
         actionExit = new QAction(MainWindowClass);
         actionExit->setObjectName(QStringLiteral("actionExit"));
-        actionParameterEstimation = new QAction(MainWindowClass);
-        actionParameterEstimation->setObjectName(QStringLiteral("actionParameterEstimation"));
+        actionMassReconstruction = new QAction(MainWindowClass);
+        actionMassReconstruction->setObjectName(QStringLiteral("actionMassReconstruction"));
         actionNew = new QAction(MainWindowClass);
         actionNew->setObjectName(QStringLiteral("actionNew"));
         actionOpenCGA = new QAction(MainWindowClass);
@@ -105,6 +106,8 @@ public:
         actionClearBackground->setObjectName(QStringLiteral("actionClearBackground"));
         actionAutoTest = new QAction(MainWindowClass);
         actionAutoTest->setObjectName(QStringLiteral("actionAutoTest"));
+        actionFacadeReconstruction = new QAction(MainWindowClass);
+        actionFacadeReconstruction->setObjectName(QStringLiteral("actionFacadeReconstruction"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -144,8 +147,10 @@ public:
         menuFile->addAction(actionOpenCGA);
         menuFile->addSeparator();
         menuFile->addAction(actionExit);
-        menuOption->addAction(actionParameterEstimation);
+        menuOption->addAction(actionMassReconstruction);
         menuOption->addAction(actionAutoTest);
+        menuOption->addSeparator();
+        menuOption->addAction(actionFacadeReconstruction);
         menuOption->addSeparator();
         menuOption->addAction(menuPen->menuAction());
         menuOption->addAction(actionOption);
@@ -163,8 +168,8 @@ public:
         MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "Photo to 3D", 0));
         actionOpenImage->setText(QApplication::translate("MainWindowClass", "Open Image", 0));
         actionExit->setText(QApplication::translate("MainWindowClass", "Exit", 0));
-        actionParameterEstimation->setText(QApplication::translate("MainWindowClass", "Parameter Estimation", 0));
-        actionParameterEstimation->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+P", 0));
+        actionMassReconstruction->setText(QApplication::translate("MainWindowClass", "Mass Reconstruction", 0));
+        actionMassReconstruction->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+P", 0));
         actionNew->setText(QApplication::translate("MainWindowClass", "New", 0));
         actionNew->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+N", 0));
         actionOpenCGA->setText(QApplication::translate("MainWindowClass", "Open CGA", 0));
@@ -187,6 +192,7 @@ public:
         actionClearSilhouette->setText(QApplication::translate("MainWindowClass", "Clear Silhouette", 0));
         actionClearBackground->setText(QApplication::translate("MainWindowClass", "Clear Background", 0));
         actionAutoTest->setText(QApplication::translate("MainWindowClass", "Auto Test", 0));
+        actionFacadeReconstruction->setText(QApplication::translate("MainWindowClass", "Facade Reconstruction", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuOption->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
         menuPen->setTitle(QApplication::translate("MainWindowClass", "Pen", 0));
