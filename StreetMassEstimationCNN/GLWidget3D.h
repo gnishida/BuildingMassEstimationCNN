@@ -17,38 +17,6 @@
 #include "Classifier.h"
 #include "Regression.h"
 #include "VanishingPoint.h"
-#include <dlib/optimization.h>
-
-typedef dlib::matrix<double, 0, 1> column_vector;
-
-class GLWidget3D;
-
-class obj_function {
-public:
-	obj_function(GLWidget3D* glWidget, cga::Grammar* grammar, cv::Mat silhouette_dist_map, float xrotMax, float xrotMin, float yrotMax, float yrotMin, float zrotMax, float zrotMin, float fovMax, float fovMin, float oxMax, float oxMin, float oyMax, float oyMin, float xMax, float xMin, float yMax, float yMin);
-	double operator() (const column_vector& arg) const;
-
-private:
-	GLWidget3D* glWidget;
-	cga::Grammar* grammar;
-	cv::Mat silhouette_dist_map;
-	float xrotMin;
-	float xrotMax;
-	float yrotMin;
-	float yrotMax;
-	float zrotMin;
-	float zrotMax;
-	float fovMin;
-	float fovMax;
-	float oxMin;
-	float oxMax;
-	float oyMin;
-	float oyMax;
-	float xMin;
-	float xMax;
-	float yMin;
-	float yMax;
-};
 
 class MainWindow;
 
