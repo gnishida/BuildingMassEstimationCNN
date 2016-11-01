@@ -233,11 +233,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_OptionDialog.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_MassReconstructionDialog.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_ParameterEstimationDialog.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_OptionDialog.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -255,11 +255,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_OptionDialog.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_MassReconstructionDialog.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_ParameterEstimationDialog.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_OptionDialog.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -279,11 +279,11 @@
     <ClCompile Include="LShapeTaper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="MassReconstructionDialog.cpp" />
     <ClCompile Include="NumberEval.cpp" />
     <ClCompile Include="OBJLoader.cpp" />
     <ClCompile Include="OffsetOperator.cpp" />
     <ClCompile Include="OptionDialog.cpp" />
-    <ClCompile Include="ParameterEstimationDialog.cpp" />
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="Prism.cpp" />
     <ClCompile Include="Pyramid.cpp" />
@@ -408,8 +408,8 @@
     <ClInclude Include="FacadeSegmentation.h" />
     <ClInclude Include="GableRoof.h" />
     <ClInclude Include="GeneralObject.h" />
+    <ClInclude Include="GeneratedFiles\ui_MassReconstructionDialog.h" />
     <ClInclude Include="GeneratedFiles\ui_OptionDialog.h" />
-    <ClInclude Include="GeneratedFiles\ui_ParameterEstimationDialog.h" />
     <ClInclude Include="GLUtils.h" />
     <ClInclude Include="Grammar.h" />
     <ClInclude Include="GrammarParser.h" />
@@ -423,27 +423,27 @@
     <ClInclude Include="LShape.h" />
     <ClInclude Include="LShapePrism.h" />
     <ClInclude Include="LShapeTaper.h" />
+    <CustomBuild Include="MassReconstructionDialog.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing MassReconstructionDialog.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -D_DEBUG -D_CONSOLE -DQT_DLL -D_MBCS "-I.\..\..\3rdparty\include" "-I.\..\..\3rdparty\include\cuda" "-I.\..\..\src" "-I.\..\..\src\include" "-ID:\ThirdPartyLibrary\caffe\include" "-ID:\ThirdPartyLibrary\caffe\src" "-ID:\ThirdPartyLibrary\boost_1_57_0" "-ID:\CUDA\Toolkit\include" "-ID:\ThirdPartyLibrary\glog-0.3.3\src\windows" "-ID:\ThirdPartyLibrary\gflags-2.1.1\buildx64\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\mkl\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\compiler\include" "-ID:\ThirdPartyLibrary\hdf5\include" "-ID:\ThirdPartyLibrary\leveldb\include" "-ID:\ThirdPartyLibrary\snappy-windows\include" "-ID:\deeplearning\caffeold\3rdparty\include" "-ID:\ThirdPartyLibrary\opencv248\opencv\build\include" "-I." "-I.\GeneratedFiles"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing MassReconstructionDialog.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -D_VARIADIC_MAX=10 -DWIN32 -D_DEBUG -D_CONSOLE -DQT_DLL -D_MBCS "-I$(BOOST_INCLUDEDIR)\." "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I.\..\3rdparty\include" "-I.\..\src" "-I.\..\include" "-I.\..\opencv\include" "-I$(CGAL_DIR)\include" "-I$(CGAL_DIR)\auxiliary\gmp\include" "-I.\..\glm" "-I.\..\glew"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing MassReconstructionDialog.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -D_CONSOLE -DQT_DLL -D_MBCS "-I.\..\..\3rdparty\include" "-I.\..\..\3rdparty\include\cuda" "-I.\..\..\src" "-I.\..\..\src\include" "-ID:\ThirdPartyLibrary\caffe\include" "-ID:\ThirdPartyLibrary\caffe\src" "-ID:\ThirdPartyLibrary\boost_1_57_0" "-ID:\CUDA\Toolkit\include" "-ID:\ThirdPartyLibrary\glog-0.3.3\src\windows" "-ID:\ThirdPartyLibrary\gflags-2.1.1\buildx64\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\mkl\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\compiler\include" "-ID:\ThirdPartyLibrary\hdf5\include" "-ID:\ThirdPartyLibrary\leveldb\include" "-ID:\ThirdPartyLibrary\snappy-windows\include" "-ID:\deeplearning\caffeold\3rdparty\include" "-ID:\ThirdPartyLibrary\opencv248\opencv\build\include" "-I." "-I.\GeneratedFiles"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing MassReconstructionDialog.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -D_VARIADIC_MAX=10 -DWIN32 -DNDEBUG -D_CONSOLE -DQT_DLL -D_MBCS "-I$(BOOST_INCLUDEDIR)\." "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I.\..\3rdparty\include" "-I.\..\src" "-I.\..\include" "-I.\..\opencv\include" "-I$(CGAL_DIR)\include" "-I$(CGAL_DIR)\auxiliary\gmp\include" "-I.\..\glm" "-I.\..\glew" "-I.\..\dlib\include"</Command>
+    </CustomBuild>
     <ClInclude Include="NumberEval.h" />
     <ClInclude Include="OBJLoader.h" />
     <ClInclude Include="OffsetOperator.h" />
-    <CustomBuild Include="ParameterEstimationDialog.h">
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ParameterEstimationDialog.h...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -D_DEBUG -D_CONSOLE -DQT_DLL -D_MBCS  "-I.\..\..\3rdparty\include" "-I.\..\..\3rdparty\include\cuda" "-I.\..\..\src" "-I.\..\..\src\include" "-ID:\ThirdPartyLibrary\caffe\include" "-ID:\ThirdPartyLibrary\caffe\src" "-ID:\ThirdPartyLibrary\boost_1_57_0" "-ID:\CUDA\Toolkit\include" "-ID:\ThirdPartyLibrary\glog-0.3.3\src\windows" "-ID:\ThirdPartyLibrary\gflags-2.1.1\buildx64\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\mkl\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\compiler\include" "-ID:\ThirdPartyLibrary\hdf5\include" "-ID:\ThirdPartyLibrary\leveldb\include" "-ID:\ThirdPartyLibrary\snappy-windows\include" "-ID:\deeplearning\caffeold\3rdparty\include" "-ID:\ThirdPartyLibrary\opencv248\opencv\build\include" "-I." "-I.\GeneratedFiles"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing ParameterEstimationDialog.h...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -D_VARIADIC_MAX=10 -DWIN32 -D_DEBUG -D_CONSOLE -DQT_DLL -D_MBCS  "-I$(BOOST_INCLUDEDIR)\." "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I.\..\3rdparty\include" "-I.\..\src" "-I.\..\include" "-I.\..\opencv\include" "-I$(CGAL_DIR)\include" "-I$(CGAL_DIR)\auxiliary\gmp\include" "-I.\..\glm" "-I.\..\glew"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ParameterEstimationDialog.h...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -D_CONSOLE -DQT_DLL -D_MBCS  "-I.\..\..\3rdparty\include" "-I.\..\..\3rdparty\include\cuda" "-I.\..\..\src" "-I.\..\..\src\include" "-ID:\ThirdPartyLibrary\caffe\include" "-ID:\ThirdPartyLibrary\caffe\src" "-ID:\ThirdPartyLibrary\boost_1_57_0" "-ID:\CUDA\Toolkit\include" "-ID:\ThirdPartyLibrary\glog-0.3.3\src\windows" "-ID:\ThirdPartyLibrary\gflags-2.1.1\buildx64\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\mkl\include" "-IC:\Program Files (x86)\Intel\Composer XE 2015\compiler\include" "-ID:\ThirdPartyLibrary\hdf5\include" "-ID:\ThirdPartyLibrary\leveldb\include" "-ID:\ThirdPartyLibrary\snappy-windows\include" "-ID:\deeplearning\caffeold\3rdparty\include" "-ID:\ThirdPartyLibrary\opencv248\opencv\build\include" "-I." "-I.\GeneratedFiles"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing ParameterEstimationDialog.h...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -D_VARIADIC_MAX=10 -DWIN32 -DNDEBUG -D_CONSOLE -DQT_DLL -D_MBCS  "-I$(BOOST_INCLUDEDIR)\." "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I.\..\3rdparty\include" "-I.\..\src" "-I.\..\include" "-I.\..\opencv\include" "-I$(CGAL_DIR)\include" "-I$(CGAL_DIR)\auxiliary\gmp\include" "-I.\..\glm" "-I.\..\glew" "-I.\..\dlib\include"</Command>
-    </CustomBuild>
     <CustomBuild Include="OptionDialog.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing OptionDialog.h...</Message>
@@ -495,26 +495,6 @@
     <ClInclude Include="GLWidget3D.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="ParameterEstimationDialog.ui">
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Uic%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Uic%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Uic%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="OptionDialog.ui">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing %(Identity)...</Message>
@@ -547,6 +527,24 @@
     <None Include="..\shaders\lc_vert_pass1.glsl" />
     <None Include="..\shaders\lc_vert_shadow.glsl" />
     <None Include="..\shaders\lc_vert_ssao.glsl" />
+    <CustomBuild Include="MassReconstructionDialog.ui">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Uic%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Uic%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Uic%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

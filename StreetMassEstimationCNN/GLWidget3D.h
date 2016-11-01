@@ -76,7 +76,7 @@ public:
 	boost::shared_ptr<Classifier> classifier;
 	std::vector<boost::shared_ptr<Regression>> regressions;
 	std::map<std::string, std::vector<cga::Grammar>> grammars;
-	int grammar_id;
+	std::map<std::string, int> grammar_ids;
 	std::map<std::string, std::vector<float>> pm_params;
 	
 	// GUI options
@@ -117,6 +117,7 @@ public:
 	bool renderImage(cga::Grammar* grammar, std::vector<float>* pm_params, cv::Mat& rendered_image, bool discardIfTopFaceIsVisible = false, bool discardIfBottomFaceIsVisible = false);
 	double distanceMap(cv::Mat rendered_image, const cv::Mat& reference_dist_map);
 	std::vector<boost::shared_ptr<glutils::Face>> updateGeometry(int grammar_type, cga::Grammar* mass_grammar, std::vector<float>* mass_params, cga::Grammar* facade_grammar = NULL, std::vector<float>* facade_params = NULL, cga::Grammar* window_grammar = NULL, std::vector<float>* window_params = NULL);
+	void updateGeometry();
 	void setupCamera(const std::vector<float>& params, float xrotMax, float xrotMin, float yrotMax, float yrotMin, float zrotMax, float zrotMin, float fovMax, float fovMin, float oxMax, float oxMin, float oyMax, float oyMin, float xMax, float xMin, float yMax, float yMin);
 	void updateStatusBar();
 	void resizeImageCanvasSize(QImage& image, int width, int height);

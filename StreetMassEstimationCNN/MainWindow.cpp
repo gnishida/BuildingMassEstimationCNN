@@ -1,6 +1,6 @@
 #include "MainWindow.h"
 #include <QFileDialog>
-#include "ParameterEstimationDialog.h"
+#include "MassReconstructionDialog.h"
 #include "OptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionMassReconstruction, SIGNAL(triggered()), this, SLOT(onMassReconstruction()));
 	connect(ui.actionAutoTest, SIGNAL(triggered()), this, SLOT(onAutoTest()));
+	connect(ui.actionFacadeReconstruction, SIGNAL(triggered()), this, SLOT(onFacadeReconstruction()));
 	connect(ui.actionPenVanishingLine, SIGNAL(triggered()), this, SLOT(onPenChanged()));
 	connect(ui.actionPenSilhouette, SIGNAL(triggered()), this, SLOT(onPenChanged()));
 	connect(ui.actionOption, SIGNAL(triggered()), this, SLOT(onOption()));
@@ -105,7 +106,7 @@ void MainWindow::onUndo() {
 * This is called when the user clickes [Tool] -> [Predict]
 */
 void MainWindow::onMassReconstruction() {
-	ParameterEstimationDialog dlg;
+	MassReconstructionDialog dlg;
 	if (dlg.exec()) {
 		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
 		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
@@ -143,7 +144,7 @@ void MainWindow::onMassReconstruction() {
 }
 
 void MainWindow::onAutoTest() {
-	ParameterEstimationDialog dlg;
+	MassReconstructionDialog dlg;
 	if (dlg.exec()) {
 		bool automaticRecognition = dlg.ui.checkBoxAutomaticRecognition->isChecked();
 		int grammarSnippetId = dlg.ui.lineEditGrammarSnippet->text().toInt() - 1;
@@ -177,6 +178,12 @@ void MainWindow::onAutoTest() {
 
 		glWidget->autoTest(grammarSnippetId, image_size, "params_multi10.txt", xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, refinement);
 	}
+}
+
+void MainWindow::onFacadeReconstruction() {
+	glWidget->grammar_type = GLWidget3D::GRAMMAR_TYPE_FACADE;
+	glWidget->updateGeometry();
+	glWidget->update();
 }
 
 void MainWindow::onPenChanged() {

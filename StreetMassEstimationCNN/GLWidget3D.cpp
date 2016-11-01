@@ -123,8 +123,10 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	// default grammar and pm values
 	grammar_type = GRAMMAR_TYPE_MASS;
-	grammar_id = 0;
+	grammar_ids["mass"] = 0;
 	pm_params["mass"].resize(grammars["mass"][0].attrs.size(), 0.5);
+	pm_params["facade"].resize(grammars["facade"][0].attrs.size(), 0.5);
+	pm_params["window"].resize(grammars["window"][0].attrs.size(), 0.5);
 }
 
 /**
@@ -568,7 +570,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 	resizeImageCanvasSize(imageOrig, width() / imageScale, height() / imageScale);
 
 	// grammar id
-	grammar_id = grammarSnippetId;
+	grammar_ids["mass"] = grammarSnippetId;
 
 	// create image of silhouette
 	cv::Mat silhouette_image(height(), width(), CV_8UC1, cv::Scalar(255));
@@ -615,7 +617,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 		//cv::imwrite("input.png", input);
 
 		// estimate paramter values by CNN
-		std::vector<float> params = regressions[grammar_id]->Predict(input);
+		std::vector<float> params = regressions[grammar_ids["mass"]]->Predict(input);
 		//utils::output_vector(params);
 
 		// 固定の場合には、ダミーでパラメータを入れちゃう
@@ -648,7 +650,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 		setupCamera(params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 
 		cv::Mat rendered_image;
-		renderImage(&grammars["mass"][grammar_id], &std::vector<float>(params.begin() + 8, params.end()), rendered_image);
+		renderImage(&grammars["mass"][grammar_ids["mass"]], &std::vector<float>(params.begin() + 8, params.end()), rendered_image);
 
 		double diff = distanceMap(rendered_image, silhouette_dist_map);
 		if (diff < diff_min) {
@@ -677,7 +679,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 			}
 
 			try {
-				find_min_bobyqa(obj_function(this, &grammars["mass"][grammar_id], silhouette_dist_map, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin),
+				find_min_bobyqa(obj_function(this, &grammars["mass"][grammar_ids["mass"]], silhouette_dist_map, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin),
 					starting_point,
 					23,
 					lower_bound,
@@ -713,7 +715,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 				setupCamera(cur_params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 
 				cv::Mat rendered_image;
-				renderImage(&grammars["mass"][grammar_id], &std::vector<float>(cur_params.begin() + 8, cur_params.end()), rendered_image);
+				renderImage(&grammars["mass"][grammar_ids["mass"]], &std::vector<float>(cur_params.begin() + 8, cur_params.end()), rendered_image);
 
 				// compute the difference
 				double diff = distanceMap(rendered_image, silhouette_dist_map);
@@ -728,7 +730,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 						setupCamera(next_params1, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 						cv::Mat rendered_image1;
 						double diff1 = std::numeric_limits<double>::max();
-						if (renderImage(&grammars["mass"][grammar_id], &std::vector<float>(next_params1.begin() + 8, next_params1.end()), rendered_image1, true, true)) {
+						if (renderImage(&grammars["mass"][grammar_ids["mass"]], &std::vector<float>(next_params1.begin() + 8, next_params1.end()), rendered_image1, true, true)) {
 							diff1 = distanceMap(rendered_image1, silhouette_dist_map);
 						}
 
@@ -738,7 +740,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 						setupCamera(next_params2, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 						cv::Mat rendered_image2;
 						double diff2 = std::numeric_limits<double>::max();
-						if (renderImage(&grammars["mass"][grammar_id], &std::vector<float>(next_params2.begin() + 8, next_params2.end()), rendered_image2, true, true)) {
+						if (renderImage(&grammars["mass"][grammar_ids["mass"]], &std::vector<float>(next_params2.begin() + 8, next_params2.end()), rendered_image2, true, true)) {
 							diff2 = distanceMap(rendered_image2, silhouette_dist_map);
 						}
 
@@ -768,7 +770,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 	setupCamera(best_params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
 
 	cv::Mat rendered_image;
-	renderImage(&grammars["mass"][grammar_id], &std::vector<float>(best_params.begin() + 8, best_params.end()), rendered_image, false, false);
+	renderImage(&grammars["mass"][grammar_ids["mass"]], &std::vector<float>(best_params.begin() + 8, best_params.end()), rendered_image, false, false);
 	diff_min = distanceMap(rendered_image, silhouette_dist_map);
 
 	// set PM parameter values
@@ -779,7 +781,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 	utils::output_vector(best_params);
 	std::cout << "Dist = " << diff_min << std::endl;
 
-	updateGeometry(GRAMMAR_TYPE_MASS, &grammars["mass"][grammar_id], &pm_params["mass"]);
+	updateGeometry(GRAMMAR_TYPE_MASS, &grammars["mass"][grammar_ids["mass"]], &pm_params["mass"]);
 
 	renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
 
@@ -1044,14 +1046,18 @@ double GLWidget3D::distanceMap(cv::Mat rendered_image, const cv::Mat& reference_
 }
 
 /**
- * Update the geometry on GPU using the selected grammar and the PM parameter values.
+ * Update the geometry using the specified grammars and the PM parameter values.
+ * Note: this function updates the geometry on GPU, so you need to call update() to actually render it on the screen.
  *
- * @param grammar		grammar
- * @param pm_params		PM parameter values
+ * @param grammar_type		grammar type
+ * @param mass_grammar		grammar for building mass
+ * @param mass_params		PM parameter values for building mass
+ * @param facade_grammar	gramamr for facade
+ * @param facade_params		PM parameter values for facade
+ * @param window_grammar	gramamr for window
+ * @param window_params		PM parameter values for window
  */
 std::vector<boost::shared_ptr<glutils::Face>> GLWidget3D::updateGeometry(int grammar_type, cga::Grammar* mass_grammar, std::vector<float>* mass_params, cga::Grammar* facade_grammar, std::vector<float>* facade_params, cga::Grammar* window_grammar, std::vector<float>* window_params) {
-	std::vector<boost::shared_ptr<glutils::Face>> faces;
-
 	// set param values
 	cga::setParamValues(*mass_grammar, *mass_params);
 	if (grammar_type == GRAMMAR_TYPE_FACADE) {
@@ -1075,6 +1081,7 @@ std::vector<boost::shared_ptr<glutils::Face>> GLWidget3D::updateGeometry(int gra
 	}
 
 	// generate 3d model
+	std::vector<boost::shared_ptr<glutils::Face>> faces;
 	cga.derive(grammar_list, true);
 	cga.generateGeometry(faces, true);
 	renderManager.removeObjects();
@@ -1083,6 +1090,54 @@ std::vector<boost::shared_ptr<glutils::Face>> GLWidget3D::updateGeometry(int gra
 	return faces;
 }
 
+/**
+ * Update the geometry using the currently selected grammars and the PM parameter values.
+ * Note: this function updates the geometry on GPU, so you need to call update() to actually render it on the screen.
+ *
+ * @param grammar		grammar
+ * @param pm_params		PM parameter values
+ */
+void GLWidget3D::updateGeometry() {
+	// set param values
+	cga::setParamValues(grammars["mass"][grammar_ids["mass"]], pm_params["mass"]);
+	if (grammar_type == GRAMMAR_TYPE_FACADE) {
+		cga::setParamValues(grammars["facade"][0], pm_params["facade"]);
+		cga::setParamValues(grammars["window"][0], pm_params["window"]);
+	}
+
+	// setup CGA
+	cga::CGA cga;
+	cga.modelMat = glm::rotate(glm::mat4(), -(float)vp::M_PI * 0.5f, glm::vec3(1, 0, 0));
+
+	// set axiom
+	boost::shared_ptr<cga::Shape> start = boost::shared_ptr<cga::Shape>(new cga::Rectangle("Start", "", glm::translate(glm::rotate(glm::mat4(), -(float)vp::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), glm::mat4(), 0, 0, glm::vec3(1, 1, 1)));
+	cga.stack.push_back(start);
+
+	std::vector<cga::Grammar*> grammar_list;
+	grammar_list.push_back(&grammars["mass"][grammar_ids["mass"]]);
+	if (grammar_type == GRAMMAR_TYPE_FACADE) {
+		grammar_list.push_back(&grammars["facade"][0]);
+		grammar_list.push_back(&grammars["window"][0]);
+	}
+
+	// generate 3d model
+	std::vector<boost::shared_ptr<glutils::Face>> faces;
+	cga.derive(grammar_list, true);
+	cga.generateGeometry(faces, true);
+	renderManager.removeObjects();
+	renderManager.addFaces(faces, true);
+}
+
+/**
+ * Set up the camera based on the specified camera parameters.
+ *
+ * @param params			Camera parameter values
+ * @param xrotMax			Maximum value of the X rotation angle
+ * @param xrotMin			Minimum value of the X rotation angle
+ * @param yrotMax			Maximum value of the Y rotation angle
+ * @param yrotMin			Minimum value of the Y rotation angle
+ * ...
+ */
 void GLWidget3D::setupCamera(const std::vector<float>& params, float xrotMax, float xrotMin, float yrotMax, float yrotMin, float zrotMax, float zrotMin, float fovMax, float fovMin, float oxMax, float oxMin, float oyMax, float oyMin, float xMax, float xMin, float yMax, float yMin) {
 	camera.xrot = params[0] * (xrotMax - xrotMin) + xrotMin;
 	camera.yrot = params[1] * (yrotMax - yrotMin) + yrotMin;
@@ -1099,9 +1154,17 @@ void GLWidget3D::setupCamera(const std::vector<float>& params, float xrotMax, fl
 
 void GLWidget3D::updateStatusBar() {
 	QString format("rot=(%1, %2, %3), pos=(%4, %5, %6), fov=%7, O=(%8, %9), PM=(");
-	for (int i = 0; i < pm_params["mass"].size(); ++i) {
-		if (i > 0) format += ", ";
-		format += "%" + QString::number(10 + i);
+	if (grammar_type == GRAMMAR_TYPE_MASS) {
+		for (int i = 0; i < pm_params["mass"].size(); ++i) {
+			if (i > 0) format += ", ";
+			format += "%" + QString::number(10 + i);
+		}
+	}
+	else if (grammar_type == GRAMMAR_TYPE_FACADE) {
+		for (int i = 0; i < pm_params["facade"].size(); ++i) {
+			if (i > 0) format += ", ";
+			format += "%" + QString::number(10 + i);
+		}
 	}
 	format += ")";
 
@@ -1109,8 +1172,15 @@ void GLWidget3D::updateStatusBar() {
 
 	// add PM parameter values (instead of normalized ones!)
 	int k = 0;
-	for (auto it = grammars["mass"][grammar_id].attrs.begin(); it != grammars["mass"][grammar_id].attrs.end(); ++it, ++k) {
-		msg = msg.arg(pm_params["mass"][k] * (it->second.range_end - it->second.range_start) + it->second.range_start);
+	if (grammar_type == GRAMMAR_TYPE_MASS) {
+		for (auto it = grammars["mass"][grammar_ids["mass"]].attrs.begin(); it != grammars["mass"][grammar_ids["mass"]].attrs.end(); ++it, ++k) {
+			msg = msg.arg(pm_params["mass"][k] * (it->second.range_end - it->second.range_start) + it->second.range_start);
+		}
+	}
+	else if (grammar_type == GRAMMAR_TYPE_FACADE) {
+		for (auto it = grammars["facade"][0].attrs.begin(); it != grammars["facade"][0].attrs.end(); ++it, ++k) {
+			msg = msg.arg(pm_params["facade"][k] * (it->second.range_end - it->second.range_start) + it->second.range_start);
+		}
 	}
 
 	mainWin->statusBar()->showMessage(msg);
@@ -1150,7 +1220,7 @@ void GLWidget3D::keyPressEvent(QKeyEvent *e) {
 		else if (grammar_type == GRAMMAR_TYPE_FACADE && pm_params["facade"].size() > 0) {
 			pm_params["facade"][0] += 0.01 * (ctrlPressed ? 0.1 : 1) * (altPressed ? -1 : 1);
 		}
-		updateGeometry(grammar_type, &grammars["mass"][grammar_id], &pm_params["mass"]);
+		updateGeometry();
 		updateStatusBar();
 		update();
 		break;
@@ -1161,7 +1231,7 @@ void GLWidget3D::keyPressEvent(QKeyEvent *e) {
 		else if (grammar_type == GRAMMAR_TYPE_FACADE && pm_params["facade"].size() > 1) {
 			pm_params["facade"][1] += 0.01 * (ctrlPressed ? 0.1 : 1) * (altPressed ? -1 : 1);
 		}
-		updateGeometry(grammar_type, &grammars["mass"][grammar_id], &pm_params["mass"]);
+		updateGeometry();
 		updateStatusBar();
 		update();
 		break;
@@ -1172,7 +1242,7 @@ void GLWidget3D::keyPressEvent(QKeyEvent *e) {
 		else if (grammar_type == GRAMMAR_TYPE_FACADE && pm_params["facade"].size() > 2) {
 			pm_params["facade"][2] += 0.01 * (ctrlPressed ? 0.1 : 1) * (altPressed ? -1 : 1);
 		}
-		updateGeometry(grammar_type, &grammars["mass"][grammar_id], &pm_params["mass"]);
+		updateGeometry();
 		updateStatusBar();
 		update();
 		break;
@@ -1183,7 +1253,7 @@ void GLWidget3D::keyPressEvent(QKeyEvent *e) {
 		else if (grammar_type == GRAMMAR_TYPE_FACADE && pm_params["facade"].size() > 3) {
 			pm_params["facade"][3] += 0.01 * (ctrlPressed ? 0.1 : 1) * (altPressed ? -1 : 1);
 		}
-		updateGeometry(grammar_type, &grammars["mass"][grammar_id], &pm_params["mass"]);
+		updateGeometry();
 		updateStatusBar();
 		update();
 		break;
@@ -1194,7 +1264,7 @@ void GLWidget3D::keyPressEvent(QKeyEvent *e) {
 		else if (grammar_type == GRAMMAR_TYPE_FACADE && pm_params["facade"].size() > 4) {
 			pm_params["facade"][4] += 0.01 * (ctrlPressed ? 0.1 : 1) * (altPressed ? -1 : 1);
 		}
-		updateGeometry(grammar_type, &grammars["mass"][grammar_id], &pm_params["mass"]);
+		updateGeometry();
 		updateStatusBar();
 		update();
 		break;
@@ -1205,7 +1275,7 @@ void GLWidget3D::keyPressEvent(QKeyEvent *e) {
 		else if (grammar_type == GRAMMAR_TYPE_FACADE && pm_params["facade"].size() > 5) {
 			pm_params["facade"][5] += 0.01 * (ctrlPressed ? 0.1 : 1) * (altPressed ? -1 : 1);
 		}
-		updateGeometry(grammar_type, &grammars["mass"][grammar_id], &pm_params["mass"]);
+		updateGeometry();
 		updateStatusBar();
 		update();
 		break;

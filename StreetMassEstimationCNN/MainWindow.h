@@ -32,6 +32,7 @@ public slots:
 	void onUndo();
 	void onMassReconstruction();
 	void onAutoTest();
+	void onFacadeReconstruction();
 	void onPenChanged();
 	void onOption();
 };
