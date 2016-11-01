@@ -2,11 +2,11 @@
 <grammar version="1.0" author="Gen Nishida">
 	<!-- parameters -->
 	<attr name="floor_height" value="2.5" range="1,5"/>
-	<attr name="ground_floor_height" value="0.5" range="0.3,1.5"/>
+	<attr name="ground_floor_height" value="3" range="1,5"/>
 	<attr name="tile_hori_margin" value="0.5" range="0.1,2"/>
 	<attr name="tile_vert_margin" value="0.3" range="0.1,2"/>
 	<attr name="tile_width" value="2.5" range="1,8"/>
-	<attr name="top_wall_height" value="0.5" range="0.3,5"/>
+	<attr name="top_wall_height" value="1" range="0.3,5"/>
 
 	<!-- facade -->
 	<rule name="Facade">
@@ -15,9 +15,27 @@
 			<param name="texHeight" type="absolute" value="5"/>
 		</setupProjection>
 		<split splitAxis="y">
-			<param type="absolute" value="ground_floor_height" name="GroundWall"/>
+			<param type="absolute" value="ground_floor_height" name="GroundFloor"/>
 			<param type="floating" value="floor_height" name="Floor" repeat="true"/>
 			<param type="absolute" value="top_wall_height" name="Wall" />
+		</split>
+	</rule>
+	<rule name="GroundFloor">
+		<split splitAxis="x">
+			<param type="floating" value="tile_width" name="GroundTile" repeat="true"/>
+		</split>
+	</rule>
+	<rule name="GroundTile">
+		<split splitAxis="y">
+			<param type="floating" value="1" name="GroundTile2"/>
+			<param type="absolute" value="0.2" name="Wall"/>
+		</split>
+	</rule>
+	<rule name="GroundTile2">
+		<split splitAxis="x">
+			<param type="absolute" value="0.2" name="Wall"/>
+			<param type="floating" value="1" name="Door"/>
+			<param type="absolute" value="0.2" name="Wall" />
 		</split>
 	</rule>
 	<rule name="Floor">
@@ -43,12 +61,5 @@
 	<!-- material -->
 	<rule name="Wall">
 		<texture texturePath="material/wall_paris.png"/>
-	</rule>
-	<rule name="GroundWall">
-		<setupProjection axesSelector="scope.xy">
-			<param name="texWidth" type="absolute" value="5"/>
-			<param name="texHeight" type="absolute" value="5"/>
-		</setupProjection>
-		<texture texturePath="material/concrete.jpg"/>
 	</rule>
 </grammar>
