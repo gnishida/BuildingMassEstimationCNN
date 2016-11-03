@@ -50,11 +50,11 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// caffe modelを読み込む
 	{
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_01.prototxt", "models/train_01_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_02.prototxt", "models/train_02_iter_80000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_03.prototxt", "models/train_03_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_04.prototxt", "models/train_04_iter_80000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_06.prototxt", "models/train_06_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_06.prototxt", "models/train_06_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_02.prototxt", "models/train_02_iter_160000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_03.prototxt", "models/train_03_iter_120000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_04.prototxt", "models/train_04_iter_120000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_05.prototxt", "models/train_05_iter_120000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_06.prototxt", "models/train_06_iter_160000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_07.prototxt", "models/train_07_iter_240000.caffemodel")));
 	}
 

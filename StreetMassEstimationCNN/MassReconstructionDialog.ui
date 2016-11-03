@@ -801,6 +801,42 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>checkBoxAutomaticRecognition</tabstop>
+  <tabstop>lineEditGrammarSnippet</tabstop>
+  <tabstop>lineEditImageSize</tabstop>
+  <tabstop>lineEditCameraDistance</tabstop>
+  <tabstop>lineEditXrotMin</tabstop>
+  <tabstop>lineEditXrotMax</tabstop>
+  <tabstop>lineEditYrotMin</tabstop>
+  <tabstop>lineEditYrotMax</tabstop>
+  <tabstop>lineEditZrotMin</tabstop>
+  <tabstop>lineEditZrotMax</tabstop>
+  <tabstop>lineEditFovMin</tabstop>
+  <tabstop>lineEditFovMax</tabstop>
+  <tabstop>lineEditOXMin</tabstop>
+  <tabstop>lineEditOXMax</tabstop>
+  <tabstop>lineEditOYMin</tabstop>
+  <tabstop>lineEditOYMax</tabstop>
+  <tabstop>lineEditXMin</tabstop>
+  <tabstop>lineEditXMax</tabstop>
+  <tabstop>lineEditYMin</tabstop>
+  <tabstop>lineEditYMax</tabstop>
+  <tabstop>radioButtonSilhouetteLine8</tabstop>
+  <tabstop>radioButtonSilhouetteLineAA</tabstop>
+  <tabstop>checkBoxImageBlur</tabstop>
+  <tabstop>lineEditImageBlurSize</tabstop>
+  <tabstop>checkBoxTryMultiples</tabstop>
+  <tabstop>lineEditNumMultipleTries</tabstop>
+  <tabstop>lineEditMaxNoise</tabstop>
+  <tabstop>checkBoxRefinement</tabstop>
+  <tabstop>lineEditIterations</tabstop>
+  <tabstop>radioButtonRefinementBobyqa</tabstop>
+  <tabstop>radioButtonRefinementRandom</tabstop>
+  <tabstop>checkBoxApplyTexture</tabstop>
+  <tabstop>pushButtonOK</tabstop>
+  <tabstop>pushButtonCancel</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

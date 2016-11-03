@@ -175,7 +175,11 @@ public:
         QWidget::setTabOrder(lineEditHorizontalRightBlue, lineEditVerticalRed);
         QWidget::setTabOrder(lineEditVerticalRed, lineEditVerticalGreen);
         QWidget::setTabOrder(lineEditVerticalGreen, lineEditVerticalBlue);
-        QWidget::setTabOrder(lineEditVerticalBlue, pushButtonOK);
+        QWidget::setTabOrder(lineEditVerticalBlue, lineEditSilhouetteWidth);
+        QWidget::setTabOrder(lineEditSilhouetteWidth, lineEditSilhouetteRed);
+        QWidget::setTabOrder(lineEditSilhouetteRed, lineEditSilhouetteGreen);
+        QWidget::setTabOrder(lineEditSilhouetteGreen, lineEditSilhouetteBlue);
+        QWidget::setTabOrder(lineEditSilhouetteBlue, pushButtonOK);
         QWidget::setTabOrder(pushButtonOK, pushButtonCancel);
 
         retranslateUi(OptionDialog);
