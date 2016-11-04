@@ -56,11 +56,14 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_05.prototxt", "models/train_05_iter_120000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_06.prototxt", "models/train_06_iter_160000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_07.prototxt", "models/train_07_iter_240000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_08.prototxt", "models/train_08_iter_80000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_09.prototxt", "models/train_09_iter_120000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_10.prototxt", "models/train_10_iter_40000.caffemodel")));
 	}
 
 	// Grammarを読み込む
 	{
-		grammars["mass"].resize(7);
+		grammars["mass"].resize(10);
 		cga::parseGrammar("cga/mass/contour_01.xml", grammars["mass"][0]);
 		cga::parseGrammar("cga/mass/contour_02.xml", grammars["mass"][1]);
 		cga::parseGrammar("cga/mass/contour_03.xml", grammars["mass"][2]);
@@ -68,6 +71,9 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		cga::parseGrammar("cga/mass/contour_05.xml", grammars["mass"][4]);
 		cga::parseGrammar("cga/mass/contour_06.xml", grammars["mass"][5]);
 		cga::parseGrammar("cga/mass/contour_07.xml", grammars["mass"][6]);
+		cga::parseGrammar("cga/mass/contour_08.xml", grammars["mass"][7]);
+		cga::parseGrammar("cga/mass/contour_09.xml", grammars["mass"][8]);
+		cga::parseGrammar("cga/mass/contour_10.xml", grammars["mass"][9]);
 
 		grammars["facade"].resize(2);
 		cga::parseGrammar("cga/facade/facade_01.xml", grammars["facade"][0]);
@@ -523,7 +529,7 @@ void GLWidget3D::undo() {
  * Use the silhouette as an input to the pretrained network, and obtain the probabilities as output.
  * Then, display the options ordered by the probabilities.
  */
-void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippetId, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, int refinement_method, bool applyTexture) {
+void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippetId, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, int refinement_method) {
 	// adjust the original background image such that the ratio of width to height is equal to the ratio of the window
 	float imageScale = std::min((float)width() / imageOrig.width(), (float)height() / imageOrig.height());
 	resizeImageCanvasSize(imageOrig, width() / imageScale, height() / imageScale);
@@ -531,7 +537,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 	// grammar id
 	grammar_ids["mass"] = grammarSnippetId;
 
-	std::vector<float> params = massrec::parameterEstimation(this, regressions[grammar_ids["mass"]], &grammars["mass"][grammar_ids["mass"]], silhouette, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, refinement_method, applyTexture);
+	std::vector<float> params = massrec::parameterEstimation(this, regressions[grammar_ids["mass"]], &grammars["mass"][grammar_ids["mass"]], silhouette, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, refinement_method);
 
 	// set the camera
 	setupCamera(params, xrotMax, xrotMin, yrotMax, yrotMin, zrotMax, zrotMin, fovMax, fovMin, oxMax, oxMin, oyMax, oyMin, xMax, xMin, yMax, yMin);
@@ -540,7 +546,7 @@ void GLWidget3D::massReconstruction(bool automaticRecognition, int grammarSnippe
 	pm_params["mass"].clear();
 	pm_params["mass"].insert(pm_params["mass"].begin(), params.begin() + 8, params.end());
 
-	updateGeometry(GRAMMAR_TYPE_MASS, &grammars["mass"][grammar_ids["mass"]], &pm_params["mass"]);
+	faces = updateGeometry(GRAMMAR_TYPE_MASS, &grammars["mass"][grammar_ids["mass"]], &pm_params["mass"]);
 
 	updateStatusBar();
 	update();
@@ -853,7 +859,8 @@ void GLWidget3D::updateGeometry() {
 	}
 
 	// generate 3d model
-	std::vector<boost::shared_ptr<glutils::Face>> faces;
+	//std::vector<boost::shared_ptr<glutils::Face>> faces;
+	faces.clear();
 	cga.derive(grammar_list, true);
 	cga.generateGeometry(faces, true);
 	renderManager.removeObjects();
@@ -885,6 +892,110 @@ void GLWidget3D::setupCamera(const std::vector<float>& params, float xrotMax, fl
 	camera.pos.z = camera.distanceBase / tan(vp::deg2rad(camera.fovy * 0.5));
 
 	camera.updatePMatrix(width(), height());
+}
+
+void GLWidget3D::textureMapping() {
+	// create texture folder
+	if (!QDir("textures").exists()) QDir().mkdir("textures");
+
+	// convert image to cv::Mat object
+	cv::Mat imageMat = cv::Mat(image.height(), image.width(), CV_8UC4, const_cast<uchar*>(image.bits()), image.bytesPerLine()).clone();
+	cv::cvtColor(imageMat, imageMat, cv::COLOR_BGRA2BGR);
+
+	// rectify the facade image
+	for (int fi = 0; fi < faces.size(); ++fi) {
+		// non-quadratic face is not supported.
+		if (faces[fi]->vertices.size() % 6 != 0) continue;
+
+		std::vector<cv::Mat> rectified_images;
+		std::vector<bool> visibilities;
+		bool visible = false;
+
+		// we create a texture for each quad because the face might be curved
+		for (int qi = 0; qi < faces[fi]->vertices.size() / 6; ++qi) {
+			// obtain the 2d/3d coordinates of the quad
+			std::vector<cv::Point2f> pts;
+			std::vector<glm::vec3> pts3d;
+			for (int k = 0; k < 6; ++k) {
+				if (k == 3 || k == 4) continue;
+
+				int vi = qi * 6 + k;
+
+				pts3d.push_back(faces[fi]->vertices[vi].position);
+
+				glm::vec2 pp = utils::projectPoint(width(), height(), faces[fi]->vertices[vi].position, camera.mvpMatrix);
+				pts.push_back(cv::Point2f(pp.x, pp.y));
+			}
+
+			// check if the quad is visible
+			glm::vec3 normal = glm::cross(pts3d[1] - pts3d[0], pts3d[2] - pts3d[1]);
+			normal = glm::vec3(camera.mvMatrix * glm::vec4(normal, 0));
+			glm::vec3 view_dir = glm::vec3(camera.mvMatrix * glm::vec4(pts3d[0], 1));
+			if (glm::dot(normal, view_dir) < 0) {
+				visible = true;
+				visibilities.push_back(true);
+
+				// rectify the facade image
+				cv::Mat transformMat;
+				cv::Mat rectifiedImage = cvutils::rectify_image(imageMat, pts, transformMat, glm::length(pts3d[1] - pts3d[0]) / glm::length(pts3d[2] - pts3d[1]));
+				rectifiedImage = cvutils::adjust_contrast(rectifiedImage);
+
+				rectified_images.push_back(rectifiedImage);
+			}
+			else {
+				visibilities.push_back(false);
+				rectified_images.push_back(cv::Mat(glm::length(pts3d[2] - pts3d[1]) * 100, glm::length(pts3d[1] - pts3d[0]) * 100, CV_8UC3));
+			}
+		}
+
+		// save the texture image
+		if (visible) {
+			// obtain the largest height of the images
+			int height_max = 0;
+			for (int i = 0; i < rectified_images.size(); ++i) {
+				if (visibilities[i]) {
+					if (rectified_images[i].rows > height_max) {
+						height_max = rectified_images[i].rows;
+					}
+				}
+			}
+
+			// determine the size of the merged texture
+			int width_total = 0;
+			for (int i = 0; i < rectified_images.size(); ++i) {
+				width_total += (float)rectified_images[i].cols * height_max / rectified_images[i].rows;
+			}
+
+			// initialize the texture
+			cv::Mat textureImg(height_max, width_total, CV_8UC3, cv::Scalar(255, 255, 255));
+
+			// merge the texture
+			int offset = 0;
+			for (int i = 0; i < rectified_images.size(); ++i) {
+				int width = (float)rectified_images[i].cols * height_max / rectified_images[i].rows;
+
+				if (visibilities[i]) {
+					cv::Mat roi(textureImg, cv::Rect(offset, 0, width, height_max));
+
+					cv::resize(rectified_images[i], rectified_images[i], cv::Size(width, height_max));
+					rectified_images[i].copyTo(roi);
+				}
+
+				offset += width;
+			}
+
+			time_t now = clock();
+			QString name = QString("textures/%1_%2_%3.png").arg(faces[fi]->name.c_str()).arg(fi).arg(now);
+			cv::imwrite(name.toUtf8().constData(), textureImg);
+
+			faces[fi]->texture = name.toUtf8().constData();
+		}
+	}
+
+	renderManager.removeObjects();
+	renderManager.addFaces(faces, true);
+	renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
+	update();
 }
 
 void GLWidget3D::updateStatusBar() {
@@ -1174,10 +1285,12 @@ void GLWidget3D::paintEvent(QPaintEvent *event) {
 	painter.drawEllipse(origin.x - 3, origin.y - 3, 7, 7);
 
 	// draw the center of the building
+	/*
 	glm::vec2 pp = vp::projectPoint(camera.mvpMatrix, glm::dvec3(0, 0, 0));
 	painter.setPen(QPen(QColor(255, 0, 0), 1, Qt::SolidLine));
 	painter.setBrush(QBrush(QColor(255, 0, 0)));
 	painter.drawEllipse((pp.x + 1) * 0.5 * width() - 3, (1 - pp.y) * 0.5 * height() - 3, 7, 7);
+	*/
 
 	painter.end();
 

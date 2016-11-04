@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionMassReconstruction, SIGNAL(triggered()), this, SLOT(onMassReconstruction()));
 	connect(ui.actionAutoTest, SIGNAL(triggered()), this, SLOT(onAutoTest()));
+	connect(ui.actionTextureMapping, SIGNAL(triggered()), this, SLOT(onTextureMapping()));
 	connect(ui.actionFacadeReconstruction, SIGNAL(triggered()), this, SLOT(onFacadeReconstruction()));
 	connect(ui.actionPenVanishingLine, SIGNAL(triggered()), this, SLOT(onPenChanged()));
 	connect(ui.actionPenSilhouette, SIGNAL(triggered()), this, SLOT(onPenChanged()));
@@ -137,9 +138,8 @@ void MainWindow::onMassReconstruction() {
 		bool refinement = dlg.ui.checkBoxRefinement->isChecked();
 		int maxIters = dlg.ui.lineEditIterations->text().toInt();
 		int refinement_method = dlg.ui.radioButtonRefinementBobyqa->isChecked() ? 0 : 1;
-		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
-		glWidget->massReconstruction(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, refinement_method, applyTexture);
+		glWidget->massReconstruction(automaticRecognition, grammarSnippetId, image_size, cameraDistanceBase, xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, tryMultiples, numMultipleTries, maxNoise, refinement, maxIters, refinement_method);
 	}
 }
 
@@ -174,10 +174,13 @@ void MainWindow::onAutoTest() {
 		float maxNoise = dlg.ui.lineEditMaxNoise->text().toFloat();
 		bool refinement = dlg.ui.checkBoxRefinement->isChecked();
 		int maxIters = dlg.ui.lineEditIterations->text().toInt();
-		bool applyTexture = dlg.ui.checkBoxApplyTexture->isChecked();
 
 		glWidget->autoTest(grammarSnippetId, image_size, "params_multi10.txt", xrotMin, xrotMax, yrotMin, yrotMax, zrotMin, zrotMax, fovMin, fovMax, oxMin, oxMax, oyMin, oyMax, xMin, xMax, yMin, yMax, silhouette_line_type, imageBlur, imageBlurSize, refinement);
 	}
+}
+
+void MainWindow::onTextureMapping() {
+	glWidget->textureMapping();
 }
 
 void MainWindow::onFacadeReconstruction() {

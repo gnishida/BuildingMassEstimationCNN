@@ -38,7 +38,7 @@ namespace massrec {
 		float yMax;
 	};
 
-	std::vector<float> parameterEstimation(GLWidget3D* glWidget, boost::shared_ptr<Regression> regression, cga::Grammar* grammar, const std::vector<vp::VanishingLine>& silhouette, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, int refinement_method, bool applyTexture);
+	std::vector<float> parameterEstimation(GLWidget3D* glWidget, boost::shared_ptr<Regression> regression, cga::Grammar* grammar, const std::vector<vp::VanishingLine>& silhouette, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, int refinement_method);
 
 }
 

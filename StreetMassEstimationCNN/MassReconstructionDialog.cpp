@@ -88,7 +88,6 @@ MassReconstructionDialog::MassReconstructionDialog(QWidget *parent) : QDialog(pa
 	ui.radioButtonRefinementBobyqa->setEnabled(ui.checkBoxRefinement->isChecked());
 	ui.radioButtonRefinementRandom->setChecked(false);
 	ui.radioButtonRefinementRandom->setEnabled(ui.checkBoxRefinement->isChecked());
-	ui.checkBoxApplyTexture->setChecked(false);
 
 	connect(ui.checkBoxAutomaticRecognition, SIGNAL(clicked()), this, SLOT(onAutomaticRecognition()));
 	connect(ui.checkBoxImageBlur, SIGNAL(clicked()), this, SLOT(onImageBlur()));

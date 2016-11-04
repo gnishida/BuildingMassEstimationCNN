@@ -56,6 +56,7 @@
     <addaction name="actionMassReconstruction"/>
     <addaction name="actionAutoTest"/>
     <addaction name="separator"/>
+    <addaction name="actionTextureMapping"/>
     <addaction name="actionFacadeReconstruction"/>
     <addaction name="separator"/>
     <addaction name="menuPen"/>
@@ -209,6 +210,11 @@
   <action name="actionFacadeReconstruction">
    <property name="text">
     <string>Facade Reconstruction</string>
+   </property>
+  </action>
+  <action name="actionTextureMapping">
+   <property name="text">
+    <string>Texture Mapping</string>
    </property>
   </action>
  </widget>

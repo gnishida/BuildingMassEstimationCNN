@@ -48,6 +48,7 @@ public:
     QAction *actionClearBackground;
     QAction *actionAutoTest;
     QAction *actionFacadeReconstruction;
+    QAction *actionTextureMapping;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -108,6 +109,8 @@ public:
         actionAutoTest->setObjectName(QStringLiteral("actionAutoTest"));
         actionFacadeReconstruction = new QAction(MainWindowClass);
         actionFacadeReconstruction->setObjectName(QStringLiteral("actionFacadeReconstruction"));
+        actionTextureMapping = new QAction(MainWindowClass);
+        actionTextureMapping->setObjectName(QStringLiteral("actionTextureMapping"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -150,6 +153,7 @@ public:
         menuOption->addAction(actionMassReconstruction);
         menuOption->addAction(actionAutoTest);
         menuOption->addSeparator();
+        menuOption->addAction(actionTextureMapping);
         menuOption->addAction(actionFacadeReconstruction);
         menuOption->addSeparator();
         menuOption->addAction(menuPen->menuAction());
@@ -193,6 +197,7 @@ public:
         actionClearBackground->setText(QApplication::translate("MainWindowClass", "Clear Background", 0));
         actionAutoTest->setText(QApplication::translate("MainWindowClass", "Auto Test", 0));
         actionFacadeReconstruction->setText(QApplication::translate("MainWindowClass", "Facade Reconstruction", 0));
+        actionTextureMapping->setText(QApplication::translate("MainWindowClass", "Texture Mapping", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuOption->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
         menuPen->setTitle(QApplication::translate("MainWindowClass", "Pen", 0));

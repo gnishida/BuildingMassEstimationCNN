@@ -52,7 +52,7 @@ namespace massrec {
 		return diff;
 	}
 
-	std::vector<float> parameterEstimation(GLWidget3D* glWidget, boost::shared_ptr<Regression> regression, cga::Grammar* grammar, const std::vector<vp::VanishingLine>& silhouette, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, int refinement_method, bool applyTexture) {
+	std::vector<float> parameterEstimation(GLWidget3D* glWidget, boost::shared_ptr<Regression> regression, cga::Grammar* grammar, const std::vector<vp::VanishingLine>& silhouette, int image_size, float cameraDistanceBase, float xrotMin, float xrotMax, float yrotMin, float yrotMax, float zrotMin, float zrotMax, float fovMin, float fovMax, float oxMin, float oxMax, float oyMin, float oyMax, float xMin, float xMax, float yMin, float yMax, int silhouette_line_type, bool imageBlur, int imageBlurSize, bool tryMultiples, int numMultipleTries, float maxNoise, bool refinement, int maxIters, int refinement_method) {
 		time_t start = clock();
 
 		std::cout << "-----------------------------------------------------" << std::endl;
@@ -280,31 +280,6 @@ namespace massrec {
 		glWidget->renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
 
 		return best_params;
-
-#if 0	
-
-		std::cout << "Final dist: " << bme::distance(silhouette, renderedImage, width(), height()) << std::endl;
-
-		// line modeで描画
-		renderManager.renderingMode = RenderManager::RENDERING_MODE_LINE;
-
-		if (applyTexture) {
-			bme::generateTextures(camera, bgImageOrig, width(), height(), faces);
-
-			renderManager.removeObjects();
-			renderManager.addFaces(faces, true);
-			renderManager.renderingMode = RenderManager::RENDERING_MODE_BASIC;
-
-			opacityOfBackground = 0.1f;
-
-			// remove the texture folder
-			//if (QDir("textures").exists()) QDir("textures").removeRecursively();
-		}
-
-		updateStatusBar();
-		update();
-#endif
-
 	}
 
 }

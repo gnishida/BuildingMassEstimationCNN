@@ -57,7 +57,6 @@ public:
     QLineEdit *lineEditYMin;
     QLineEdit *lineEditZrotMax;
     QCheckBox *checkBoxRefinement;
-    QCheckBox *checkBoxApplyTexture;
     QPushButton *pushButtonOK;
     QRadioButton *radioButtonRefinementRandom;
     QLineEdit *lineEditXrotMin;
@@ -91,7 +90,7 @@ public:
     {
         if (MassReconstructionDialog->objectName().isEmpty())
             MassReconstructionDialog->setObjectName(QStringLiteral("MassReconstructionDialog"));
-        MassReconstructionDialog->resize(582, 580);
+        MassReconstructionDialog->resize(582, 551);
         lineEditGrammarSnippet = new QLineEdit(MassReconstructionDialog);
         lineEditGrammarSnippet->setObjectName(QStringLiteral("lineEditGrammarSnippet"));
         lineEditGrammarSnippet->setGeometry(QRect(250, 10, 31, 20));
@@ -198,12 +197,9 @@ public:
         checkBoxRefinement = new QCheckBox(MassReconstructionDialog);
         checkBoxRefinement->setObjectName(QStringLiteral("checkBoxRefinement"));
         checkBoxRefinement->setGeometry(QRect(110, 450, 91, 17));
-        checkBoxApplyTexture = new QCheckBox(MassReconstructionDialog);
-        checkBoxApplyTexture->setObjectName(QStringLiteral("checkBoxApplyTexture"));
-        checkBoxApplyTexture->setGeometry(QRect(110, 510, 91, 17));
         pushButtonOK = new QPushButton(MassReconstructionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(370, 540, 91, 31));
+        pushButtonOK->setGeometry(QRect(370, 510, 91, 31));
         radioButtonRefinementRandom = new QRadioButton(MassReconstructionDialog);
         radioButtonRefinementRandom->setObjectName(QStringLiteral("radioButtonRefinementRandom"));
         radioButtonRefinementRandom->setGeometry(QRect(230, 480, 82, 17));
@@ -278,7 +274,7 @@ public:
         label_28->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         pushButtonCancel = new QPushButton(MassReconstructionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(470, 540, 91, 31));
+        pushButtonCancel->setGeometry(QRect(470, 510, 91, 31));
         label = new QLabel(MassReconstructionDialog);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(230, 450, 71, 20));
@@ -327,8 +323,7 @@ public:
         QWidget::setTabOrder(checkBoxRefinement, lineEditIterations);
         QWidget::setTabOrder(lineEditIterations, radioButtonRefinementBobyqa);
         QWidget::setTabOrder(radioButtonRefinementBobyqa, radioButtonRefinementRandom);
-        QWidget::setTabOrder(radioButtonRefinementRandom, checkBoxApplyTexture);
-        QWidget::setTabOrder(checkBoxApplyTexture, pushButtonOK);
+        QWidget::setTabOrder(radioButtonRefinementRandom, pushButtonOK);
         QWidget::setTabOrder(pushButtonOK, pushButtonCancel);
 
         retranslateUi(MassReconstructionDialog);
@@ -354,7 +349,6 @@ public:
         label_23->setText(QApplication::translate("MassReconstructionDialog", "Y pos:", 0));
         label_31->setText(QApplication::translate("MassReconstructionDialog", "Silhouette:", 0));
         checkBoxRefinement->setText(QApplication::translate("MassReconstructionDialog", "Refinement", 0));
-        checkBoxApplyTexture->setText(QApplication::translate("MassReconstructionDialog", "Apply Texture", 0));
         pushButtonOK->setText(QApplication::translate("MassReconstructionDialog", "OK", 0));
         radioButtonRefinementRandom->setText(QApplication::translate("MassReconstructionDialog", "Random walk", 0));
         label_24->setText(QApplication::translate("MassReconstructionDialog", "~", 0));
