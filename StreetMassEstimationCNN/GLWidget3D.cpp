@@ -56,9 +56,9 @@ GLWidget3D::GLWidget3D(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_05.prototxt", "models/train_05_iter_120000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_06.prototxt", "models/train_06_iter_160000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_07.prototxt", "models/train_07_iter_240000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_08.prototxt", "models/train_08_iter_80000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_08.prototxt", "models/train_08_iter_120000.caffemodel")));
 		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_09.prototxt", "models/train_09_iter_120000.caffemodel")));
-		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_10.prototxt", "models/train_10_iter_40000.caffemodel")));
+		regressions.push_back(boost::shared_ptr<Regression>(new Regression("models/deploy_10.prototxt", "models/train_10_iter_80000.caffemodel")));
 	}
 
 	// Grammarを読み込む
