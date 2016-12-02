@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <grammar version="1.0" author="Gen Nishida">
 	<!-- parameters -->
-	<attr name="width" value="10" range="4,40"/>
 	<attr name="depth" value="10" range="4,40"/>
 	<attr name="height" value="10" range="4,40"/>
 	<attr name="roof_height" value="1" range="0.3,1.5"/>
 	<attr name="roof_overhang" value="0.5" range="0.3,1.5"/>
+	<attr name="width" value="10" range="4,40"/>
 	
 	<!-- building mass -->
 	<rule name="Start">
@@ -59,17 +59,5 @@
 			<param name="side" value="RoofLedge"/>
 			<param name="top" value="RoofTop"/>
 		</comp>
-	</rule>
-
-	<!-- material -->
-	<rule name="RoofTop">
-		<setupProjection axesSelector="scope.xy">
-			<param name="texWidth" type="relative" value="1"/>
-			<param name="texHeight" type="relative" value="1"/>
-		</setupProjection>
-		<texture texturePath="material/roof.tif"/>
-	</rule>
-	<rule name="RoofLedge">
-		<color s="#dfe0db"/>
 	</rule>
 </grammar>
